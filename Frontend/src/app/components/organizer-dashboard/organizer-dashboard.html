@@ -1,0 +1,109 @@
+<div class="dashboard-container">
+  <div class="organizer-dashboard-header">
+    <h2>Organizer Dashboard</h2>
+    <button class="organizer-logout-btn" (click)="logout()">Logout</button>
+  </div>
+
+  <button (click)="toggleCreateForm()">
+    {{ showCreateForm ? 'Cancel' : (isEditMode ? 'Edit Event' : 'Create Event') }}
+  </button>
+
+  <div *ngIf="showCreateForm" class="create-event-form">
+    <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+      <label>
+        Title:
+        <input formControlName="title" required />
+      </label>
+
+      <label>
+        Description:
+        <textarea formControlName="description"></textarea>
+      </label>
+
+      <label>
+        Date:
+        <input type="date" formControlName="date" required />
+      </label>
+
+      <label>
+        Time Slot:
+        <input formControlName="timeSlot" />
+      </label>
+
+      <label>
+        Duration:
+        <input formControlName="duration" />
+      </label>
+
+      <!-- Cascading Location Dropdowns -->
+      <label>
+        State:
+        <select [(ngModel)]="selectedState" (change)="onStateChange()" required>
+          <option value="" disabled selected>Select State</option>
+          <option *ngFor="let state of filteredStates" [value]="state">{{ state }}</option>
+        </select>
+      </label>
+
+      <label>
+        District:
+        <select [(ngModel)]="selectedDistrict" (change)="onDistrictChange()" [disabled]="!selectedState" required>
+          <option value="" disabled selected>Select District</option>
+          <option *ngFor="let district of filteredDistricts" [value]="district">{{ district }}</option>
+        </select>
+      </label>
+
+      <label>
+        Place Name:
+        <select formControlName="location" [disabled]="!selectedDistrict" required>
+          <option value="" disabled selected>Select Place</option>
+          <option *ngFor="let place of filteredPlaceNames" [value]="place">{{ place }}</option>
+        </select>
+      </label>
+      <!-- End Cascading Dropdown -->
+
+      <label>
+        Category:
+        <input formControlName="category" />
+      </label>
+
+      <label>
+        Price:
+        <input type="number" formControlName="price" min="0" />
+      </label>
+
+      <label>
+        Max Registrations:
+        <input type="number" formControlName="maxRegistrations" min="1" required />
+      </label>
+
+      <label>
+        Artist:
+        <input formControlName="artist" />
+      </label>
+
+      <label>
+        Organization:
+        <input formControlName="organization" />
+      </label>
+
+      <button type="submit" [disabled]="eventForm.invalid">
+        {{ isEditMode ? 'Update Event' : 'Create Event' }}
+      </button>
+    </form>
+  </div>
+
+  <div class="events-list" *ngIf="events.length > 0">
+    <h3>Your Created Events:</h3>
+    <ul>
+      <li *ngFor="let event of events">
+        <strong>{{ event.title }}</strong> - {{ event.date | date }} - {{ event.location }}
+        <button (click)="onEdit(event)">Edit</button>
+        <button (click)="onDelete(event._id)">Delete</button>
+      </li>
+    </ul>
+  </div>
+
+  <div *ngIf="events.length === 0">
+    <p>You have not created any events yet.</p>
+  </div>
+</div>

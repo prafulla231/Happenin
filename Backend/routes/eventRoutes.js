@@ -7,10 +7,23 @@ import {
   deleteEvent,
 } from '../controllers/eventController.js';
 
+import { registerForEvent , getRegisteredEvents , deregisterEvent , getEventDetails } from '../controllers/userActivityController.js';
+
+
+
 const router = express.Router();
 
 // Create new event
-router.post('/', createEvent);
+router.post('/',createEvent);
+
+router.post('/register', registerForEvent);
+router.get('/registered-events/:userId', getRegisteredEvents);
+router.delete('/deregister', deregisterEvent);
+router.get('/registered-users/:eventId', getEventDetails);
+
+
+
+
 
 // Get all events
 router.get('/', getEvents);

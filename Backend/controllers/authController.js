@@ -90,6 +90,7 @@ export const checkLogin = async (req, res) => {
 
     const payload = {
       userId: user._id,
+      userName : user.name,
       role: user.role,
       email: user.email,
     };
@@ -107,8 +108,10 @@ export const checkLogin = async (req, res) => {
         role: user.role,
       },
     });
+
   } catch (error) {
     console.error('Login error:', error);
     return apiError(res, 500, 'Server error', error);
   }
 };
+

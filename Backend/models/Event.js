@@ -12,6 +12,7 @@ const eventSchema = new mongoose.Schema(
     price: { type: Number, default: 0 },
     image: { type: String },
     poster: { type: String },
+    currentRegistrations : { type: Number, default:0 },
     maxRegistrations: { type: Number, required: true },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

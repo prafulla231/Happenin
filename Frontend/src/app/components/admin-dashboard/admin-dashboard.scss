@@ -1,0 +1,522 @@
+// ========= ADMIN DASHBOARD 3D MODERN STYLES =========
+// Color Variables
+$admin-primary-purple: #8B5FBF;
+$admin-light-purple: #B794C7;
+$admin-violet: #9D7BEA;
+$admin-light-blue: #A8C8EC;
+$admin-blue-accent: #7FB3D3;
+$admin-white: #FFFFFF;
+$admin-light-gray: #F8F9FF;
+$admin-text-dark: #2D1B69;
+$admin-text-light: #6B46C1;
+$admin-shadow-light: rgba(139, 95, 191, 0.15);
+$admin-shadow-medium: rgba(139, 95, 191, 0.25);
+$admin-shadow-dark: rgba(139, 95, 191, 0.35);
+$admin-gradient-primary: linear-gradient(135deg, $admin-light-purple 0%, $admin-violet 50%, $admin-light-blue 100%);
+$admin-gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+$admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin-violet 100%);
+
+// Mixins
+@mixin admin-glass-effect {
+  background: $admin-gradient-card;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@mixin admin-3d-shadow {
+  box-shadow:
+    0 8px 32px $admin-shadow-light,
+    0 4px 16px $admin-shadow-medium,
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+@mixin admin-hover-transform {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 12px 40px $admin-shadow-medium,
+    0 8px 24px $admin-shadow-light;
+}
+
+@mixin admin-button-3d {
+  background: $admin-gradient-button;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  color: $admin-white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 4px 16px rgba(139, 95, 191, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 24px rgba(139, 95, 191, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow:
+      0 2px 8px rgba(139, 95, 191, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+}
+
+// Main Container
+.admin-dashboard-container {
+  min-height: 100vh;
+  background: $admin-gradient-primary;
+  padding: 20px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(139, 95, 191, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// Header Styles
+.admin-dashboard-header {
+  @include admin-glass-effect;
+  @include admin-3d-shadow;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  margin-bottom: 32px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    @include admin-hover-transform;
+  }
+
+  h2 {
+    color: $admin-text-dark;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, $admin-text-dark 0%, $admin-primary-purple 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.admin-logout-btn {
+  @include admin-button-3d;
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+
+  &:hover {
+    background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+  }
+}
+
+// Event Card Styles
+.admin-event-card {
+  @include admin-glass-effect;
+  @include admin-3d-shadow;
+  padding: 28px;
+  margin-bottom: 24px;
+  border-radius: 18px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    @include admin-hover-transform;
+  }
+
+  h3 {
+    color: $admin-text-dark;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    background: linear-gradient(135deg, $admin-text-dark 0%, $admin-violet 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  p {
+    color: $admin-text-light;
+    margin: 8px 0;
+    font-size: 16px;
+
+    strong {
+      color: $admin-text-dark;
+      font-weight: 600;
+    }
+  }
+
+  button {
+    @include admin-button-3d;
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+    margin: 12px 8px 16px 0;
+
+    &:hover {
+      background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+    }
+  }
+
+  h4 {
+    color: $admin-text-dark;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 24px 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(139, 95, 191, 0.2);
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      @include admin-glass-effect;
+      padding: 16px 20px;
+      margin: 12px 0;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: $admin-text-light;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(139, 95, 191, 0.1);
+
+      &:hover {
+        transform: translateX(8px);
+        box-shadow: 0 6px 20px rgba(139, 95, 191, 0.2);
+      }
+
+      button {
+        @include admin-button-3d;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+        padding: 8px 16px;
+        font-size: 14px;
+        margin: 0;
+
+        &:hover {
+          background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+        }
+      }
+    }
+  }
+}
+
+// Add Location Header
+.add-location-header {
+  text-align: center;
+  margin: 32px 0;
+
+  button {
+    @include admin-button-3d;
+    font-size: 16px;
+    padding: 16px 32px;
+    border-radius: 16px;
+
+    &:hover {
+      transform: translateY(-3px) scale(1.05);
+    }
+  }
+}
+
+// Location Section Styles
+.admin-location-section {
+  @include admin-glass-effect;
+  @include admin-3d-shadow;
+  padding: 32px;
+  margin-bottom: 32px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    @include admin-hover-transform;
+  }
+
+  h3 {
+    color: $admin-text-dark;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 24px 0;
+    text-align: center;
+    background: linear-gradient(135deg, $admin-text-dark 0%, $admin-violet 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    .admin-form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+    }
+
+    .admin-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      color: $admin-text-dark;
+      font-weight: 600;
+      font-size: 16px;
+      margin: 0;
+    }
+
+    input, select, textarea {
+      width: 90%;
+      padding: 16px 20px;
+      border: 2px solid rgba(139, 95, 191, 0.2);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      color: $admin-text-dark;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(139, 95, 191, 0.1);
+
+      &:focus {
+        outline: none;
+        border-color: $admin-violet;
+        box-shadow:
+          0 0 0 4px rgba(139, 95, 191, 0.2),
+          0 8px 24px rgba(139, 95, 191, 0.2);
+        transform: translateY(-2px);
+      }
+
+      &:hover:not(:focus) {
+        border-color: rgba(139, 95, 191, 0.4);
+        transform: translateY(-1px);
+      }
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    button[type="submit"] {
+      @include admin-button-3d;
+      align-self: center;
+      padding: 16px 48px;
+      font-size: 18px;
+      border-radius: 16px;
+      margin-top: 12px;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+
+        &:hover {
+          transform: none;
+          box-shadow: 0 4px 16px rgba(139, 95, 191, 0.3);
+        }
+      }
+    }
+  }
+}
+
+// Amenities Checkboxes
+.amenities-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  border: 2px solid rgba(139, 95, 191, 0.1);
+
+  label {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    color: $admin-text-light;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 12px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    margin: 0 !important;
+
+    &:hover {
+      background: rgba(139, 95, 191, 0.1);
+      color: $admin-text-dark;
+      transform: translateX(4px);
+    }
+
+    input[type="checkbox"] {
+      width: auto !important;
+      margin: 0 !important;
+      accent-color: $admin-violet;
+      transform: scale(1.2);
+    }
+  }
+}
+
+// Locations List
+.admin-locations-list {
+  @include admin-glass-effect;
+  @include admin-3d-shadow;
+  padding: 32px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    @include admin-hover-transform;
+  }
+
+  h3 {
+    color: $admin-text-dark;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 24px 0;
+    text-align: center;
+    background: linear-gradient(135deg, $admin-text-dark 0%, $admin-violet 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.location-card {
+  @include admin-glass-effect;
+  padding: 24px;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 20px rgba(139, 95, 191, 0.1);
+
+  &:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(139, 95, 191, 0.2);
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  h4 {
+    color: $admin-text-dark;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    background: linear-gradient(135deg, $admin-text-dark 0%, $admin-primary-purple 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  p {
+    color: $admin-text-light;
+    margin: 8px 0;
+    font-size: 16px;
+    line-height: 1.5;
+
+    strong {
+      color: $admin-text-dark;
+      font-weight: 600;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .admin-dashboard-container {
+    padding: 16px;
+  }
+
+  .admin-dashboard-header {
+    padding: 20px;
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+
+    h2 {
+      font-size: 24px;
+    }
+  }
+
+  .admin-event-card, .admin-location-section, .admin-locations-list {
+    padding: 20px;
+  }
+
+  .admin-location-section form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    .admin-form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .amenities-checkboxes {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-event-card ul li {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+}
+
+// Animation Keyframes
+@keyframes admin-fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes admin-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(139, 95, 191, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(139, 95, 191, 0);
+  }
+}
+
+// Apply entrance animations
+.admin-dashboard-container > * {
+  animation: admin-fadeInUp 0.6s ease-out forwards;
+}
+
+.admin-event-card:nth-child(even) {
+  animation-delay: 0.1s;
+}
+
+.admin-event-card:nth-child(odd) {
+  animation-delay: 0.2s;
+}

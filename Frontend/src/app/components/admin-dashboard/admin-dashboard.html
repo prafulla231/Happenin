@@ -1,0 +1,119 @@
+<div class="admin-dashboard-container">
+  <!-- ========= HEADER ========= -->
+  <div class="admin-dashboard-header">
+    <h2>Admin Dashboard</h2>
+    <button class="admin-logout-btn" (click)="logout()">Logout</button>
+  </div>
+
+  <!-- ========= EVENT MANAGEMENT ========= -->
+  <div *ngFor="let event of events" class="admin-event-card">
+    <h3>{{ event.title }}</h3>
+    <p><strong>Date:</strong> {{ event.date }}</p>
+    <p><strong>Location:</strong> {{ event.location }}</p>
+    <button (click)="deleteEvent(event._id)">Delete Event</button>
+
+    <h4>Registered Users</h4>
+
+<div *ngIf="usersMap[event._id]">
+  <button (click)="toggleUsersDropdown(event._id)">
+    Registered users: {{ usersMap[event._id].currentRegistration }}
+    <span *ngIf="!showUsersDropdown[event._id]">▼</span>
+    <span *ngIf="showUsersDropdown[event._id]">▲</span>
+  </button>
+
+  <ul *ngIf="showUsersDropdown[event._id]">
+    <li *ngFor="let user of usersMap[event._id].users">
+      {{ user.name }} ({{ user.email }})
+      <button (click)="removeUserFromEvent(event._id, user.userId)">Remove</button>
+    </li>
+  </ul>
+</div>
+
+
+  </div>
+
+  <!-- ========= TOGGLE BUTTON FOR LOCATION FORM ========= -->
+  <div class="add-location-header">
+    <button (click)="toggleLocationForm()">
+      {{ showLocationForm ? 'Hide Location Form' : 'Add New Location' }}
+    </button>
+  </div>
+
+  <!-- ========= LOCATION FORM ========= -->
+<!-- ========= LOCATION FORM ========= -->
+<div *ngIf="showLocationForm" class="admin-location-section">
+  <h3>Add New Location</h3>
+  <form #locationForm="ngForm" (ngSubmit)="addLocation(newLocation)">
+
+    <!-- First Row: State and District -->
+    <div class="admin-form-row">
+      <div class="admin-form-group">
+        <label>State:</label>
+        <select [(ngModel)]="newLocation.state" name="state" required (change)="onStateChange()">
+          <option value="" disabled selected>Select State</option>
+          <option *ngFor="let state of getStates()" [value]="state">
+            {{ state }}
+          </option>
+        </select>
+      </div>
+
+      <div class="admin-form-group">
+        <label>District:</label>
+        <select [(ngModel)]="newLocation.district" name="district" required>
+          <option value="" disabled selected>Select District</option>
+          <option *ngFor="let district of availableDistricts" [value]="district">
+            {{ district }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Second Row: Place Name and Max Seating Capacity -->
+    <div class="admin-form-row">
+      <div class="admin-form-group">
+        <label>Place Name:</label>
+        <input type="text" [(ngModel)]="newLocation.placeName" name="placeName" required />
+      </div>
+
+      <div class="admin-form-group">
+        <label>Max Seating Capacity:</label>
+        <input type="number" [(ngModel)]="newLocation.maxSeatingCapacity" name="maxSeatingCapacity" required />
+      </div>
+    </div>
+
+    <!-- Third Row: Address (Full Width) -->
+    <div class="admin-form-group">
+      <label>Address:</label>
+      <textarea [(ngModel)]="newLocation.address" name="address" required></textarea>
+    </div>
+
+    <!-- Fourth Row: Amenities (Full Width) -->
+    <div class="admin-form-group">
+      <label>Amenities:</label>
+      <div class="amenities-checkboxes">
+        <label *ngFor="let amenity of amenities">
+          <input
+            type="checkbox"
+            [value]="amenity"
+            (change)="toggleAmenity(amenity, $event)"
+          />
+          {{ amenity }}
+        </label>
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="!locationForm.form.valid">Add Location</button>
+  </form>
+</div>
+
+  <!-- ========= DISPLAY LOCATIONS ========= -->
+  <div class="admin-locations-list">
+    <h3>All Locations</h3>
+    <div *ngFor="let location of locations" class="location-card">
+      <h4>{{ location.placeName }} ({{ location.state }} - {{ location.district }})</h4>
+      <p>{{ location.address }}</p>
+      <p><strong>Capacity:</strong> {{ location.maxSeatingCapacity }}</p>
+      <p><strong>Amenities:</strong> {{ location.amenities.join(', ') }}</p>
+    </div>
+  </div>
+</div>
