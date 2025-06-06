@@ -4,7 +4,7 @@ import {
   getEvents,
   getEventById,
   updateEvent,
-  deleteEvent,
+  deleteEvent, removeUserFromEvent
 } from '../controllers/eventController.js';
 
 import { registerForEvent , getRegisteredEvents , deregisterEvent , getEventDetails } from '../controllers/userActivityController.js';
@@ -20,6 +20,7 @@ router.post('/register', registerForEvent);
 router.get('/registered-events/:userId', getRegisteredEvents);
 router.delete('/deregister', deregisterEvent);
 router.get('/registered-users/:eventId', getEventDetails);
+router.delete('/removeuser/:eventId/users/:userId', removeUserFromEvent);
 
 
 

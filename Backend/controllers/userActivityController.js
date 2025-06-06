@@ -24,7 +24,7 @@ export const registerForEvent = async (req, res) => {
     const registration = new Registration({ userId, eventId });
     await registration.save();
 
-    await Event.findByIdAndUpdate(eventId, { $inc: { currentRegistration: 1 } });
+    await Event.findByIdAndUpdate(eventId, { $inc: { currentRegistrations: 1 } });
 
     res.status(200).json({ message: 'Successfully registered!' });
   } catch (error) {
@@ -76,7 +76,7 @@ export const deregisterEvent = async (req, res) => {
       return res.status(404).json({ message: 'Registration not found.' });
     }
 
-    await Event.findByIdAndUpdate(eventId, { $inc: { currentRegistration: -1 } });
+    await Event.findByIdAndUpdate(eventId, { $inc: { currentRegistrations: -1 } });
 
 
     return res.status(200).json({ message: 'Deregistered successfully.' });
@@ -110,7 +110,7 @@ export const getEventDetails = async (req, res) => {
       message: 'Registered users fetched',
       data: {
         users,
-        currentRegistration: event.currentRegistrations || 0
+        currentRegistration: event.currentRegistrations
       }
     });
   } catch (error) {

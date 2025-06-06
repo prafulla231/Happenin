@@ -16,12 +16,13 @@ interface RegisteredUser {
   userId: string;
   name: string;
   email: string;
+  _id : string;
 }
 
 interface Location {
   _id?: string;
   state: string;
-  district: string;
+  city: string;
   placeName: string;
   address: string;
   maxSeatingCapacity: number;
@@ -48,7 +49,8 @@ export class AdminDashboardComponent {
   usersMap: { [eventId: string]: RegisteredUsersResponse } = {};
 
   baseEventUrl = 'http://localhost:5000/api/events';
-  baseRegistrationUrl = 'http://localhost:5000/api/registrations';
+  baseRegistrationUrl = 'http://localhost:5000/api/events/registered-users';
+  removeUser = 'http://localhost:5000/api/events/removeuser';
   baseLocationUrl = 'http://localhost:5000/api/locations';
 
 
@@ -57,14 +59,14 @@ export class AdminDashboardComponent {
 
   newLocation: Location = {
     state: '',
-    district: '',
+    city: '',
     placeName: '',
     address: '',
     maxSeatingCapacity: 0,
     amenities: []
   };
 
-  statesAndDistricts: { [key: string]: string[] } = {
+  statesAndcitys: { [key: string]: string[] } = {
     "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik", "Thane"],
     "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar"],
     "Karnataka": ["Bengaluru", "Mysuru", "Hubli", "Mangaluru", "Belagavi"],
@@ -74,7 +76,7 @@ export class AdminDashboardComponent {
     "Uttar Pradesh": ["Lucknow", "Kanpur", "Varanasi", "Agra", "Noida"]
   };
 
-  availableDistricts: string[] = [];
+  availablecitys: string[] = [];
 
   amenities: string[] = ['Wi-Fi', 'AC', 'Parking', 'Projector', 'Water Supply' , 'Microphone' , 'Speaker'];
 
@@ -97,6 +99,7 @@ export class AdminDashboardComponent {
   this.http.get<{ data: RegisteredUsersResponse }>(`${this.baseRegistrationUrl}/${eventId}`).subscribe({
     next: res => {
       this.usersMap[eventId] = res.data;
+      console.log(`Loaded users for event ${eventId}`, res.data);
     },
     error: err => console.error('Error loading users for event', err)
   });
@@ -118,9 +121,9 @@ export class AdminDashboardComponent {
     }
   }
 
-  removeUserFromEvent(eventId: string, userId: string) {
+  removeUserFromEvent(eventId: string, _id: string) {
     if (confirm('Remove user from event?')) {
-      this.http.delete(`${this.baseRegistrationUrl}/${eventId}/users/${userId}`).subscribe({
+      this.http.delete(`${this.removeUser}/${eventId}/users/${_id}`).subscribe({
         next: () => {
           alert('User removed successfully');
           this.loadRegisteredUsers(eventId);
@@ -145,7 +148,7 @@ toggleUsersDropdown(eventId: string) {
     localStorage.removeItem('user');
     sessionStorage.clear();
     alert('You have been logged out.');
-    window.location.href = '/';
+    window.location.href = '/login';
   }
 
   // ========= Location Section Methods =========
@@ -155,10 +158,10 @@ toggleUsersDropdown(eventId: string) {
   }
 
   onStateChange() {
-    this.availableDistricts = this.statesAndDistricts[this.newLocation.state] || [];
+    this.availablecitys = this.statesAndcitys[this.newLocation.state] || [];
   }
   getStates(): string[] {
-  return this.statesAndDistricts ? Object.keys(this.statesAndDistricts) : [];
+  return this.statesAndcitys ? Object.keys(this.statesAndcitys) : [];
 }
 
 
@@ -203,12 +206,14 @@ toggleUsersDropdown(eventId: string) {
   resetForm() {
     this.newLocation = {
       state: '',
-      district: '',
+      city: '',
       placeName: '',
       address: '',
       maxSeatingCapacity: 0,
       amenities: []
     };
-    this.availableDistricts = [];
+    this.availablecitys = [];
   }
 }
+
+

@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 const locationSchema = new mongoose.Schema(
   {
     state: { type: String, required: true },
-    district: { type: String, required: true },
+    city: { type: String, required: true },
     placeName: { type: String, required: true },
     address: { type: String, required: true },
     maxSeatingCapacity: { type: Number, required: true },

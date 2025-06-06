@@ -9,7 +9,7 @@ export const createLocation = asyncHandler(async (req, res) => {
 
   const {
     state,
-    district,
+    city,
     placeName,
     address,
     maxSeatingCapacity,
@@ -19,7 +19,7 @@ export const createLocation = asyncHandler(async (req, res) => {
   console.log('🔍 Request Body:', req.body);
 
   // Validate required fields
-  if (!state || !district || !placeName || !address || !maxSeatingCapacity) {
+  if (!state || !city || !placeName || !address || !maxSeatingCapacity) {
     console.error('❌ Missing required fields');
     res.status(400).json({ message: 'Please fill all required fields' });
     return;
@@ -35,7 +35,7 @@ export const createLocation = asyncHandler(async (req, res) => {
   // Create and save the location
   const location = new Location({
     state,
-    district,
+    city,
     placeName,
     address,
     maxSeatingCapacity,

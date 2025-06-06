@@ -1,109 +1,317 @@
 <div class="dashboard-container">
-  <div class="organizer-dashboard-header">
-    <h2>Organizer Dashboard</h2>
-    <button class="organizer-logout-btn" (click)="logout()">Logout</button>
-  </div>
-
-  <button (click)="toggleCreateForm()">
-    {{ showCreateForm ? 'Cancel' : (isEditMode ? 'Edit Event' : 'Create Event') }}
-  </button>
-
-  <div *ngIf="showCreateForm" class="create-event-form">
-    <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
-      <label>
-        Title:
-        <input formControlName="title" required />
-      </label>
-
-      <label>
-        Description:
-        <textarea formControlName="description"></textarea>
-      </label>
-
-      <label>
-        Date:
-        <input type="date" formControlName="date" required />
-      </label>
-
-      <label>
-        Time Slot:
-        <input formControlName="timeSlot" />
-      </label>
-
-      <label>
-        Duration:
-        <input formControlName="duration" />
-      </label>
-
-      <!-- Cascading Location Dropdowns -->
-      <label>
-        State:
-        <select [(ngModel)]="selectedState" (change)="onStateChange()" required>
-          <option value="" disabled selected>Select State</option>
-          <option *ngFor="let state of filteredStates" [value]="state">{{ state }}</option>
-        </select>
-      </label>
-
-      <label>
-        District:
-        <select [(ngModel)]="selectedDistrict" (change)="onDistrictChange()" [disabled]="!selectedState" required>
-          <option value="" disabled selected>Select District</option>
-          <option *ngFor="let district of filteredDistricts" [value]="district">{{ district }}</option>
-        </select>
-      </label>
-
-      <label>
-        Place Name:
-        <select formControlName="location" [disabled]="!selectedDistrict" required>
-          <option value="" disabled selected>Select Place</option>
-          <option *ngFor="let place of filteredPlaceNames" [value]="place">{{ place }}</option>
-        </select>
-      </label>
-      <!-- End Cascading Dropdown -->
-
-      <label>
-        Category:
-        <input formControlName="category" />
-      </label>
-
-      <label>
-        Price:
-        <input type="number" formControlName="price" min="0" />
-      </label>
-
-      <label>
-        Max Registrations:
-        <input type="number" formControlName="maxRegistrations" min="1" required />
-      </label>
-
-      <label>
-        Artist:
-        <input formControlName="artist" />
-      </label>
-
-      <label>
-        Organization:
-        <input formControlName="organization" />
-      </label>
-
-      <button type="submit" [disabled]="eventForm.invalid">
-        {{ isEditMode ? 'Update Event' : 'Create Event' }}
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="dashboard-title">Organizer Dashboard</h1>
+        <p class="dashboard-subtitle">Manage your events with ease</p>
+      </div>
+      <button class="logout-btn" (click)="logout()">
+        <span class="btn-icon">🚪</span>
+        Logout
       </button>
-    </form>
+    </div>
   </div>
 
-  <div class="events-list" *ngIf="events.length > 0">
-    <h3>Your Created Events:</h3>
-    <ul>
-      <li *ngFor="let event of events">
-        <strong>{{ event.title }}</strong> - {{ event.date | date }} - {{ event.location }}
-        <button (click)="onEdit(event)">Edit</button>
-        <button (click)="onDelete(event._id)">Delete</button>
-      </li>
-    </ul>
+  <!-- Action Button -->
+  <div class="action-section">
+    <button class="create-event-btn" (click)="toggleCreateForm()">
+      <span class="btn-icon">{{ showCreateForm ? '✕' : '✚' }}</span>
+      {{ showCreateForm ? 'Cancel' : (isEditMode ? 'Edit Event' : 'Create Event') }}
+    </button>
   </div>
 
-  <div *ngIf="events.length === 0">
-    <p>You have not created any events yet.</p>
+  <!-- Create/Edit Event Form -->
+  <div class="form-container" [class.show]="showCreateForm">
+    <div class="form-card">
+      <div class="form-header">
+        <h3>{{ isEditMode ? 'Edit Event' : 'Create New Event' }}</h3>
+      </div>
+
+      <form [formGroup]="eventForm" (ngSubmit)="onSubmit()" class="event-form">
+        <div class="form-grid">
+          <!-- Basic Information -->
+          <div class="form-group full-width">
+            <label class="form-label">Event Title</label>
+            <input
+              type="text"
+              formControlName="title"
+              class="form-input"
+              placeholder="Enter event title"
+              required
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label class="form-label">Description</label>
+            <textarea
+              formControlName="description"
+              class="form-textarea"
+              placeholder="Describe your event..."
+              rows="4"
+            ></textarea>
+          </div>
+
+          <!-- Date and Time -->
+          <div class="form-group">
+            <label class="form-label">Event Date</label>
+            <input
+              type="date"
+              formControlName="date"
+              class="form-input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Time Slot</label>
+            <input
+              type="text"
+              formControlName="timeSlot"
+              class="form-input"
+              placeholder="e.g., 7:00 PM - 9:00 PM"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Duration</label>
+            <input
+              type="text"
+              formControlName="duration"
+              class="form-input"
+              placeholder="e.g., 2 hours"
+            />
+          </div>
+
+          <!-- Location -->
+          <div class="form-group">
+            <label class="form-label">State</label>
+            <select
+              formControlName="state"
+              [(ngModel)]="selectedState"
+              (change)="onStateChange()"
+              class="form-select"
+              required
+            >
+              <option value="" disabled>Select State</option>
+              <option *ngFor="let state of filteredStates" [value]="state">
+                {{ state }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <select
+              formControlName="city"
+              [(ngModel)]="selectedCity"
+              (change)="onCityChange()"
+              [disabled]="!eventForm.get('state')?.value"
+              class="form-select"
+              required
+            >
+              <option value="" disabled>Select City</option>
+              <option *ngFor="let city of filteredCities" [value]="city">
+                {{ city }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Venue</label>
+            <select
+              formControlName="location"
+              [disabled]="!eventForm.get('city')?.value"
+              class="form-select"
+              required
+            >
+              <option value="" disabled>Select Venue</option>
+              <option *ngFor="let place of filteredPlaceNames" [value]="place">
+                {{ place }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Event Details -->
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <input
+              type="text"
+              formControlName="category"
+              class="form-input"
+              placeholder="e.g., Music, Sports, Workshop"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Price (₹)</label>
+            <input
+              type="number"
+              formControlName="price"
+              class="form-input"
+              placeholder="0"
+              min="0"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Max Registrations</label>
+            <input
+              type="number"
+              formControlName="maxRegistrations"
+              class="form-input"
+              placeholder="100"
+              min="1"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Artist/Speaker</label>
+            <input
+              type="text"
+              formControlName="artist"
+              class="form-input"
+              placeholder="Featured artist or speaker"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Organization</label>
+            <input
+              type="text"
+              formControlName="organization"
+              class="form-input"
+              placeholder="Organizing body"
+            />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="submit-btn"
+            [disabled]="eventForm.invalid || isLoading"
+          >
+            <span class="btn-icon">{{ isEditMode ? '📝' : '✨' }}</span>
+            {{ isEditMode ? 'Update Event' : 'Create Event' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Events Grid -->
+  <div class="events-section" *ngIf="events.length > 0">
+    <div class="section-header">
+      <h2 class="section-title">Your Created Events</h2>
+      <div class="events-count">{{ events.length }} {{ events.length === 1 ? 'Event' : 'Events' }}</div>
+    </div>
+
+    <div class="events-grid">
+      <div class="event-card" *ngFor="let event of events">
+        <div class="event-card-header">
+          <div class="event-category">{{ event.category || 'General' }}</div>
+          <div class="event-price">₹{{ event.price || 0 }}</div>
+        </div>
+
+        <div class="event-card-body">
+          <h4 class="event-title">{{ event.title }}</h4>
+          <div class="event-details">
+            <div class="event-detail">
+              <span class="detail-icon">📅</span>
+              <span class="detail-text">{{ event.date | date:'MMM dd, yyyy' }}</span>
+            </div>
+            <div class="event-detail">
+              <span class="detail-icon">📍</span>
+              <span class="detail-text">{{ event.location }}</span>
+            </div>
+            <div class="event-detail" *ngIf="event.timeSlot">
+              <span class="detail-icon">🕐</span>
+              <span class="detail-text">{{ event.timeSlot }}</span>
+            </div>
+            <div class="event-detail" *ngIf="event.maxRegistrations">
+              <span class="detail-icon">👥</span>
+              <span class="detail-text">Max {{ event.maxRegistrations }} attendees</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card-actions">
+          <button class="action-btn edit-btn" (click)="onEdit(event)" [disabled]="isLoading">
+            <span class="btn-icon">✏️</span>
+            Edit
+          </button>
+          <button class="action-btn delete-btn" (click)="onDelete(event._id)" [disabled]="isLoading">
+            <span class="btn-icon">🗑️</span>
+            Delete
+          </button>
+          <button class="action-btn delete-btn" (click)="openUserModal(event._id)" [disabled]="isLoading">
+            <span class="btn-icon"></span>
+            View Users
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="events.length === 0 && !isLoading">
+    <div class="empty-state-content">
+      <div class="empty-state-icon">🎭</div>
+      <h3 class="empty-state-title">No Events Yet</h3>
+      <p class="empty-state-text">Start creating amazing events for your audience!</p>
+      <button class="create-first-event-btn" (click)="toggleCreateForm()" *ngIf="!showCreateForm">
+        <span class="btn-icon">✨</span>
+        Create Your First Event
+      </button>
+    </div>
+  </div>
+  <footer class="dashboard-footer">
+  <h2 class="footer-title"> <span class="brand-highlight"> Happenin'</span></h2>
+  <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin&#64;gmail.com</span></p>
+  <div class="footer-socials">
+    <a href="https://www.instagram.com" target="_blank" aria-label="Instagram" class="social-icon">
+      <img src="assets/icons/instagram.svg" alt="Instagram" />
+    </a>
+    <a href="https://www.twitter.com" target="_blank" aria-label="Twitter" class="social-icon">
+      <img src="assets/icons/twitter.svg" alt="Twtter" />
+    </a>
+    <a href="https://www.linkedin.com" target="_blank" aria-label="LinkedIn" class="social-icon">
+      <img src="assets/icons/linkedin.svg" alt="LinkedIn" />
+    </a>
+  </div>
+</footer>
+
+
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Loading...</p>
+    </div>
   </div>
 </div>
+
+
+<!-- Registered Users Modal -->
+<div class="modal-backdrop" *ngIf="selectedEventId && usersMap[selectedEventId]">
+  <div class="modal">
+    <h3>Registered Users</h3>
+
+    <ul *ngIf="usersMap[selectedEventId]?.users?.length; else noUsers">
+      <li *ngFor="let user of usersMap[selectedEventId].users">
+        {{ user.name }} ({{ user.email }})
+      </li>
+    </ul>
+
+    <ng-template #noUsers>
+      <p>No users registered for this event.</p>
+    </ng-template>
+
+    <button (click)="closeUserModal()">Close</button>
+  </div>
+</div>
+

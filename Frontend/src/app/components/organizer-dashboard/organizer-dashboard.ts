@@ -20,6 +20,19 @@ interface Event {
   organization?: string;
 }
 
+interface RegisteredUser {
+  userId: string;
+  name: string;
+  email: string;
+  _id : string;
+}
+
+
+interface RegisteredUsersResponse {
+  users: RegisteredUser[];
+  currentRegistration: number;
+}
+
 @Component({
   selector: 'app-organizer-dashboard',
   standalone: true,
@@ -30,26 +43,28 @@ interface Event {
 export class OrganizerDashboardComponent {
   showCreateForm = false;
   isEditMode = false;
-  posterFile: File | null = null;          // For storing the selected file
-  uploadedPosterUrl: string | null = null; // For storing the Cloudinary URL
+  posterFile: File | null = null;
+  uploadedPosterUrl: string | null = null;
   events: Event[] = [];
   currentEditEventId: string | null = null;
   organizerId: string | null = null;
-  isLoading = false;  // For optional loading state
+  isLoading = false;
 
+  usersMap: { [eventId: string]: RegisteredUsersResponse } = {};
   createApiUrl = 'http://localhost:5000/api/events';
   baseApiUrl = 'http://localhost:5000/api/events';
+  baseRegistrationUrl = 'http://localhost:5000/api/events/registered-users';
 
   eventForm: FormGroup;
 
-  // --- New properties for locations ---
+  // Location dropdown data and selections
   locations: any[] = [];
   filteredStates: string[] = [];
-  filteredDistricts: string[] = [];
+  filteredCities: string[] = [];
   filteredPlaceNames: string[] = [];
 
   selectedState: string = '';
-  selectedDistrict: string = '';
+  selectedCity: string = '';
 
   constructor(private fb: FormBuilder, private http: HttpClient) {
     this.eventForm = this.fb.group({
@@ -64,13 +79,13 @@ export class OrganizerDashboardComponent {
       maxRegistrations: [1, [Validators.required, Validators.min(1)]],
       artist: [''],
       organization: [''],
+      state: ['', Validators.required],
+      city: ['', Validators.required],  // Changed from 'district' to 'city'
     });
-
-    console.log("Hi");
 
     this.decodeToken();
     this.loadEvents();
-    this.fetchLocations(); // fetch locations on component init
+    this.fetchLocations();
   }
 
   decodeToken() {
@@ -87,7 +102,6 @@ export class OrganizerDashboardComponent {
       const decodedPayload: { userId?: string } = JSON.parse(decodedJson);
 
       this.organizerId = decodedPayload.userId || null;
-
       console.log('Organizer ID:', this.organizerId);
     } catch (error) {
       console.error('Failed to decode token:', error);
@@ -102,68 +116,141 @@ export class OrganizerDashboardComponent {
       return;
     }
 
-    console.log(this.organizerId);
-
     this.isLoading = true;
     this.http.get<{ data: Event[] }>(`${this.baseApiUrl}/${this.organizerId}`).subscribe({
       next: (res) => {
-        this.events = res.data;  // all events by this organizer returned from backend
+        this.events = res.data;
         this.isLoading = false;
       },
       error: (err) => {
         console.error('Error loading events', err);
         this.isLoading = false;
         alert('Failed to load events. Please try again later.');
-      }
-    });
-  }
-
-  // --- New method to fetch all locations ---
-  fetchLocations() {
-    this.http.get<any[]>('http://localhost:5000/api/locations').subscribe({
-      next: (data) => {
-        this.locations = data;
-        this.filteredStates = [...new Set(data.map(loc => loc.state))];
-        console.log('Locations fetched:', this.locations);
-        console.log('Filtered states:', this.filteredStates);
-
       },
-      error: (err) => {
-        console.error('Failed to fetch locations', err);
-      }
     });
   }
 
-  // --- New handlers for cascading dropdown ---
-  onStateChange() {
-    this.filteredDistricts = [...new Set(this.locations
-      .filter(loc => loc.state === this.selectedState)
-      .map(loc => loc.district))];
+  fetchLocations() {
+  console.log('📡 Fetching locations from API...');
+  this.http.get<any[]>('http://localhost:5000/api/locations').subscribe({
+    next: (data) => {
+      console.log('✅ Raw location data:', data);
+      this.locations = data;
 
-    this.selectedDistrict = '';
+      // Extract and trim unique states safely
+      this.filteredStates = [
+        ...new Set(
+          data
+            .filter((loc) => loc.state)
+            .map((loc) => loc.state.trim())
+        )
+      ];
+
+      console.log('📍 All Locations:', this.locations);
+      console.log('🌍 Filtered States:', this.filteredStates);
+    },
+    error: (err) => {
+      console.error('❌ Failed to fetch locations', err);
+    },
+  });
+}
+
+
+selectedEventId: string | null = null;
+
+openUserModal(eventId: string) {
+  this.loadRegisteredUsers(eventId, () => {
+    this.selectedEventId = eventId;
+  });
+}
+
+
+closeUserModal() {
+  this.selectedEventId = null;
+}
+
+
+onStateChange() {
+  console.log('🟢 State changed!');
+  console.log('Selected State:', this.selectedState);
+
+  if (!this.selectedState) {
+    console.log('⚠️ No state selected. Resetting cities and location...');
+    this.filteredCities = [];
     this.filteredPlaceNames = [];
-    this.eventForm.patchValue({ location: '' });
+    this.eventForm.patchValue({ city: '', location: '' });
+    return;
   }
 
-  onDistrictChange() {
-    this.filteredPlaceNames = [...new Set(this.locations
-      .filter(loc =>
-        loc.state === this.selectedState &&
-        loc.district === this.selectedDistrict
-      )
-      .map(loc => loc.placeName))];
+  const state = this.selectedState.trim();
+  console.log('✅ Trimmed Selected State:', state);
 
-    this.eventForm.patchValue({ location: '' });
+  const matchingLocations = this.locations.filter(
+    (loc) => loc.state?.trim() === state
+  );
+
+  console.log('🔍 Matching Locations for State:', matchingLocations);
+
+  // Extract and trim city values only if they exist
+  this.filteredCities = [
+    ...new Set(
+      matchingLocations
+        .filter((loc) => loc.city)
+        .map((loc) => loc.city.trim())
+    )
+  ];
+
+  console.log('🏙️ Filtered Cities:', this.filteredCities);
+
+  // Reset further selections
+  this.selectedCity = '';
+  this.filteredPlaceNames = [];
+  this.eventForm.patchValue({ city: '', location: '' });
+}
+
+onCityChange() {
+  console.log('🟢 City changed!');
+  console.log('Selected State:', this.selectedState);
+  console.log('Selected City:', this.selectedCity);
+
+  if (!this.selectedCity || !this.selectedState) {
+    console.log('⚠️ Either city or state not selected. Skipping logic.');
+    return;
   }
+
+  const state = this.selectedState.trim();
+  const city = this.selectedCity.trim();
+  console.log('✅ Trimmed State and City:', state, city);
+
+  const matchingPlaces = this.locations.filter(
+    (loc) =>
+      loc.state?.trim() === state &&
+      loc.city?.trim() === city
+  );
+
+  console.log('📌 Matching Places:', matchingPlaces);
+
+  this.filteredPlaceNames = [
+    ...new Set(
+      matchingPlaces
+        .filter((loc) => loc.placeName)
+        .map((loc) => loc.placeName.trim())
+    )
+  ];
+
+  console.log('🏛️ Filtered Place Names:', this.filteredPlaceNames);
+
+  this.eventForm.patchValue({ location: '' });
+}
 
   toggleCreateForm() {
     this.showCreateForm = !this.showCreateForm;
     this.isEditMode = false;
-    this.eventForm.reset({ price: 0, maxRegistrations: 1 });
+    this.eventForm.reset({ price: 0, maxRegistrations: 1, state: '', city: '' });
     this.currentEditEventId = null;
     this.selectedState = '';
-    this.selectedDistrict = '';
-    this.filteredDistricts = [];
+    this.selectedCity = '';
+    this.filteredCities = [];
     this.filteredPlaceNames = [];
   }
 
@@ -177,7 +264,6 @@ export class OrganizerDashboardComponent {
       alert('Please fill in all required fields correctly.');
       return;
     }
-    console.table(this.eventForm.value);
 
     const eventData = { ...this.eventForm.value, createdBy: this.organizerId };
 
@@ -194,7 +280,7 @@ export class OrganizerDashboardComponent {
           console.error('Error updating event', err);
           alert('Failed to update event. Please try again.');
           this.isLoading = false;
-        }
+        },
       });
     } else {
       this.http.post(this.createApiUrl, eventData).subscribe({
@@ -208,24 +294,31 @@ export class OrganizerDashboardComponent {
           console.error('Error creating event', err);
           alert('Failed to create event. Please try again.');
           this.isLoading = false;
-        }
+        },
       });
     }
   }
 
   onEdit(event: Event) {
-    this.eventForm.patchValue(event);
+    // Find location info to set state and city
+    const loc = this.locations.find((l) => l.placeName === event.location);
+
+    // Patch form values including state & city explicitly
+    this.eventForm.patchValue({
+      ...event,
+      state: loc ? loc.state : '',
+      city: loc ? loc.city : '',  // Changed from 'district' to 'city'
+    });
+
     this.currentEditEventId = event._id;
     this.isEditMode = true;
     this.showCreateForm = true;
 
-    // Set selectedState and selectedDistrict based on event.location if possible
-    const loc = this.locations.find(l => l.placeName === event.location);
     if (loc) {
       this.selectedState = loc.state;
       this.onStateChange();
-      this.selectedDistrict = loc.district;
-      this.onDistrictChange();
+      this.selectedCity = loc.city;  // Changed from 'district' to 'city'
+      this.onCityChange();  // Changed method name
     }
   }
 
@@ -243,29 +336,42 @@ export class OrganizerDashboardComponent {
         console.error('Error deleting event', err);
         alert('Failed to delete event. Please try again.');
         this.isLoading = false;
-      }
+      },
     });
   }
 
+
+  loadRegisteredUsers(eventId: string, callback?: () => void) {
+  this.http.get<{ data: RegisteredUsersResponse }>(`${this.baseRegistrationUrl}/${eventId}`).subscribe({
+    next: res => {
+      this.usersMap[eventId] = res.data;
+      console.log(`Loaded users for event ${eventId}`, res.data);
+      if (callback) callback();
+    },
+    error: err => {
+      console.error('Error loading users for event', err);
+      alert('Failed to load users');
+    }
+  });
+}
+
+
   resetForm() {
-    this.eventForm.reset({ price: 0, maxRegistrations: 1 });
+    this.eventForm.reset({ price: 0, maxRegistrations: 1, state: '', city: '' });
     this.showCreateForm = false;
     this.isEditMode = false;
     this.currentEditEventId = null;
     this.selectedState = '';
-    this.selectedDistrict = '';
-    this.filteredDistricts = [];
+    this.selectedCity = '';
+    this.filteredCities = [];
     this.filteredPlaceNames = [];
   }
 
   logout() {
-    // Clear token/session and other relevant data
-    localStorage.removeItem('token'); // If you stored JWT here
-    localStorage.removeItem('user');    // Optional: if you stored userId separately
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    sessionStorage.clear();
 
-    sessionStorage.clear(); // Clear session storage if used
-
-    // Redirect to login page
     alert('You have been logged out.');
     window.location.href = '/';
   }

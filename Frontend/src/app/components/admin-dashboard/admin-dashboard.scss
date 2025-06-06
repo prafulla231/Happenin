@@ -131,6 +131,13 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   }
 }
 
+.admin-events-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
 // Event Card Styles
 .admin-event-card {
   @include admin-glass-effect;
@@ -461,6 +468,9 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
       font-size: 24px;
     }
   }
+  .admin-events-grid {
+  grid-template-columns: 1fr;
+}
 
   .admin-event-card, .admin-location-section, .admin-locations-list {
     padding: 20px;

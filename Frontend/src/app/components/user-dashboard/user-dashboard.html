@@ -12,6 +12,160 @@
     </div>
   </header>
 
+  <!-- Filters and Search Section -->
+  <section class="filters-section">
+    <div class="filters-container">
+      <div class="filters-header">
+        <h2 class="filters-title">
+          <span class="title-icon">🔍</span>
+          Find Your Perfect Event
+        </h2>
+        <button class="clear-filters-btn" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+          <span class="btn-icon">✕</span>
+          <span class="btn-text">Clear All</span>
+        </button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search events by title, location, artist, category..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange()"
+          />
+          <button class="search-clear-btn" (click)="clearSearch()" *ngIf="searchQuery">
+            <span>✕</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Controls -->
+      <div class="filter-controls">
+        <!-- Category Filter -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <span class="label-icon">🏷️</span>
+            Category
+          </label>
+          <select class="filter-select" [(ngModel)]="selectedCategory" (change)="applyFilters()">
+            <option value="">All Categories</option>
+            <option *ngFor="let category of availableCategories" [value]="category">
+              {{ category }}
+            </option>
+          </select>
+        </div>
+
+        <!-- City Filter -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <span class="label-icon">🏙️</span>
+            City
+          </label>
+          <select class="filter-select" [(ngModel)]="selectedCity" (change)="applyFilters()">
+            <option value="">All Cities</option>
+            <option *ngFor="let city of availableCities" [value]="city">
+              {{ city }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="filter-group date-range-group">
+          <label class="filter-label">
+            <span class="label-icon">📅</span>
+            Date Range
+          </label>
+          <div class="date-inputs">
+            <input
+              type="date"
+              class="date-input"
+              placeholder="From"
+              [(ngModel)]="dateFrom"
+              (change)="applyFilters()"
+            />
+            <span class="date-separator">to</span>
+            <input
+              type="date"
+              class="date-input"
+              placeholder="To"
+              [(ngModel)]="dateTo"
+              (change)="applyFilters()"
+            />
+          </div>
+        </div>
+
+        <!-- Price Range Filter -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <span class="label-icon">💰</span>
+            Price Range
+          </label>
+          <select class="filter-select" [(ngModel)]="selectedPriceRange" (change)="applyFilters()">
+            <option value="">All Prices</option>
+            <option value="0-500">Free - ₹500</option>
+            <option value="500-1000">₹500 - ₹1000</option>
+            <option value="1000-2000">₹1000 - ₹2000</option>
+            <option value="2000+">₹2000+</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Active Filters Display -->
+      <div class="active-filters" *ngIf="hasActiveFilters()">
+        <div class="active-filters-header">
+          <span class="active-filters-title">Active Filters:</span>
+        </div>
+        <div class="filter-tags">
+          <span class="filter-tag" *ngIf="searchQuery">
+            <span class="tag-icon">🔍</span>
+            Search: "{{ searchQuery }}"
+            <button class="tag-remove" (click)="clearSearch()">✕</button>
+          </span>
+          <span class="filter-tag" *ngIf="selectedCategory">
+            <span class="tag-icon">🏷️</span>
+            {{ selectedCategory }}
+            <button class="tag-remove" (click)="selectedCategory = ''; applyFilters()">✕</button>
+          </span>
+          <span class="filter-tag" *ngIf="selectedCity">
+            <span class="tag-icon">🏙️</span>
+            {{ selectedCity }}
+            <button class="tag-remove" (click)="selectedCity = ''; applyFilters()">✕</button>
+          </span>
+          <span class="filter-tag" *ngIf="dateFrom || dateTo">
+            <span class="tag-icon">📅</span>
+            {{ formatDateRange() }}
+            <button class="tag-remove" (click)="dateFrom = ''; dateTo = ''; applyFilters()">✕</button>
+          </span>
+          <span class="filter-tag" *ngIf="selectedPriceRange">
+            <span class="tag-icon">💰</span>
+            {{ formatPriceRange() }}
+            <button class="tag-remove" (click)="selectedPriceRange = ''; applyFilters()">✕</button>
+          </span>
+        </div>
+      </div>
+
+      <!-- Results Count -->
+      <div class="results-info">
+        <span class="results-count">
+          {{ filteredEvents.length }} {{ filteredEvents.length === 1 ? 'event' : 'events' }} found
+        </span>
+        <div class="sort-controls">
+          <label class="sort-label">Sort by:</label>
+          <select class="sort-select" [(ngModel)]="sortBy" (change)="applySorting()">
+            <option value="date">Date</option>
+            <option value="title">Title</option>
+            <option value="price">Price</option>
+            <option value="category">Category</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="events-section">
     <div class="section-header">
       <h2 class="section-title">
@@ -20,9 +174,23 @@
         <div class="title-underline"></div>
       </h2>
     </div>
-    <div class="events-grid">
+
+    <!-- No Results Message -->
+    <div *ngIf="filteredEvents.length === 0" class="no-results">
+      <div class="no-results-icon">🔍</div>
+      <h3 class="no-results-title">No events found</h3>
+      <p class="no-results-message">
+        Try adjusting your search criteria or filters to find more events.
+      </p>
+      <button class="clear-filters-btn" (click)="clearFilters()">
+        <span class="btn-icon">🔄</span>
+        <span class="btn-text">Clear All Filters</span>
+      </button>
+    </div>
+
+    <div class="events-grid" *ngIf="filteredEvents.length > 0">
       <div
-        *ngFor="let event of events"
+        *ngFor="let event of filteredEvents"
         class="event-card"
         [class.registered-card]="isRegistered(event._id)"
       >
@@ -39,7 +207,7 @@
             <div class="detail-item">
               <span class="detail-icon">📅</span>
               <span class="detail-label">Date:</span>
-              <span class="detail-value">{{ event.date }}</span>
+              <span class="detail-value">{{ event.date  | date: 'MMM d, y'}}</span>
             </div>
             <div class="detail-item">
               <span class="detail-icon">⏰</span>
@@ -66,15 +234,16 @@
               [class.registered-btn]="isRegistered(event._id)"
             >
               <span class="register-btn-content">
-                <span class="btn-icon"
-                  >{{ isRegistered(event._id) ? '✓' : '+' }}</span
-                >
-                <span class="register-btn-text"
-                  >{{ isRegistered(event._id) ? 'Registered' : 'Register Now'
-                  }}</span
-                >
+                <span class="btn-icon">{{ isRegistered(event._id) ? '✓' : '+' }}</span>
+                <span class="register-btn-text">{{ isRegistered(event._id) ? 'Registered' : 'Register Now' }}</span>
               </span>
               <div class="btn-ripple"></div>
+            </button>
+
+            <!-- View Details Button -->
+            <button class="view-details-btn" (click)="showEventDetail(event)">
+              <span class="btn-icon">👁️</span>
+              <span class="btn-text">Details</span>
             </button>
           </div>
         </div>
@@ -101,51 +270,155 @@
     </div>
 
     <div class="events-grid" *ngIf="registeredEvents.length > 0">
-  <div
-    *ngFor="let event of registeredEvents"
-    class="event-card registered-event-card"
-  >
-    <div class="card-gradient-bg registered-bg"></div>
-    <div class="card-content">
-      <div class="card-header">
-        <h3 class="event-title">{{ event.title }}</h3>
-        <div class="registered-badge">
-          <span class="badge-icon">✓</span>
-          <span class="badge-text">Registered</span>
-        </div>
-      </div>
-
-      <p class="event-description">{{ event.description }}</p>
-
-      <div class="event-details">
-        <div class="detail-item">
-          <span class="detail-icon">📅</span>
-          <span class="detail-label">Date:</span>
-          <span class="detail-value">{{ event.date }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-icon">⏰</span>
-          <span class="detail-label">Time:</span>
-          <span class="detail-value">{{ event.timeSlot }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-icon">📍</span>
-          <span class="detail-label">Location:</span>
-          <span class="detail-value">{{ event.location }}</span>
-        </div>
-      </div>
-
-      <!-- Deregister button -->
-      <button
-        class="deregister-button"
-        (click)="deregister(userId!, event._id)"
+      <div
+        *ngFor="let event of registeredEvents"
+        class="event-card registered-event-card"
       >
-        Deregister
-      </button>
-    </div>
-    <div class="card-shine"></div>
-  </div>
-</div>
+        <div class="card-gradient-bg registered-bg"></div>
+        <div class="card-content">
+          <div class="card-header">
+            <h3 class="event-title">{{ event.title }}</h3>
+            <div class="registered-badge">
+              <span class="badge-icon">✓</span>
+              <span class="badge-text">Registered</span>
+            </div>
+          </div>
 
+          <p class="event-description">{{ event.description }}</p>
+
+          <div class="event-details">
+            <div class="detail-item">
+              <span class="detail-icon">📅</span>
+              <span class="detail-label">Date:</span>
+              <span class="detail-value">{{ event.date | date: 'MMM d, y'}}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">⏰</span>
+              <span class="detail-label">Time:</span>
+              <span class="detail-value">{{ event.timeSlot }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">📍</span>
+              <span class="detail-label">Location:</span>
+              <span class="detail-value">{{ event.location }}</span>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <!-- Download Ticket Button -->
+            <button class="download-ticket-btn" (click)="downloadTicket(event)">
+              <span class="btn-icon">📥</span>
+              <span class="btn-text">Download Ticket</span>
+            </button>
+
+            <!-- Deregister button -->
+            <button class="deregister-button" (click)="deregister(userId!, event._id)">
+              <span class="btn-icon">❌</span>
+              <span class="btn-text">Deregister</span>
+            </button>
+          </div>
+        </div>
+        <div class="card-shine"></div>
+      </div>
+    </div>
   </section>
+
+  <!-- Event Details Modal -->
+  <div class="modal-overlay" *ngIf="showEventDetails" (click)="closeEventDetails()">
+    <div class="event-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ selectedEvent?.title }}</h2>
+        <button class="modal-close-btn" (click)="closeEventDetails()">
+          <span>✕</span>
+        </button>
+      </div>
+
+      <div class="modal-content" *ngIf="selectedEvent">
+        <div class="modal-category">
+          <span class="category-badge">{{ selectedEvent.category || 'Event' }}</span>
+        </div>
+
+        <div class="modal-description">
+          <h3>About This Event</h3>
+          <p>{{ selectedEvent.description }}</p>
+        </div>
+
+        <div class="modal-details-grid">
+          <div class="modal-detail-card">
+            <div class="detail-header">
+              <span class="detail-icon">📅</span>
+              <span class="detail-title">Date & Time</span>
+            </div>
+            <div class="detail-content">
+              <p><strong>Date:</strong> {{ selectedEvent.date  | date: 'MMM d, y' }}</p>
+              <p><strong>Time:</strong> {{ selectedEvent.timeSlot }}</p>
+              <p><strong>Duration:</strong> {{ selectedEvent.duration }}</p>
+            </div>
+          </div>
+
+          <div class="modal-detail-card">
+            <div class="detail-header">
+              <span class="detail-icon">📍</span>
+              <span class="detail-title">Location</span>
+            </div>
+            <div class="detail-content">
+              <p>{{ selectedEvent.location }}</p>
+            </div>
+          </div>
+
+          <div class="modal-detail-card">
+            <div class="detail-header">
+              <span class="detail-icon">💰</span>
+              <span class="detail-title">Pricing</span>
+            </div>
+            <div class="detail-content">
+              <p class="price-highlight">₹{{ selectedEvent.price }}</p>
+            </div>
+          </div>
+
+          <div class="modal-detail-card">
+            <div class="detail-header">
+              <span class="detail-icon">👥</span>
+              <span class="detail-title">Capacity</span>
+            </div>
+            <div class="detail-content">
+              <p>Max {{ selectedEvent.maxRegistrations }} attendees</p>
+            </div>
+          </div>
+
+          <div class="modal-detail-card" *ngIf="selectedEvent.artist">
+            <div class="detail-header">
+              <span class="detail-icon">🎭</span>
+              <span class="detail-title">Artist</span>
+            </div>
+            <div class="detail-content">
+              <p>{{ selectedEvent.artist }}</p>
+            </div>
+          </div>
+
+          <div class="modal-detail-card" *ngIf="selectedEvent.organization">
+            <div class="detail-header">
+              <span class="detail-icon">🏢</span>
+              <span class="detail-title">Organization</span>
+            </div>
+            <div class="detail-content">
+              <p>{{ selectedEvent.organization }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            class="modal-register-btn"
+            (click)="registerForEvent(selectedEvent._id)"
+            [disabled]="isRegistered(selectedEvent._id)"
+            [class.registered-btn]="isRegistered(selectedEvent._id)"
+          >
+            <span class="btn-icon">{{ isRegistered(selectedEvent._id) ? '✓' : '+' }}</span>
+            <span class="btn-text">{{ isRegistered(selectedEvent._id) ? 'Already Registered' : 'Register Now' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

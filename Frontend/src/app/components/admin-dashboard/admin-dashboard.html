@@ -6,9 +6,10 @@
   </div>
 
   <!-- ========= EVENT MANAGEMENT ========= -->
+   <div class="admin-events-grid">
   <div *ngFor="let event of events" class="admin-event-card">
     <h3>{{ event.title }}</h3>
-    <p><strong>Date:</strong> {{ event.date }}</p>
+    <p><strong>Date:</strong> {{ event.date  | date: 'MMM d, y'   }}</p>
     <p><strong>Location:</strong> {{ event.location }}</p>
     <button (click)="deleteEvent(event._id)">Delete Event</button>
 
@@ -19,19 +20,20 @@
     Registered users: {{ usersMap[event._id].currentRegistration }}
     <span *ngIf="!showUsersDropdown[event._id]">▼</span>
     <span *ngIf="showUsersDropdown[event._id]">▲</span>
+
   </button>
 
   <ul *ngIf="showUsersDropdown[event._id]">
     <li *ngFor="let user of usersMap[event._id].users">
       {{ user.name }} ({{ user.email }})
-      <button (click)="removeUserFromEvent(event._id, user.userId)">Remove</button>
+      <button (click)="removeUserFromEvent(event._id, user._id)">Remove</button>
     </li>
   </ul>
 </div>
 
 
   </div>
-
+</div>
   <!-- ========= TOGGLE BUTTON FOR LOCATION FORM ========= -->
   <div class="add-location-header">
     <button (click)="toggleLocationForm()">
@@ -45,7 +47,7 @@
   <h3>Add New Location</h3>
   <form #locationForm="ngForm" (ngSubmit)="addLocation(newLocation)">
 
-    <!-- First Row: State and District -->
+    <!-- First Row: State and city -->
     <div class="admin-form-row">
       <div class="admin-form-group">
         <label>State:</label>
@@ -58,11 +60,11 @@
       </div>
 
       <div class="admin-form-group">
-        <label>District:</label>
-        <select [(ngModel)]="newLocation.district" name="district" required>
-          <option value="" disabled selected>Select District</option>
-          <option *ngFor="let district of availableDistricts" [value]="district">
-            {{ district }}
+        <label>city:</label>
+        <select [(ngModel)]="newLocation.city" name="city" required>
+          <option value="" disabled selected>Select city</option>
+          <option *ngFor="let city of availablecitys" [value]="city">
+            {{ city }}
           </option>
         </select>
       </div>
@@ -76,9 +78,21 @@
       </div>
 
       <div class="admin-form-group">
-        <label>Max Seating Capacity:</label>
-        <input type="number" [(ngModel)]="newLocation.maxSeatingCapacity" name="maxSeatingCapacity" required />
-      </div>
+  <label>Max Seating Capacity:</label>
+  <input
+    type="number"
+    [(ngModel)]="newLocation.maxSeatingCapacity"
+    name="maxSeatingCapacity"
+    min="31"
+    #maxCap="ngModel"
+  />
+
+  <!-- Error message -->
+  <div class="error" *ngIf="maxCap.invalid && maxCap.touched">
+    <span *ngIf="maxCap.errors?.['min']">Seating capacity must be greater than 30.</span>
+  </div>
+</div>
+
     </div>
 
     <!-- Third Row: Address (Full Width) -->
@@ -106,14 +120,5 @@
   </form>
 </div>
 
-  <!-- ========= DISPLAY LOCATIONS ========= -->
-  <div class="admin-locations-list">
-    <h3>All Locations</h3>
-    <div *ngFor="let location of locations" class="location-card">
-      <h4>{{ location.placeName }} ({{ location.state }} - {{ location.district }})</h4>
-      <p>{{ location.address }}</p>
-      <p><strong>Capacity:</strong> {{ location.maxSeatingCapacity }}</p>
-      <p><strong>Amenities:</strong> {{ location.amenities.join(', ') }}</p>
-    </div>
-  </div>
+
 </div>
