@@ -1,10 +1,10 @@
-// user-dashboard.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import jsPDF from 'jspdf';
+import { environment } from '../../../environment';
 import { LoadingService } from '../loading';
 
 interface Event {
@@ -23,6 +23,16 @@ interface Event {
   organization?: string;
 }
 
+interface CustomAlert {
+  show: boolean;
+  type: 'success' | 'error' | 'warning' | 'info' | 'confirm';
+  title: string;
+  message: string;
+  confirmAction?: () => void;
+  cancelAction?: () => void;
+  showCancel?: boolean;
+}
+
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
@@ -39,21 +49,26 @@ export class UserDashboardComponent {
   selectedEvent: Event | null = null;
   showEventDetails: boolean = false;
 
-  // Filter properties
-  searchQuery: string = '';
-  selectedCategory: string = '';
-  selectedCity: string = '';
-  dateFrom: string = '';
-  dateTo: string = '';
-  selectedPriceRange: string = '';
-  sortBy: string = 'date';
+  // Custom Alert System
+  customAlert: CustomAlert = {
+    show: false,
+    type: 'info',
+    title: '',
+    message: '',
+    showCancel: false
+  };
 
-  // Available filter options
+  // Filters
+  searchQuery = '';
+  selectedCategory = '';
+  selectedCity = '';
+  dateFrom = '';
+  dateTo = '';
+  selectedPriceRange = '';
+  sortBy = 'date';
+
   availableCategories: string[] = [];
   availableCities: string[] = [];
-
-  eventsApiUrl = 'http://localhost:5000/api/events';
-  registerApiUrl = 'http://localhost:5000/api/events/register';
 
   constructor(
     private http: HttpClient,
@@ -64,99 +79,187 @@ export class UserDashboardComponent {
     this.loadRegisteredEvents();
   }
 
-  loadAllEvents() {
-    this.decodeToken();
-    this.loadingService.show();
+  // Custom Alert Methods
+  showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) {
+    this.customAlert = {
+      show: true,
+      type,
+      title,
+      message,
+      showCancel: false
+    };
+  }
 
-    this.http.get<{ data: Event[] }>(this.eventsApiUrl).subscribe({
+  showConfirmation(title: string, message: string, confirmAction: () => void, cancelAction?: () => void) {
+    this.customAlert = {
+      show: true,
+      type: 'confirm',
+      title,
+      message,
+      confirmAction,
+      cancelAction,
+      showCancel: true
+    };
+  }
+
+  handleAlertConfirm() {
+    if (this.customAlert.confirmAction) {
+      this.customAlert.confirmAction();
+    }
+    this.closeAlert();
+  }
+
+  handleAlertCancel() {
+    if (this.customAlert.cancelAction) {
+      this.customAlert.cancelAction();
+    }
+    this.closeAlert();
+  }
+
+  closeAlert() {
+    this.customAlert.show = false;
+    this.customAlert.confirmAction = undefined;
+    this.customAlert.cancelAction = undefined;
+  }
+
+  loadAllEvents() {
+    this.loadingService.show();
+    const url = `${environment.apiBaseUrl}${environment.apis.getAllEvents}`;
+
+    this.http.get<{ data: Event[] }>(url).subscribe({
       next: (res) => {
         this.events = res.data;
         this.filteredEvents = [...this.events];
         this.extractFilterOptions();
         this.applySorting();
         this.loadingService.hide();
+        this.showAlert('success', 'Events Loaded', 'Successfully loaded all available events!');
       },
       error: (err) => {
         console.error('Error loading events', err);
         this.loadingService.hide();
+        this.showAlert('error', 'Loading Failed', 'Failed to load events. Please try again later.');
       }
     });
   }
 
-  extractFilterOptions() {
-    // Extract unique categories
-    const categories = this.events
-      .map(event => event.category)
-      .filter(category => category && category.trim() !== '');
-    this.availableCategories = [...new Set(categories)].sort();
+  loadRegisteredEvents() {
+    if (!this.userId) return;
 
-    // Extract unique cities from locations
-    const cities = this.events
-      .map(event => this.extractCityFromLocation(event.location))
-      .filter(city => city && city.trim() !== '');
-    this.availableCities = [...new Set(cities)].sort();
-    console.log("Location is : ",location);
+    const url = `${environment.apiBaseUrl}/events/registered-events/${this.userId}`;
+    this.http.get<{ events: Event[] }>(url).subscribe({
+      next: (res) => {
+        this.registeredEvents = res.events;
+      },
+      error: (err) => {
+        console.error('Error loading registered events', err);
+        this.showAlert('error', 'Loading Failed', 'Failed to load your registered events.');
+      }
+    });
+  }
+
+  registerForEvent(eventId: string) {
+    const event = this.events.find(e => e._id === eventId);
+    const eventTitle = event ? event.title : 'this event';
+
+    this.showConfirmation(
+      'Register for Event',
+      `Are you sure you want to register for "${eventTitle}"?`,
+      () => {
+        const url = `${environment.apiBaseUrl}/events/register`;
+        const payload = {
+          userId: this.userId,
+          eventId: eventId
+        };
+
+        this.loadingService.show();
+        this.http.post(url, payload).subscribe({
+          next: () => {
+            this.loadRegisteredEvents();
+            this.loadingService.hide();
+            this.showAlert('success', 'Registration Successful', `You have successfully registered for "${eventTitle}"!`);
+          },
+          error: (err) => {
+            console.error('Registration failed', err);
+            this.loadingService.hide();
+            this.showAlert('error', 'Registration Failed', 'Failed to register for the event. Please try again.');
+          }
+        });
+      }
+    );
+  }
+
+  deregister(userId: string, eventId: string) {
+    const event = this.registeredEvents.find(e => e._id === eventId);
+    const eventTitle = event ? event.title : 'this event';
+
+    this.showConfirmation(
+      'Confirm Deregistration',
+      `Are you sure you want to deregister from "${eventTitle}"? This action cannot be undone.`,
+      () => {
+        const url = `${environment.apiBaseUrl}/events/deregister`;
+        const payload = { userId, eventId };
+
+        this.loadingService.show();
+        this.http.request('delete', url, { body: payload }).subscribe({
+          next: () => {
+            this.loadRegisteredEvents();
+            this.loadingService.hide();
+            this.showAlert('success', 'Deregistration Successful', `You have been deregistered from "${eventTitle}".`);
+          },
+          error: (err) => {
+            console.error('Deregistration failed', err);
+            this.loadingService.hide();
+            this.showAlert('error', 'Deregistration Failed', 'Failed to deregister from the event. Please try again.');
+          }
+        });
+      },
+      () => {
+        this.showAlert('info', 'Deregistration Cancelled', 'You remain registered for the event.');
+      }
+    );
+  }
+
+  extractFilterOptions() {
+    this.availableCategories = [...new Set(
+      this.events.map(e => e.category).filter(Boolean)
+    )].sort();
+
+    this.availableCities = [...new Set(
+      this.events.map(e => this.extractCityFromLocation(e.location)).filter(Boolean)
+    )].sort();
   }
 
   extractCityFromLocation(location: string): string {
     if (!location) return '';
-
-    // Try to extract city name from location string
-    // This is a simple implementation - you might need to adjust based on your location format
     const parts = location.split(',');
-    if (parts.length >= 2) {
-      return parts[parts.length - 2].trim(); // Assume city is second-to-last part
-    }
-    return parts[0].trim(); // If only one part, assume it's the city
+    return parts.length >= 2
+      ? parts[parts.length - 2].trim()
+      : parts[0].trim();
   }
 
   decodeToken() {
     const token = localStorage.getItem('token');
-
-    if (!token) {
-      console.warn('No token found in localStorage.');
-      return;
-    }
+    if (!token) return;
 
     try {
-      const payloadBase64: string = token.split('.')[1];
-      const decodedJson: string = atob(payloadBase64);
-      const decodedPayload: { userId?: string, userName?: string } = JSON.parse(decodedJson);
-
-      this.userId = decodedPayload.userId || null;
-      this.userName = decodedPayload.userName || null;
-
-      console.log('User ID:', this.userId);
-      console.log('User Name:', this.userName);
-    } catch (error) {
-      console.error('Failed to decode token:', error);
+      const payloadBase64 = token.split('.')[1];
+      const decoded = JSON.parse(atob(payloadBase64));
+      this.userId = decoded.userId || null;
+      this.userName = decoded.userName || null;
+    } catch (err) {
+      console.error('Token decode error:', err);
       this.userId = null;
       this.userName = null;
+      this.showAlert('warning', 'Session Warning', 'There was an issue with your session. Please log in again if needed.');
     }
   }
 
-  loadRegisteredEvents() {
-    this.decodeToken();
-
-    if (!this.userId) {
-      console.warn('User ID not available after decoding token.');
-      return;
-    }
-
-    const myRegistrationsApiUrl = `http://localhost:5000/api/events/registered-events/${this.userId}`;
-
-    this.http.get<{ events: Event[] }>(myRegistrationsApiUrl).subscribe({
-      next: (res) => {
-        this.registeredEvents = res.events;
-        console.log('Registered events:', this.registeredEvents);
-      },
-      error: (err) => {
-        console.error('Error loading registered events', err);
-      }
-    });
+  isRegistered(eventId: string): boolean {
+    return this.registeredEvents.some(e => e._id === eventId);
   }
 
-  // Search and Filter Methods
+  // Filter logic
   onSearchChange() {
     this.applyFilters();
   }
@@ -164,43 +267,36 @@ export class UserDashboardComponent {
   applyFilters() {
     let filtered = [...this.events];
 
-    // Apply search filter
     if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(event =>
-        event.title.toLowerCase().includes(query) ||
-        event.location.toLowerCase().includes(query) ||
-        (event.artist && event.artist.toLowerCase().includes(query)) ||
-        (event.category && event.category.toLowerCase().includes(query)) ||
-        event.description.toLowerCase().includes(query) ||
-        (event.organization && event.organization.toLowerCase().includes(query))
+      const query = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(e =>
+        e.title.toLowerCase().includes(query) ||
+        e.description.toLowerCase().includes(query) ||
+        (e.artist && e.artist.toLowerCase().includes(query)) ||
+        (e.organization && e.organization.toLowerCase().includes(query)) ||
+        (e.category && e.category.toLowerCase().includes(query)) ||
+        e.location.toLowerCase().includes(query)
       );
     }
 
-    // Apply category filter
     if (this.selectedCategory) {
-      filtered = filtered.filter(event => event.category === this.selectedCategory);
+      filtered = filtered.filter(e => e.category === this.selectedCategory);
     }
 
-    // Apply city filter
     if (this.selectedCity) {
-      filtered = filtered.filter(event =>
-        this.extractCityFromLocation(event.location) === this.selectedCity
-      );
+      filtered = filtered.filter(e => this.extractCityFromLocation(e.location) === this.selectedCity);
     }
 
-    // Apply date range filter
     if (this.dateFrom) {
       const fromDate = new Date(this.dateFrom);
-      filtered = filtered.filter(event => new Date(event.date) >= fromDate);
+      filtered = filtered.filter(e => new Date(e.date) >= fromDate);
     }
 
     if (this.dateTo) {
       const toDate = new Date(this.dateTo);
-      filtered = filtered.filter(event => new Date(event.date) <= toDate);
+      filtered = filtered.filter(e => new Date(e.date) <= toDate);
     }
 
-    // Apply price range filter
     if (this.selectedPriceRange) {
       filtered = this.applyPriceFilter(filtered);
     }
@@ -212,13 +308,13 @@ export class UserDashboardComponent {
   applyPriceFilter(events: Event[]): Event[] {
     switch (this.selectedPriceRange) {
       case '0-500':
-        return events.filter(event => event.price >= 0 && event.price <= 500);
+        return events.filter(e => e.price <= 500);
       case '500-1000':
-        return events.filter(event => event.price > 500 && event.price <= 1000);
+        return events.filter(e => e.price > 500 && e.price <= 1000);
       case '1000-2000':
-        return events.filter(event => event.price > 1000 && event.price <= 2000);
+        return events.filter(e => e.price > 1000 && e.price <= 2000);
       case '2000+':
-        return events.filter(event => event.price > 2000);
+        return events.filter(e => e.price > 2000);
       default:
         return events;
     }
@@ -227,16 +323,11 @@ export class UserDashboardComponent {
   applySorting() {
     this.filteredEvents.sort((a, b) => {
       switch (this.sortBy) {
-        case 'date':
-          return new Date(a.date).getTime() - new Date(b.date).getTime();
-        case 'title':
-          return a.title.localeCompare(b.title);
-        case 'price':
-          return a.price - b.price;
-        case 'category':
-          return (a.category || '').localeCompare(b.category || '');
-        default:
-          return 0;
+        case 'date': return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case 'title': return a.title.localeCompare(b.title);
+        case 'price': return a.price - b.price;
+        case 'category': return (a.category || '').localeCompare(b.category || '');
+        default: return 0;
       }
     });
   }
@@ -250,6 +341,7 @@ export class UserDashboardComponent {
     this.selectedPriceRange = '';
     this.sortBy = 'date';
     this.applyFilters();
+    this.showAlert('info', 'Filters Cleared', 'All filters have been reset.');
   }
 
   clearSearch() {
@@ -258,84 +350,31 @@ export class UserDashboardComponent {
   }
 
   hasActiveFilters(): boolean {
-    return !!(
-      this.searchQuery ||
-      this.selectedCategory ||
-      this.selectedCity ||
-      this.dateFrom ||
-      this.dateTo ||
-      this.selectedPriceRange
-    );
+    return !!(this.searchQuery || this.selectedCategory || this.selectedCity || this.dateFrom || this.dateTo || this.selectedPriceRange);
   }
 
   formatDateRange(): string {
-    if (this.dateFrom && this.dateTo) {
-      return `${this.formatDate(this.dateFrom)} - ${this.formatDate(this.dateTo)}`;
-    } else if (this.dateFrom) {
-      return `From ${this.formatDate(this.dateFrom)}`;
-    } else if (this.dateTo) {
-      return `Until ${this.formatDate(this.dateTo)}`;
-    }
-    return '';
+    return this.dateFrom && this.dateTo
+      ? `${this.formatDate(this.dateFrom)} - ${this.formatDate(this.dateTo)}`
+      : this.dateFrom
+        ? `From ${this.formatDate(this.dateFrom)}`
+        : this.dateTo
+          ? `Until ${this.formatDate(this.dateTo)}`
+          : '';
   }
 
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   formatPriceRange(): string {
     switch (this.selectedPriceRange) {
-      case '0-500':
-        return 'Free - ₹500';
-      case '500-1000':
-        return '₹500 - ₹1000';
-      case '1000-2000':
-        return '₹1000 - ₹2000';
-      case '2000+':
-        return '₹2000+';
-      default:
-        return '';
+      case '0-500': return 'Free - ₹500';
+      case '500-1000': return '₹500 - ₹1000';
+      case '1000-2000': return '₹1000 - ₹2000';
+      case '2000+': return '₹2000+';
+      default: return '';
     }
-  }
-
-  // Existing methods (unchanged)
-  registerForEvent(eventId: string) {
-    const payload = {
-      userId: this.userId,
-      eventId: eventId,
-    };
-
-    this.http.post(this.registerApiUrl, payload).subscribe({
-      next: () => {
-        this.loadRegisteredEvents();
-      },
-      error: (err) => {
-        console.error('Registration failed', err);
-      }
-    });
-  }
-
-  isRegistered(eventId: string): boolean {
-    return this.registeredEvents.some(e => e._id === eventId);
-  }
-
-  deregister(userId: string, eventId: string) {
-    const url = `http://localhost:5000/api/events/deregister`;
-    const payload = { userId, eventId };
-
-    this.http.request('delete', url, { body: payload }).subscribe({
-      next: () => {
-        this.loadRegisteredEvents();
-      },
-      error: (err) => {
-        console.error('Deregistration failed', err);
-      }
-    });
   }
 
   showEventDetail(event: Event) {
@@ -351,41 +390,33 @@ export class UserDashboardComponent {
   }
 
   downloadTicket(event: Event) {
-    this.loadingService.show();
+    this.showConfirmation(
+      'Download Ticket',
+      `Generate and download ticket for "${event.title}"?`,
+      () => {
+        this.generateTicketPDF(event);
+      }
+    );
+  }
 
+  private generateTicketPDF(event: Event) {
+    this.loadingService.show();
     try {
       const doc = new jsPDF();
-
-      // Set up the PDF styling
       const pageWidth = doc.internal.pageSize.width;
       const margin = 20;
 
-      // Header
       doc.setFillColor(102, 126, 234);
       doc.rect(0, 0, pageWidth, 60, 'F');
-
-      // Title
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(24);
       doc.setFont('helvetica', 'bold');
       doc.text('EVENT TICKET', pageWidth / 2, 25, { align: 'center' });
-
-      // Subtitle
       doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
       doc.text('Official Entry Pass', pageWidth / 2, 35, { align: 'center' });
 
-      // Event details section
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Event Details', margin, 80);
-
-      // Event information
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
       let yPosition = 100;
-
       const details = [
         { label: 'Event Name:', value: event.title },
         { label: 'Description:', value: event.description },
@@ -402,15 +433,12 @@ export class UserDashboardComponent {
         doc.setFont('helvetica', 'bold');
         doc.text(detail.label, margin, yPosition);
         doc.setFont('helvetica', 'normal');
-
         const maxWidth = pageWidth - margin * 2 - 80;
         const splitText = doc.splitTextToSize(detail.value, maxWidth);
         doc.text(splitText, margin + 80, yPosition);
-
         yPosition += splitText.length * 7 + 5;
       });
 
-      // Footer
       yPosition += 20;
       doc.setDrawColor(102, 126, 234);
       doc.line(margin, yPosition, pageWidth - margin, yPosition);
@@ -423,23 +451,28 @@ export class UserDashboardComponent {
       yPosition += 10;
       doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, yPosition, { align: 'center' });
 
-      // Download the PDF
       const fileName = `ticket-${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
       doc.save(fileName);
 
-      // Hide loading after PDF generation
       this.loadingService.hide();
-
+      this.showAlert('success', 'Ticket Downloaded', `Your ticket for "${event.title}" has been downloaded successfully!`);
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('Error generating ticket PDF:', error);
       this.loadingService.hide();
+      this.showAlert('error', 'Download Failed', 'Failed to generate the ticket. Please try again.');
     }
   }
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    sessionStorage.clear();
-    window.location.href = '/';
+    this.showConfirmation(
+      'Confirm Logout',
+      'Are you sure you want to logout? You will need to login again to access your dashboard.',
+      () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.clear();
+        window.location.href = '/';
+      }
+    );
   }
 }

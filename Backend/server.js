@@ -4,6 +4,7 @@ import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import locationRoutes from './routes/locationRoutes.js';
+// import approveRoute from './routes/approveRoute.js';
 import cors from 'cors';
 
 dotenv.config();
@@ -26,6 +27,7 @@ app.use(cors({
 app.use('/api/users', userRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/locations', locationRoutes);
+// app.use('/api/approval',approveRoute);
 app.get('/', (req, res) => {
   res.send('API is running...');
 });

@@ -5,120 +5,545 @@
     <button class="admin-logout-btn" (click)="logout()">Logout</button>
   </div>
 
-  <!-- ========= EVENT MANAGEMENT ========= -->
-   <div class="admin-events-grid">
-  <div *ngFor="let event of events" class="admin-event-card">
-    <h3>{{ event.title }}</h3>
-    <p><strong>Date:</strong> {{ event.date  | date: 'MMM d, y'   }}</p>
-    <p><strong>Location:</strong> {{ event.location }}</p>
-    <button (click)="deleteEvent(event._id)">Delete Event</button>
-
-    <h4>Registered Users</h4>
-
-<div *ngIf="usersMap[event._id]">
-  <button (click)="toggleUsersDropdown(event._id)">
-    Registered users: {{ usersMap[event._id].currentRegistration }}
-    <span *ngIf="!showUsersDropdown[event._id]">▼</span>
-    <span *ngIf="showUsersDropdown[event._id]">▲</span>
-
-  </button>
-
-  <ul *ngIf="showUsersDropdown[event._id]">
-    <li *ngFor="let user of usersMap[event._id].users">
-      {{ user.name }} ({{ user.email }})
-      <button (click)="removeUserFromEvent(event._id, user._id)">Remove</button>
-    </li>
-  </ul>
-</div>
-
-
-  </div>
-</div>
   <!-- ========= TOGGLE BUTTON FOR LOCATION FORM ========= -->
   <div class="add-location-header">
-    <button (click)="toggleLocationForm()">
+    <button class="toggle-location-btn" (click)="toggleLocationForm()">
       {{ showLocationForm ? 'Hide Location Form' : 'Add New Location' }}
     </button>
   </div>
 
   <!-- ========= LOCATION FORM ========= -->
-<!-- ========= LOCATION FORM ========= -->
-<div *ngIf="showLocationForm" class="admin-location-section">
-  <h3>Add New Location</h3>
-  <form #locationForm="ngForm" (ngSubmit)="addLocation(newLocation)">
+  <div *ngIf="showLocationForm" class="admin-location-section">
+    <h3>Add New Location</h3>
+    <form #locationForm="ngForm" (ngSubmit)="addLocation(newLocation)" class="location-form" novalidate>
 
-    <!-- First Row: State and city -->
-    <div class="admin-form-row">
-      <div class="admin-form-group">
-        <label>State:</label>
-        <select [(ngModel)]="newLocation.state" name="state" required (change)="onStateChange()">
-          <option value="" disabled selected>Select State</option>
-          <option *ngFor="let state of getStates()" [value]="state">
-            {{ state }}
-          </option>
-        </select>
+      <!-- First Row: State and City -->
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label for="stateSelect">State:</label>
+          <select
+            id="stateSelect"
+            [(ngModel)]="newLocation.state"
+            name="state"
+            required
+            (change)="onStateChange()"
+            class="form-select"
+            >
+            <option value="" disabled>Select State</option>
+            <option *ngFor="let state of getStates()" [value]="state">
+              {{ state }}
+            </option>
+          </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="citySelect">City:</label>
+          <select
+            id="citySelect"
+            [(ngModel)]="newLocation.city"
+            name="city"
+            required
+            class="form-select"
+          >
+            <option value="" disabled>Select City</option>
+            <option *ngFor="let city of availablecitys" [value]="city">
+              {{ city }}
+            </option>
+          </select>
+        </div>
       </div>
 
+      <!-- Second Row: Place Name and Max Seating Capacity -->
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label for="placeNameInput">Place Name:</label>
+          <input
+            id="placeNameInput"
+            type="text"
+            [(ngModel)]="newLocation.placeName"
+            name="placeName"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <div class="admin-form-group">
+          <label for="maxSeatingInput">Max Seating Capacity:</label>
+          <input
+            id="maxSeatingInput"
+            type="number"
+            [(ngModel)]="newLocation.maxSeatingCapacity"
+            name="maxSeatingCapacity"
+            min="31"
+            #maxCap="ngModel"
+            class="form-input"
+          />
+          <div class="error" *ngIf="maxCap.invalid && maxCap.touched">
+            <span *ngIf="maxCap.errors?.['min']">
+              Seating capacity must be greater than 30.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Third Row: Address (Full Width) -->
       <div class="admin-form-group">
-        <label>city:</label>
-        <select [(ngModel)]="newLocation.city" name="city" required>
-          <option value="" disabled selected>Select city</option>
-          <option *ngFor="let city of availablecitys" [value]="city">
-            {{ city }}
-          </option>
-        </select>
+        <label for="addressTextarea">Address:</label>
+        <textarea
+          id="addressTextarea"
+          [(ngModel)]="newLocation.address"
+          name="address"
+          required
+          class="form-textarea"
+        ></textarea>
+      </div>
+
+      <!-- Fourth Row: Amenities (Full Width) -->
+      <div class="admin-form-group">
+        <label>Amenities:</label>
+        <div class="amenities-checkboxes">
+          <label *ngFor="let amenity of amenities" class="checkbox-label">
+            <input
+              type="checkbox"
+              [value]="amenity"
+              (change)="toggleAmenity(amenity, $event)"
+              class="checkbox-input"
+            />
+            <span class="checkbox-text">{{ amenity }}</span>
+          </label>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="!locationForm.form.valid"
+        class="submit-btn"
+      >
+        Add Location
+      </button>
+    </form>
+  </div>
+
+  <!-- ========= SEARCH AND FILTERS SECTION ========= -->
+  <div class="filters-container">
+    <div class="filters-header">
+      <h3>Event Filters & Search</h3>
+      <div class="filter-actions">
+        <button
+          class="clear-filters-btn"
+          (click)="clearFilters()"
+          [disabled]="!hasActiveFilters()"
+          [class.disabled]="!hasActiveFilters()"
+        >
+          Clear All Filters
+        </button>
       </div>
     </div>
 
-    <!-- Second Row: Place Name and Max Seating Capacity -->
-    <div class="admin-form-row">
-      <div class="admin-form-group">
-        <label>Place Name:</label>
-        <input type="text" [(ngModel)]="newLocation.placeName" name="placeName" required />
+    <!-- Search Bar -->
+    <div class="search-section">
+      <div class="search-bar">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()"
+          placeholder="Search events by title, location, user, category, artist, organization..."
+          class="search-input"
+          aria-label="Search events"
+        />
+        <button
+          class="clear-search-btn"
+          (click)="clearSearch()"
+          *ngIf="searchQuery"
+          title="Clear search"
+          aria-label="Clear search"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="filter-controls">
+      <div class="filter-row">
+        <!-- Category Filter -->
+        <div class="filter-group">
+          <label for="categorySelect">Category</label>
+          <select
+            id="categorySelect"
+            [(ngModel)]="selectedCategory"
+            (change)="applyFilters()"
+            class="filter-select"
+          >
+            <option value="">All Categories</option>
+            <option *ngFor="let category of availableCategories" [value]="category">
+              {{ category }}
+            </option>
+          </select>
+        </div>
+
+        <!-- City Filter -->
+        <div class="filter-group">
+          <label for="cityFilterSelect">City</label>
+          <select
+            id="cityFilterSelect"
+            [(ngModel)]="selectedCity"
+            (change)="applyFilters()"
+            class="filter-select"
+          >
+            <option value="">All Cities</option>
+            <option *ngFor="let city of availableCities" [value]="city">
+              {{ city }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Price Range Filter -->
+        <div class="filter-group">
+          <label for="priceRangeSelect">Price Range</label>
+          <select
+            id="priceRangeSelect"
+            [(ngModel)]="selectedPriceRange"
+            (change)="applyFilters()"
+            class="filter-select"
+          >
+            <option value="">All Prices</option>
+            <option value="0-500">Free - ₹500</option>
+            <option value="500-1000">₹500 - ₹1000</option>
+            <option value="1000-2000">₹1000 - ₹2000</option>
+            <option value="2000+">₹2000+</option>
+          </select>
+        </div>
+
+        <!-- Sort By -->
+        <div class="filter-group">
+          <label for="sortBySelect">Sort By</label>
+          <select
+            id="sortBySelect"
+            [(ngModel)]="sortBy"
+            (change)="applySorting()"
+            class="filter-select"
+          >
+            <option value="date">Date</option>
+            <option value="title">Title</option>
+            <option value="price">Price</option>
+            <option value="category">Category</option>
+            <option value="registrations">Registrations</option>
+          </select>
+        </div>
       </div>
 
-      <div class="admin-form-group">
-  <label>Max Seating Capacity:</label>
-  <input
-    type="number"
-    [(ngModel)]="newLocation.maxSeatingCapacity"
-    name="maxSeatingCapacity"
-    min="31"
-    #maxCap="ngModel"
-  />
+      <!-- Date Range Filter -->
+      <div class="date-filter-row">
+        <div class="filter-group">
+          <label for="dateFromInput">From Date</label>
+          <input
+            id="dateFromInput"
+            type="date"
+            [(ngModel)]="dateFrom"
+            (change)="applyFilters()"
+            class="date-input"
+          />
+        </div>
+        <div class="filter-group">
+          <label for="dateToInput">To Date</label>
+          <input
+            id="dateToInput"
+            type="date"
+            [(ngModel)]="dateTo"
+            (change)="applyFilters()"
+            class="date-input"
+          />
+        </div>
+      </div>
+    </div>
 
-  <!-- Error message -->
-  <div class="error" *ngIf="maxCap.invalid && maxCap.touched">
-    <span *ngIf="maxCap.errors?.['min']">Seating capacity must be greater than 30.</span>
+    <!-- Active Filters Display -->
+    <div class="active-filters" *ngIf="hasActiveFilters()">
+      <span class="active-filters-label">Active Filters:</span>
+
+      <span class="filter-tag" *ngIf="searchQuery">
+        Search: "{{ searchQuery }}"
+        <button (click)="searchQuery = ''; applyFilters()">×</button>
+      </span>
+
+      <span class="filter-tag" *ngIf="selectedCategory">
+        Category: {{ selectedCategory }}
+        <button (click)="selectedCategory = ''; applyFilters()">×</button>
+      </span>
+
+      <span class="filter-tag" *ngIf="selectedCity">
+        City: {{ selectedCity }}
+        <button (click)="selectedCity = ''; applyFilters()">×</button>
+      </span>
+
+      <span class="filter-tag" *ngIf="formatDateRange()">
+        Date: {{ formatDateRange() }}
+        <button (click)="dateFrom = ''; dateTo = ''; applyFilters()">×</button>
+      </span>
+
+      <span class="filter-tag" *ngIf="selectedPriceRange">
+        Price: {{ formatPriceRange() }}
+        <button (click)="selectedPriceRange = ''; applyFilters()">×</button>
+      </span>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="results-summary">
+      <span class="results-count">
+        Showing {{ filteredEvents.length }} of {{ events.length }} events
+      </span>
+    </div>
+  </div>
+
+  <!-- ========= EVENT MANAGEMENT ========= -->
+  <div class="admin-events-grid">
+    <div *ngFor="let event of filteredEvents" class="admin-event-card">
+      <div class="event-header">
+        <h3>{{ event.title }}</h3>
+        <span class="event-category" *ngIf="event.category">{{ event.category }}</span>
+      </div>
+
+      <div class="event-details">
+        <p><strong>Date:</strong> {{ event.date | date: 'MMM d, y' }}</p>
+        <p><strong>Time:</strong> {{ event.timeSlot }}</p>
+        <p><strong>Location:</strong> {{ event.location }}</p>
+        <p><strong>Price:</strong> ₹{{ event.price }}</p>
+        <p *ngIf="event.artist"><strong>Artist:</strong> {{ event.artist }}</p>
+        <p *ngIf="event.organization"><strong>Organization:</strong> {{ event.organization }}</p>
+      </div>
+
+      <div class="event-actions">
+        <button class="delete-btn" (click)="deleteEvent(event._id)">Delete Event</button>
+        <button class="view-details-btn" (click)="showEventDetail(event)">
+          <span class="btn-icon">👁️</span>
+          <span class="btn-text">Details</span>
+        </button>
+      </div>
+
+      <div class="registered-users-section">
+        <h4>Registered Users</h4>
+
+        <div *ngIf="usersMap[event._id]" class="users-dropdown">
+         <button
+  class="users-toggle-btn"
+  (click)="toggleUsersDropdown(event._id)"
+  [attr.aria-expanded]="showUsersDropdown[event._id]"
+  [attr.aria-controls]="'usersList-' + event._id"
+>
+  Registered users: {{ usersMap[event._id].currentRegistration }}
+  <span
+    class="dropdown-icon"
+    [class.rotated]="showUsersDropdown[event._id]"
+  >
+    ▼
+  </span>
+</button>
+
+
+          <ul
+            id="usersList-{{ event._id }}"
+            class="users-list"
+            *ngIf="showUsersDropdown[event._id]"
+          >
+            <li *ngFor="let user of usersMap[event._id].users" class="user-item">
+              <div class="user-info">
+                <span class="user-name">{{ user.name }}</span>
+                <span class="user-email">{{ user.email }}</span>
+              </div>
+              <button
+                class="remove-user-btn"
+                (click)="removeUserFromEvent(event._id, user._id)"
+                title="Remove user"
+              >
+                Remove
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Details Modal -->
+  <div
+    class="admin-modal-overlay"
+    *ngIf="showEventDetails"
+    (click)="closeEventDetails()"
+    style="display: flex !important; z-index: 9999 !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important;"
+  >
+    <div class="admin-event-modal" (click)="$event.stopPropagation()">
+      <div class="admin-modal-header">
+        <h2 class="admin-modal-title">{{ selectedEvent?.title }}</h2>
+        <button
+          class="admin-modal-close-btn"
+          (click)="closeEventDetails()"
+          aria-label="Close event details"
+        >
+          <span>✕</span>
+        </button>
+      </div>
+
+      <div class="admin-modal-content" *ngIf="selectedEvent">
+        <div class="admin-modal-category">
+          <span class="admin-category-badge">{{
+            selectedEvent.category || 'Event'
+          }}</span>
+        </div>
+
+        <div class="admin-modal-description">
+          <h3>About This Event</h3>
+          <p>{{ selectedEvent.description }}</p>
+        </div>
+
+        <div class="admin-modal-details-grid">
+          <div class="admin-modal-detail-card">
+            <div class="admin-detail-header">
+              <span class="admin-detail-icon">📅</span>
+              <span class="admin-detail-title">Date & Time</span>
+            </div>
+            <div class="admin-detail-content">
+              <p><strong>Date:</strong> {{ selectedEvent.date | date: 'MMM d, y' }}</p>
+              <p><strong>Time:</strong> {{ selectedEvent.timeSlot }}</p>
+              <p><strong>Duration:</strong> {{ selectedEvent.duration }}</p>
+            </div>
+          </div>
+
+          <div class="admin-modal-detail-card">
+            <div class="admin-detail-header">
+              <span class="admin-detail-icon">📍</span>
+              <span class="admin-detail-title">Location</span>
+            </div>
+            <div class="admin-detail-content">
+              <p>{{ selectedEvent.location }}</p>
+            </div>
+          </div>
+
+          <div class="admin-modal-detail-card">
+            <div class="admin-detail-header">
+              <span class="admin-detail-icon">💰</span>
+              <span class="admin-detail-title">Pricing</span>
+            </div>
+            <div class="admin-detail-content">
+              <p class="admin-price-highlight">₹{{ selectedEvent.price }}</p>
+            </div>
+          </div>
+
+          <div class="admin-modal-detail-card">
+            <div class="admin-detail-header">
+              <span class="admin-detail-icon">👥</span>
+              <span class="admin-detail-title">Capacity</span>
+            </div>
+            <div class="admin-detail-content">
+              <p>Max {{ selectedEvent.maxRegistrations }} attendees</p>
+              <p *ngIf="usersMap[selectedEvent._id]">
+                Current: {{ usersMap[selectedEvent._id].currentRegistration }}
+                registered
+              </p>
+            </div>
+          </div>
+
+          <div class="admin-modal-detail-card" *ngIf="selectedEvent.artist">
+            <div class="admin-detail-header">
+              <span class="admin-detail-icon">🎭</span>
+              <span class="admin-detail-title">Artist</span>
+            </div>
+            <div class="admin-detail-content">
+              <p>{{ selectedEvent.artist }}</p>
+            </div>
+          </div>
+
+          <div class="admin-modal-detail-card" *ngIf="selectedEvent.organization">
+            <div class="admin-detail-header">
+              <span class="admin-detail-icon">🏢</span>
+              <span class="admin-detail-title">Organization</span>
+            </div>
+            <div class="admin-detail-content">
+              <p>{{ selectedEvent.organization }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin-specific actions in modal -->
+        <div class="admin-modal-actions">
+          <button
+            class="admin-modal-delete-btn"
+            (click)="deleteEvent(selectedEvent._id); closeEventDetails()"
+          >
+            <span class="btn-icon">🗑️</span>
+            <span class="btn-text">Delete Event</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-    </div>
 
-    <!-- Third Row: Address (Full Width) -->
-    <div class="admin-form-group">
-      <label>Address:</label>
-      <textarea [(ngModel)]="newLocation.address" name="address" required></textarea>
-    </div>
+<div>
+  <h2>Approved Events</h2>
+   <div class="admin-events-grid">
+    <div *ngFor="let event of filteredEventsone" class="admin-event-card">
+      <div class="event-header">
+        <h3>{{ event.title }}</h3>
+        <span class="event-category" *ngIf="event.category">{{ event.category }}</span>
+      </div>
 
-    <!-- Fourth Row: Amenities (Full Width) -->
-    <div class="admin-form-group">
-      <label>Amenities:</label>
-      <div class="amenities-checkboxes">
-        <label *ngFor="let amenity of amenities">
-          <input
-            type="checkbox"
-            [value]="amenity"
-            (change)="toggleAmenity(amenity, $event)"
-          />
-          {{ amenity }}
-        </label>
+      <div class="event-details">
+        <p><strong>Date:</strong> {{ event.date | date: 'MMM d, y' }}</p>
+        <p><strong>Time:</strong> {{ event.timeSlot }}</p>
+        <p><strong>Location:</strong> {{ event.location }}</p>
+        <p><strong>Price:</strong> ₹{{ event.price }}</p>
+        <p *ngIf="event.artist"><strong>Artist:</strong> {{ event.artist }}</p>
+        <p *ngIf="event.organization"><strong>Organization:</strong> {{ event.organization }}</p>
+      </div>
+
+      <div class="event-actions">
+        <button class="delete-btn" (click)="deleteEvent(event._id)">Delete Event</button>
+        <button class="view-details-btn" (click)="showEventDetail(event)">
+          <span class="btn-icon">👁️</span>
+          <span class="btn-text">Details</span>
+        </button>
+      </div>
+
+      <div class="registered-users-section">
+        <h4>Registered Users</h4>
+
+        <div *ngIf="usersMap[event._id]" class="users-dropdown">
+          <button
+            class="users-toggle-btn"
+            (click)="toggleUsersDropdown(event._id)"
+
+          >
+            Registered users: {{ usersMap[event._id].currentRegistration }}
+            <span
+              class="dropdown-icon"
+              [class.rotated]="showUsersDropdown[event._id]"
+              >▼</span
+            >
+          </button>
+
+          <ul
+            id="usersList-{{ event._id }}"
+            class="users-list"
+            *ngIf="showUsersDropdown[event._id]"
+          >
+            <li *ngFor="let user of usersMap[event._id].users" class="user-item">
+              <div class="user-info">
+                <span class="user-name">{{ user.name }}</span>
+                <span class="user-email">{{ user.email }}</span>
+              </div>
+              <button
+                class="remove-user-btn"
+                (click)="removeUserFromEvent(event._id, user._id)"
+                title="Remove user"
+              >
+                Remove
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
-
-    <button type="submit" [disabled]="!locationForm.form.valid">Add Location</button>
-  </form>
-</div>
-
-
+  </div>
 </div>

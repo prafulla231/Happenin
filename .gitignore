@@ -12,6 +12,12 @@ logs/
 .DS_Store
 Thumbs.db
 
+Frontend/src/environments/*.ts
+Frontend/src/environment.ts
+Frontend/src/environment.prod.ts
+
+
+
 # Build output
 dist/
 build/

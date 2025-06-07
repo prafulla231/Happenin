@@ -24,6 +24,7 @@ export class LoginComponent {
     private fb: FormBuilder,
     private router: Router,
     private http: HttpClient
+
   ) {
     // Login form
     this.loginForm = this.fb.group({
@@ -43,6 +44,20 @@ export class LoginComponent {
 
   toggleForm(isLoginForm: boolean): void {
     this.isLogin = isLoginForm;
+    navigator.geolocation.getCurrentPosition(async (position) => {
+  const lat = position.coords.latitude;
+  const lon = position.coords.longitude;
+
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
+  );
+  const data = await response.json();
+
+  const city = data.address.city || data.address.town || data.address.village || 'City not found';
+  console.log('City:', city);
+});
+
+
   }
 
   onLoginSubmit(): void {

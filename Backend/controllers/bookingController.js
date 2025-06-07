@@ -1,63 +1,98 @@
-import Location from '../models/locationModel.js';
+import {Location} from '../models/locationModel.js';
 
 // 📌 Book a slot
-export const bookLocationSlot = async (req, res) => {
+export const bookLocation = async (req, res) => {
   try {
-    const { state, city, placeName, date, startTime, endTime } = req.body;
+    const { state, city, placeName, startTime_one, endTime_one } = req.body;
+
+    if (!state || !city || !placeName || !startTime_one || !endTime_one) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
 
     const location = await Location.findOne({ state, city, placeName });
+
     if (!location) {
       return res.status(404).json({ message: 'Location not found' });
     }
 
-    // Check for overlapping booked slots
-    const conflict = location.bookings.find(booking =>
-      booking.status === 'booked' &&
-      booking.date === date &&
-      booking.startTime < endTime &&
-      startTime < booking.endTime
-    );
+    const newStart = new Date(startTime_one);
+    const newEnd = new Date(endTime_one);
+
+    if (newStart >= newEnd) {
+      return res.status(400).json({ message: 'Invalid time range' });
+    }
+
+    // Check for conflict with existing bookings
+    const conflict = location.bookings.find(booking => {
+      const existingStart = new Date(booking.startTime);
+      const existingEnd = new Date(booking.endTime);
+      return (
+        booking.isBooked &&
+        newStart < existingEnd &&
+        newEnd > existingStart
+      );
+    });
 
     if (conflict) {
       return res.status(400).json({
-        message: `Slot already booked from ${conflict.startTime} to ${conflict.endTime}`
+        message: 'Time slot conflict with existing booking',
+        conflict,
       });
     }
 
-    // Add new booking
-    location.bookings.push({ date, startTime, endTime });
+    // Add new booking with standardized field names
+    location.bookings.push({
+      startTime: newStart,
+      endTime: newEnd,
+      isBooked: true,
+    });
+
     await location.save();
 
-    return res.status(200).json({ message: 'Slot booked successfully', location });
+    return res.status(201).json({ message: 'Booking confirmed', location });
   } catch (error) {
     console.error('Booking error:', error);
     return res.status(500).json({ message: 'Server error' });
   }
 };
 
+
+
 // ❌ Cancel a slot
 export const cancelBooking = async (req, res) => {
   try {
-    const { state, city, placeName, date, startTime, endTime } = req.body;
+    const { state, city, placeName, startTime, endTime } = req.body;
+
+    if (!state || !city || !placeName || !startTime || !endTime) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
 
     const location = await Location.findOne({ state, city, placeName });
-    if (!location) return res.status(404).json({ message: 'Location not found' });
 
-    const booking = location.bookings.find(b =>
-      b.date === date &&
-      b.startTime === startTime &&
-      b.endTime === endTime &&
-      b.status === 'booked'
+    if (!location) {
+      return res.status(404).json({ message: 'Location not found' });
+    }
+
+    const targetStart = new Date(startTime);
+    const targetEnd = new Date(endTime);
+
+    const booking = location.bookings.find(
+      (b) =>
+        new Date(b.startTime).getTime() === targetStart.getTime() &&
+        new Date(b.endTime).getTime() === targetEnd.getTime() &&
+        b.isBooked === true
     );
 
-    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found or already cancelled' });
+    }
 
-    booking.status = 'cancelled';
+    booking.isBooked = false;
     await location.save();
 
-    return res.status(200).json({ message: 'Booking cancelled successfully' });
+    return res.status(200).json({ message: 'Booking cancelled successfully', location });
   } catch (error) {
-    console.error('Cancel error:', error);
+    console.error('Cancel Booking error:', error);
     return res.status(500).json({ message: 'Server error' });
   }
 };

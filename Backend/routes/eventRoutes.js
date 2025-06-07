@@ -1,6 +1,6 @@
 import express from 'express';
 import {
-  createEvent,
+  createApproval,
   getEvents,
   getEventById,
   updateEvent,
@@ -14,7 +14,7 @@ import { registerForEvent , getRegisteredEvents , deregisterEvent , getEventDeta
 const router = express.Router();
 
 // Create new event
-router.post('/',createEvent);
+router.post('/',createApproval);
 
 router.post('/register', registerForEvent);
 router.get('/registered-events/:userId', getRegisteredEvents);

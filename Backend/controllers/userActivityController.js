@@ -1,43 +1,52 @@
-import { Registration } from '../models/Registration.js'; // your schema file path
-import {Event} from '../models/Event.js';
-import {User} from '../models/Users.js';
+import { Registration } from '../models/Registration.js';
+import { Event } from '../models/Event.js';
+import { User } from '../models/Users.js';
 
+// REGISTER
 export const registerForEvent = async (req, res) => {
   try {
     const { userId, eventId } = req.body;
 
-    // Check if user exists
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Check if event exists
-    const event = await Event.findById(eventId);
-    if (!event) return res.status(404).json({ message: 'Event not found' });
+    const event = await Event.findOne({ _id: eventId, isDeleted: false });
+    if (!event) return res.status(404).json({ message: 'Event not found or deleted' });
 
-    // Check if event is full
-    const registeredCount = await Registration.countDocuments({ eventId });
+    const registeredCount = await Registration.countDocuments({ eventId, isDeleted: false });
     if (registeredCount >= event.maxRegistrations) {
       return res.status(400).json({ message: 'Event registration full' });
     }
 
-    // Attempt to register (unique index ensures no duplicates)
-    const registration = new Registration({ userId, eventId });
+    // Check if registration exists but is soft-deleted
+    let registration = await Registration.findOne({ userId, eventId });
+    if (registration) {
+      if (!registration.isDeleted) {
+        // Already registered
+        return res.status(400).json({ message: 'User already registered for this event' });
+      } else {
+        // Reactivate the soft-deleted registration
+        registration.isDeleted = false;
+        await registration.save();
+        await Event.findByIdAndUpdate(eventId, { $inc: { currentRegistrations: 1 } });
+        return res.status(200).json({ message: 'Successfully registered!' });
+      }
+    }
+
+    // No registration found, create new
+    registration = new Registration({ userId, eventId, isDeleted: false });
     await registration.save();
 
     await Event.findByIdAndUpdate(eventId, { $inc: { currentRegistrations: 1 } });
 
     res.status(200).json({ message: 'Successfully registered!' });
   } catch (error) {
-    if (error.code === 11000) {
-      // Duplicate key error: user already registered for this event
-      return res.status(400).json({ message: 'User already registered for this event' });
-    }
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-
+// GET ALL REGISTERED EVENTS FOR USER
 export const getRegisteredEvents = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -46,14 +55,11 @@ export const getRegisteredEvents = async (req, res) => {
       return res.status(400).json({ message: 'User ID is required' });
     }
 
-    // Step 1: Find all registrations by this user
-    const registrations = await Registration.find({ userId }).select('eventId');
+    const registrations = await Registration.find({ userId, isDeleted: false }).select('eventId');
 
-    // Step 2: Extract all event IDs
     const eventIds = registrations.map((reg) => reg.eventId);
 
-    // Step 3: Find all events with those IDs
-    const events = await Event.find({ _id: { $in: eventIds } });
+    const events = await Event.find({ _id: { $in: eventIds }, isDeleted: false });
 
     res.status(200).json({ events });
   } catch (error) {
@@ -62,6 +68,7 @@ export const getRegisteredEvents = async (req, res) => {
   }
 };
 
+// DEREGISTER (Soft delete)
 export const deregisterEvent = async (req, res) => {
   const { userId, eventId } = req.body;
 
@@ -70,14 +77,17 @@ export const deregisterEvent = async (req, res) => {
   }
 
   try {
-    const deleted = await Registration.findOneAndDelete({ userId, eventId });
+    const registration = await Registration.findOneAndUpdate(
+      { userId, eventId, isDeleted: false },
+      { isDeleted: true },
+      { new: true }
+    );
 
-    if (!deleted) {
+    if (!registration) {
       return res.status(404).json({ message: 'Registration not found.' });
     }
 
     await Event.findByIdAndUpdate(eventId, { $inc: { currentRegistrations: -1 } });
-
 
     return res.status(200).json({ message: 'Deregistered successfully.' });
   } catch (error) {
@@ -86,26 +96,22 @@ export const deregisterEvent = async (req, res) => {
   }
 };
 
+// GET USERS REGISTERED FOR AN EVENT
 export const getEventDetails = async (req, res) => {
   try {
     const eventId = req.params.eventId;
 
-    // 1. Find event to get currentRegistration count
-    const event = await Event.findById(eventId).select('currentRegistrations');
+    const event = await Event.findOne({ _id: eventId, isDeleted: false }).select('currentRegistrations');
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: 'Event not found or deleted' });
     }
 
-    // 2. Find registrations for event
-    const registrations = await Registration.find({ eventId }).select('userId');
+    const registrations = await Registration.find({ eventId, isDeleted: false }).select('userId');
 
-    // 3. Extract userIds
     const userIds = registrations.map(reg => reg.userId);
 
-    // 4. Find users by userIds
     const users = await User.find({ _id: { $in: userIds } }).select('name email');
 
-    // 5. Return users and currentRegistration count
     return res.status(200).json({
       message: 'Registered users fetched',
       data: {

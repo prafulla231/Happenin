@@ -3,7 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
+import { LoadingService } from '../loading';
+import { environment } from '../../../environment';
+import { forkJoin } from 'rxjs';
 
+// Interfaces
 interface Event {
   _id: string;
   title: string;
@@ -24,13 +28,21 @@ interface RegisteredUser {
   userId: string;
   name: string;
   email: string;
-  _id : string;
+  _id: string;
 }
-
 
 interface RegisteredUsersResponse {
   users: RegisteredUser[];
   currentRegistration: number;
+}
+
+interface PopupConfig {
+  title: string;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  showConfirm?: boolean;
+  confirmText?: string;
+  cancelText?: string;
 }
 
 @Component({
@@ -51,27 +63,29 @@ export class OrganizerDashboardComponent {
   isLoading = false;
 
   usersMap: { [eventId: string]: RegisteredUsersResponse } = {};
-  createApiUrl = 'http://localhost:5000/api/events';
-  baseApiUrl = 'http://localhost:5000/api/events';
-  baseRegistrationUrl = 'http://localhost:5000/api/events/registered-users';
-
   eventForm: FormGroup;
 
-  // Location dropdown data and selections
   locations: any[] = [];
   filteredStates: string[] = [];
   filteredCities: string[] = [];
   filteredPlaceNames: string[] = [];
 
-  selectedState: string = '';
-  selectedCity: string = '';
+  selectedState = '';
+  selectedCity = '';
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {
+  showPopup = false;
+  popupConfig: PopupConfig = { title: '', message: '', type: 'info' };
+  popupResolve: ((value: boolean) => void) | null = null;
+
+  selectedEventId: string | null = null;
+
+  constructor(private fb: FormBuilder, private http: HttpClient, private loadingService: LoadingService) {
     this.eventForm = this.fb.group({
       title: ['', Validators.required],
       description: [''],
       date: ['', Validators.required],
-      timeSlot: [''],
+      startTime: ['', Validators.required],
+      endTime: ['', Validators.required],
       duration: [''],
       location: [''],
       category: [''],
@@ -80,7 +94,7 @@ export class OrganizerDashboardComponent {
       artist: [''],
       organization: [''],
       state: ['', Validators.required],
-      city: ['', Validators.required],  // Changed from 'district' to 'city'
+      city: ['', Validators.required],
     });
 
     this.decodeToken();
@@ -90,289 +104,225 @@ export class OrganizerDashboardComponent {
 
   decodeToken() {
     const token = localStorage.getItem('token');
-
-    if (!token) {
-      console.warn('No token found in localStorage.');
-      return;
-    }
+    if (!token) return;
 
     try {
-      const payloadBase64: string = token.split('.')[1];
-      const decodedJson: string = atob(payloadBase64);
-      const decodedPayload: { userId?: string } = JSON.parse(decodedJson);
-
-      this.organizerId = decodedPayload.userId || null;
-      console.log('Organizer ID:', this.organizerId);
-    } catch (error) {
-      console.error('Failed to decode token:', error);
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      this.organizerId = payload.userId || null;
+    } catch {
       this.organizerId = null;
     }
   }
 
   loadEvents() {
-    if (!this.organizerId) {
-      console.warn('No organizerId found, skipping event load');
-      this.events = [];
-      return;
-    }
+    if (!this.organizerId) return;
+    this.loadingService.show();
 
-    this.isLoading = true;
-    this.http.get<{ data: Event[] }>(`${this.baseApiUrl}/${this.organizerId}`).subscribe({
-      next: (res) => {
+    this.http.get<{ data: Event[] }>(
+      `${environment.apiBaseUrl}${environment.apis.getEventsByOrganizer(this.organizerId)}`
+    ).subscribe({
+      next: res => {
         this.events = res.data;
-        this.isLoading = false;
+        this.loadingService.hide();
       },
-      error: (err) => {
-        console.error('Error loading events', err);
-        this.isLoading = false;
-        alert('Failed to load events. Please try again later.');
-      },
+      error: () => {
+        this.loadingService.hide();
+        this.showAlert('Error', 'Failed to load events', 'error');
+      }
     });
   }
 
   fetchLocations() {
-  console.log('📡 Fetching locations from API...');
-  this.http.get<any[]>('http://localhost:5000/api/locations').subscribe({
-    next: (data) => {
-      console.log('✅ Raw location data:', data);
-      this.locations = data;
+    this.loadingService.show();
+    this.http.get<any[]>(`${environment.apiBaseUrl}${environment.apis.fetchLocations}`).subscribe({
+      next: data => {
+        this.locations = data;
+        this.filteredStates = [...new Set(data.map(loc => loc.state?.trim()).filter(Boolean))];
+        this.loadingService.hide();
+      },
+      error: () => {
+        this.loadingService.hide();
+        this.showAlert('Error', 'Failed to fetch locations', 'error');
+      }
+    });
+  }
 
-      // Extract and trim unique states safely
-      this.filteredStates = [
-        ...new Set(
-          data
-            .filter((loc) => loc.state)
-            .map((loc) => loc.state.trim())
-        )
-      ];
+  // Event Submit/Create/Update
+  async onSubmit() {
+    if (this.eventForm.invalid) {
+      await this.showAlert('Validation Error', 'Please fill required fields', 'warning');
+      return;
+    }
 
-      console.log('📍 All Locations:', this.locations);
-      console.log('🌍 Filtered States:', this.filteredStates);
-    },
-    error: (err) => {
-      console.error('❌ Failed to fetch locations', err);
-    },
-  });
-}
+    this.isLoading = true;
+    const form = this.eventForm.value;
+    const timeSlot = `${form.startTime} - ${form.endTime}`;
+    const eventData = {
+      ...form,
+      createdBy: this.organizerId,
+      timeSlot
+    };
 
+    const startDateTime = new Date(`${form.date}T${form.startTime}:00`).toISOString();
+    const endDateTime = new Date(`${form.date}T${form.endTime}:00`).toISOString();
 
-selectedEventId: string | null = null;
+    const locationData = {
+      startTime_one: startDateTime,
+      endTime_one: endDateTime,
+      state: form.state,
+      city: form.city,
+      placeName: form.location,
+    };
 
-openUserModal(eventId: string) {
-  this.loadRegisteredUsers(eventId, () => {
-    this.selectedEventId = eventId;
-  });
-}
+    this.http.post(`${environment.apiBaseUrl}/locations/book`, locationData).subscribe({
+      next: () => {
+        const request = this.isEditMode && this.currentEditEventId
+          ? this.http.put(`${environment.apiBaseUrl}${environment.apis.updateEvent(this.currentEditEventId)}`, eventData)
+          : this.http.post(`${environment.apiBaseUrl}${environment.apis.createEvent}`, eventData);
 
+        request.subscribe({
+          next: async () => {
+            await this.showAlert('Success', `Event ${this.isEditMode ? 'updated' : 'created'} successfully!`, 'success');
+            this.resetForm();
+            this.loadEvents();
+            this.isLoading = false;
+          },
+          error: async () => {
+            await this.showAlert('Error', 'Event creation/updation failed', 'error');
+            this.isLoading = false;
+          }
+        });
+      },
+      error: async () => {
+        await this.showAlert('Error', 'Failed to book location', 'error');
+        this.isLoading = false;
+      }
+    });
+  }
 
-closeUserModal() {
-  this.selectedEventId = null;
-}
+  onEdit(event: Event) {
+    const loc = this.locations.find(l => l.placeName === event.location);
+    this.eventForm.patchValue({ ...event, state: loc?.state || '', city: loc?.city || '' });
+    this.currentEditEventId = event._id;
+    this.isEditMode = true;
+    this.showCreateForm = true;
+    if (loc) {
+      this.selectedState = loc.state;
+      this.onStateChange();
+      this.selectedCity = loc.city;
+      this.onCityChange();
+    }
+  }
 
+  async onDelete(eventId: string) {
+    const confirm = await this.showConfirm('Delete Event', 'Are you sure?', 'Delete', 'Cancel');
+    if (!confirm) return;
 
-onStateChange() {
-  console.log('🟢 State changed!');
-  console.log('Selected State:', this.selectedState);
+    this.isLoading = true;
+    this.http.delete(`${environment.apiBaseUrl}${environment.apis.deleteEvent(eventId)}`).subscribe({
+      next: async () => {
+        await this.showAlert('Success', 'Event deleted!', 'success');
+        this.loadEvents();
+        this.isLoading = false;
+      },
+      error: async () => {
+        await this.showAlert('Error', 'Failed to delete event', 'error');
+        this.isLoading = false;
+      }
+    });
+  }
 
-  if (!this.selectedState) {
-    console.log('⚠️ No state selected. Resetting cities and location...');
-    this.filteredCities = [];
+  loadRegisteredUsers(eventId: string, callback?: () => void) {
+    this.http.get<{ data: RegisteredUsersResponse }>(
+      `${environment.apiBaseUrl}${environment.apis.getRegisteredUsers(eventId)}`
+    ).subscribe({
+      next: res => {
+        this.usersMap[eventId] = res.data;
+        if (callback) callback();
+      },
+      error: () => {
+        this.showAlert('Error', 'Failed to load registered users', 'error');
+      }
+    });
+  }
+
+  // State/City Filters
+  onStateChange() {
+    const state = this.selectedState.trim();
+    const matches = this.locations.filter(loc => loc.state?.trim() === state);
+    this.filteredCities = [...new Set(matches.map(loc => loc.city?.trim()).filter(Boolean))];
     this.filteredPlaceNames = [];
+    this.selectedCity = '';
     this.eventForm.patchValue({ city: '', location: '' });
-    return;
   }
 
-  const state = this.selectedState.trim();
-  console.log('✅ Trimmed Selected State:', state);
-
-  const matchingLocations = this.locations.filter(
-    (loc) => loc.state?.trim() === state
-  );
-
-  console.log('🔍 Matching Locations for State:', matchingLocations);
-
-  // Extract and trim city values only if they exist
-  this.filteredCities = [
-    ...new Set(
-      matchingLocations
-        .filter((loc) => loc.city)
-        .map((loc) => loc.city.trim())
-    )
-  ];
-
-  console.log('🏙️ Filtered Cities:', this.filteredCities);
-
-  // Reset further selections
-  this.selectedCity = '';
-  this.filteredPlaceNames = [];
-  this.eventForm.patchValue({ city: '', location: '' });
-}
-
-onCityChange() {
-  console.log('🟢 City changed!');
-  console.log('Selected State:', this.selectedState);
-  console.log('Selected City:', this.selectedCity);
-
-  if (!this.selectedCity || !this.selectedState) {
-    console.log('⚠️ Either city or state not selected. Skipping logic.');
-    return;
+  onCityChange() {
+    const state = this.selectedState.trim();
+    const city = this.selectedCity.trim();
+    const matches = this.locations.filter(loc => loc.state?.trim() === state && loc.city?.trim() === city);
+    this.filteredPlaceNames = [...new Set(matches.map(loc => loc.placeName?.trim()).filter(Boolean))];
+    this.eventForm.patchValue({ location: '' });
   }
-
-  const state = this.selectedState.trim();
-  const city = this.selectedCity.trim();
-  console.log('✅ Trimmed State and City:', state, city);
-
-  const matchingPlaces = this.locations.filter(
-    (loc) =>
-      loc.state?.trim() === state &&
-      loc.city?.trim() === city
-  );
-
-  console.log('📌 Matching Places:', matchingPlaces);
-
-  this.filteredPlaceNames = [
-    ...new Set(
-      matchingPlaces
-        .filter((loc) => loc.placeName)
-        .map((loc) => loc.placeName.trim())
-    )
-  ];
-
-  console.log('🏛️ Filtered Place Names:', this.filteredPlaceNames);
-
-  this.eventForm.patchValue({ location: '' });
-}
 
   toggleCreateForm() {
     this.showCreateForm = !this.showCreateForm;
     this.isEditMode = false;
-    this.eventForm.reset({ price: 0, maxRegistrations: 1, state: '', city: '' });
-    this.currentEditEventId = null;
-    this.selectedState = '';
-    this.selectedCity = '';
-    this.filteredCities = [];
-    this.filteredPlaceNames = [];
+    this.resetForm();
   }
-
-  onSubmit() {
-    if (!this.organizerId) {
-      alert('User not authenticated, please login again.');
-      return;
-    }
-
-    if (this.eventForm.invalid) {
-      alert('Please fill in all required fields correctly.');
-      return;
-    }
-
-    const eventData = { ...this.eventForm.value, createdBy: this.organizerId };
-
-    this.isLoading = true;
-    if (this.isEditMode && this.currentEditEventId) {
-      this.http.put(`${this.baseApiUrl}/${this.currentEditEventId}`, eventData).subscribe({
-        next: () => {
-          alert('Event updated successfully!');
-          this.resetForm();
-          this.loadEvents();
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Error updating event', err);
-          alert('Failed to update event. Please try again.');
-          this.isLoading = false;
-        },
-      });
-    } else {
-      this.http.post(this.createApiUrl, eventData).subscribe({
-        next: () => {
-          alert('Event created successfully!');
-          this.resetForm();
-          this.loadEvents();
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Error creating event', err);
-          alert('Failed to create event. Please try again.');
-          this.isLoading = false;
-        },
-      });
-    }
-  }
-
-  onEdit(event: Event) {
-    // Find location info to set state and city
-    const loc = this.locations.find((l) => l.placeName === event.location);
-
-    // Patch form values including state & city explicitly
-    this.eventForm.patchValue({
-      ...event,
-      state: loc ? loc.state : '',
-      city: loc ? loc.city : '',  // Changed from 'district' to 'city'
-    });
-
-    this.currentEditEventId = event._id;
-    this.isEditMode = true;
-    this.showCreateForm = true;
-
-    if (loc) {
-      this.selectedState = loc.state;
-      this.onStateChange();
-      this.selectedCity = loc.city;  // Changed from 'district' to 'city'
-      this.onCityChange();  // Changed method name
-    }
-  }
-
-  onDelete(eventId: string) {
-    if (!confirm('Are you sure you want to delete this event?')) return;
-
-    this.isLoading = true;
-    this.http.delete(`${this.baseApiUrl}/${eventId}`).subscribe({
-      next: () => {
-        alert('Event deleted successfully!');
-        this.loadEvents();
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error deleting event', err);
-        alert('Failed to delete event. Please try again.');
-        this.isLoading = false;
-      },
-    });
-  }
-
-
-  loadRegisteredUsers(eventId: string, callback?: () => void) {
-  this.http.get<{ data: RegisteredUsersResponse }>(`${this.baseRegistrationUrl}/${eventId}`).subscribe({
-    next: res => {
-      this.usersMap[eventId] = res.data;
-      console.log(`Loaded users for event ${eventId}`, res.data);
-      if (callback) callback();
-    },
-    error: err => {
-      console.error('Error loading users for event', err);
-      alert('Failed to load users');
-    }
-  });
-}
-
 
   resetForm() {
     this.eventForm.reset({ price: 0, maxRegistrations: 1, state: '', city: '' });
-    this.showCreateForm = false;
-    this.isEditMode = false;
-    this.currentEditEventId = null;
     this.selectedState = '';
     this.selectedCity = '';
     this.filteredCities = [];
     this.filteredPlaceNames = [];
+    this.currentEditEventId = null;
   }
 
-  logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    sessionStorage.clear();
+  async logout() {
+    const confirm = await this.showConfirm('Logout', 'Are you sure you want to logout?', 'Logout', 'Cancel');
+    if (confirm) {
+      localStorage.clear();
+      sessionStorage.clear();
+      await this.showAlert('Logged out', 'You have been logged out', 'success');
+      setTimeout(() => (window.location.href = '/'), 1000);
+    }
+  }
 
-    alert('You have been logged out.');
-    window.location.href = '/';
+  // Popup logic
+  showAlert(title: string, message: string, type: PopupConfig['type']): Promise<boolean> {
+    return new Promise(resolve => {
+      this.popupConfig = { title, message, type };
+      this.showPopup = true;
+      this.popupResolve = resolve;
+    });
+  }
+
+  showConfirm(title: string, message: string, confirmText = 'Yes', cancelText = 'No'): Promise<boolean> {
+    return new Promise(resolve => {
+      this.popupConfig = { title, message, type: 'warning', showConfirm: true, confirmText, cancelText };
+      this.showPopup = true;
+      this.popupResolve = resolve;
+    });
+  }
+
+  onPopupConfirm() {
+    this.showPopup = false;
+    this.popupResolve?.(true);
+    this.popupResolve = null;
+  }
+
+  onPopupCancel() {
+    this.showPopup = false;
+    this.popupResolve?.(false);
+    this.popupResolve = null;
+  }
+
+  openUserModal(eventId: string) {
+    this.loadRegisteredUsers(eventId, () => (this.selectedEventId = eventId));
+  }
+
+  closeUserModal() {
+    this.selectedEventId = null;
   }
 }

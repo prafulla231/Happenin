@@ -10,8 +10,10 @@ const eventSchema = new mongoose.Schema(
     location: { type: String },
     category: { type: String },
     price: { type: Number, default: 0 },
-    image: { type: String },
-    poster: { type: String },
+    isDeleted: {
+    type: Boolean,
+    default: false
+  },
     currentRegistrations : { type: Number, default:0 },
     maxRegistrations: { type: Number, required: true },
     createdBy: {

@@ -3,56 +3,36 @@ import { Registration } from '../models/Registration.js';
 import { apiResponse } from '../utils/apiResponse.js';
 import { apiError } from '../utils/apiError.js';
 import mongoose from 'mongoose';
+import { Approval } from '../models/approval.js';
 
-export const createEvent = async (req, res) => {
+// CREATE EVENT
+export const createApproval = async (req, res) => {
   try {
     const {
-      title,
-      description,
-      date,
-      timeSlot,
-      duration,
-      location,
-      category,
-      price,
-      // image,
-      // poster,
-      maxRegistrations,
-      createdBy,
-      artist,
-      organization,
+      title, description, date, timeSlot, duration, location,
+      category, price, maxRegistrations, createdBy,
+      artist, organization
     } = req.body;
 
-    // console.log('Creating event with data:', req.body);
     console.log('Authenticated user:', req.user);
 
-    // Basic validations
     if (!title || !date || !maxRegistrations || !createdBy) {
       return apiError(res, 400, 'Title, Date, MaxRegistrations and CreatedBy are required fields.');
     }
 
-    // Validate ObjectId for createdBy
-    // if (!mongoose.Types.ObjectId.isValid(createdBy)) {
-    //   return apiError(res, 400, 'Invalid createdBy user ID.');
-    // }
-
-    // Validate date is valid date
     if (isNaN(Date.parse(date))) {
       return apiError(res, 400, 'Invalid date format.');
     }
 
-    // Validate price is number >= 0 if provided
     if (price !== undefined && (typeof price !== 'number' || price < 0)) {
       return apiError(res, 400, 'Price must be a positive number.');
     }
 
-    // Validate maxRegistrations is positive integer
     if (!Number.isInteger(maxRegistrations) || maxRegistrations <= 0) {
       return apiError(res, 400, 'maxRegistrations must be a positive integer.');
     }
 
-    // Create event object
-    const newEvent = new Event({
+    const newEvent = new Approval({
       title,
       description,
       date,
@@ -61,16 +41,13 @@ export const createEvent = async (req, res) => {
       location,
       category,
       price: price || 0,
-      // image,
-      // poster,
       maxRegistrations,
-      currentRegistrations: 0, // Initialize to 0
+      currentRegistrations: 0,
       createdBy,
       artist,
       organization,
+       // Soft delete flag
     });
-
-    console.log('Creating new event:', newEvent);
 
     await newEvent.save();
 
@@ -81,9 +58,10 @@ export const createEvent = async (req, res) => {
   }
 };
 
+// GET ALL EVENTS (only not deleted)
 export const getEvents = async (req, res) => {
   try {
-    const events = await Event.find().populate('createdBy', 'name email role');
+    const events = await Event.find({ isDeleted: false }).populate('createdBy', 'name email role');
     return apiResponse(res, 200, 'Events fetched successfully', events);
   } catch (error) {
     console.error('❌ Get Events error:', error.message);
@@ -91,15 +69,19 @@ export const getEvents = async (req, res) => {
   }
 };
 
+// GET EVENTS BY USER ID (only not deleted)
 export const getEventById = async (req, res) => {
-   try {
+  try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return apiError(res, 400, 'Invalid user ID.');
     }
 
-    const events = await Event.find({ createdBy: id }).populate('createdBy', 'name email role');
+    const events = await Event.find({
+      createdBy: id,
+      isDeleted: false,
+    }).populate('createdBy', 'name email role');
 
     return apiResponse(res, 200, 'Events fetched successfully', events);
   } catch (error) {
@@ -108,6 +90,7 @@ export const getEventById = async (req, res) => {
   }
 };
 
+// UPDATE EVENT (only if not deleted)
 export const updateEvent = async (req, res) => {
   try {
     const { id } = req.params;
@@ -117,15 +100,14 @@ export const updateEvent = async (req, res) => {
       return apiError(res, 400, 'Invalid event ID.');
     }
 
-    // Optional: Validate updateData fields here if needed
-
-    const updatedEvent = await Event.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedEvent = await Event.findOneAndUpdate(
+      { _id: id, isDeleted: false },
+      updateData,
+      { new: true, runValidators: true }
+    );
 
     if (!updatedEvent) {
-      return apiError(res, 404, 'Event not found.');
+      return apiError(res, 404, 'Event not found or already deleted.');
     }
 
     return apiResponse(res, 200, 'Event updated successfully', updatedEvent);
@@ -135,6 +117,7 @@ export const updateEvent = async (req, res) => {
   }
 };
 
+// SOFT DELETE EVENT
 export const deleteEvent = async (req, res) => {
   try {
     const { id } = req.params;
@@ -143,19 +126,24 @@ export const deleteEvent = async (req, res) => {
       return apiError(res, 400, 'Invalid event ID.');
     }
 
-    const deletedEvent = await Event.findByIdAndDelete(id);
+    const deletedEvent = await Event.findOneAndUpdate(
+      { _id: id, isDeleted: false },
+      { isDeleted: true },
+      { new: true }
+    );
 
     if (!deletedEvent) {
-      return apiError(res, 404, 'Event not found.');
+      return apiError(res, 404, 'Event not found or already deleted.');
     }
 
-    return apiResponse(res, 200, 'Event deleted successfully', deletedEvent);
+    return apiResponse(res, 200, 'Event soft-deleted successfully', deletedEvent);
   } catch (error) {
     console.error('❌ Delete Event error:', error.message);
     return apiError(res, 500, 'Server error while deleting event', error);
   }
 };
 
+// REMOVE USER FROM EVENT (optional: support soft delete in future here too)
 export const removeUserFromEvent = async (req, res) => {
   try {
     const { eventId, userId } = req.params;
@@ -169,7 +157,6 @@ export const removeUserFromEvent = async (req, res) => {
       return res.status(404).json({ message: 'Registration not found' });
     }
 
-    // Optionally, decrement currentRegistrations in Event
     await Event.findByIdAndUpdate(eventId, { $inc: { currentRegistrations: -1 } });
 
     return res.status(200).json({ message: 'User removed from event successfully' });
