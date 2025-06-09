@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-
+// import { environment } from '../../../../environment.prod'
+import { environment } from '../../../../environment';
+import { AuthService } from '../../../services/auth';
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -17,13 +19,16 @@ export class LoginComponent {
   loginForm: FormGroup;
   registerForm: FormGroup;
 
-  loginUrl = 'http://localhost:5000/api/users/login';
-  registerUrl = 'http://localhost:5000/api/users/register';
+  loginUrl = environment.apiBaseUrl + environment.apis.loginUser;
+  registerUrl = environment.apiBaseUrl + environment.apis.registerUser;
+
+
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private authService : AuthService
 
   ) {
     // Login form
@@ -44,27 +49,15 @@ export class LoginComponent {
 
   toggleForm(isLoginForm: boolean): void {
     this.isLogin = isLoginForm;
-    navigator.geolocation.getCurrentPosition(async (position) => {
-  const lat = position.coords.latitude;
-  const lon = position.coords.longitude;
-
-  const response = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
-  );
-  const data = await response.json();
-
-  const city = data.address.city || data.address.town || data.address.village || 'City not found';
-  console.log('City:', city);
-});
-
-
   }
 
   onLoginSubmit(): void {
     if (this.loginForm.valid) {
       const data = this.loginForm.value;
 
-      this.http.post(this.loginUrl, data).subscribe({
+      //this.authService.loginUser(data)
+
+      this.authService.loginUser(data).subscribe({
         next: (response: any) => {
           const userRole = response.data.user?.role;
 

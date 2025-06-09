@@ -5,8 +5,14 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LoadingService } from '../loading';
 import { environment } from '../../../environment';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { LocationService } from '../../services/location';
+import { ApprovalService } from '../../services/approval';
+import { AuthService } from '../../services/auth';
+import { EventService } from '../../services/event';
 
-interface Event {
+
+export interface Event {
   _id: string;
   title: string;
   description: string;
@@ -22,14 +28,14 @@ interface Event {
   organization?: string;
 }
 
-interface RegisteredUser {
+export interface RegisteredUser {
   userId: string;
   name: string;
   email: string;
   _id: string;
 }
 
-interface Location {
+export interface Location {
   _id?: string;
   state: string;
   city: string;
@@ -40,21 +46,31 @@ interface Location {
   createdBy?: string;
 }
 
-interface RegisteredUsersResponse {
+export interface RegisteredUsersResponse {
   users: RegisteredUser[];
   currentRegistration: number;
+}
+
+export interface CustomAlert {
+  show: boolean;
+  type: 'success' | 'error' | 'warning' | 'info' | 'confirm';
+  title: string;
+  message: string;
+  confirmAction?: () => void;
+  cancelAction?: () => void;
+  showCancel?: boolean;
 }
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss']
 })
 export class AdminDashboardComponent {
   events: Event[] = [];
-  eventsone : Event[]=[];
+  eventsone: Event[] = [];
   filteredEvents: Event[] = [];
   filteredEventsone: Event[] = [];
   usersMap: { [eventId: string]: RegisteredUsersResponse } = {};
@@ -63,6 +79,20 @@ export class AdminDashboardComponent {
   selectedEvent: Event | null = null;
   showEventDetails: boolean = false;
 
+   showFilters: boolean = false;
+
+
+
+  // Custom Alert System
+  customAlert: CustomAlert = {
+    show: false,
+    type: 'info',
+    title: '',
+    message: '',
+    showCancel: false
+  };
+
+  // Filters
   searchQuery = '';
   selectedCategory = '';
   selectedCity = '';
@@ -75,10 +105,13 @@ export class AdminDashboardComponent {
   availableCities: string[] = [];
 
   baseEventUrl = environment.apiBaseUrl + environment.apis.getAllEvents;
-  eventurlapproval = 'http://localhost:5000/api/approval/viewApproval';
+  eventurlapproval = environment.apiBaseUrl + environment.apis.viewApprovalRequests;
   baseRegistrationUrl = environment.apiBaseUrl;
   removeUser = environment.apiBaseUrl;
   baseLocationUrl = environment.apiBaseUrl + environment.apis.fetchLocations;
+  registerForm: FormGroup;
+  showRegisterForm = false;
+  registerUrl = environment.apiBaseUrl + environment.apis.registerUser;
 
   showLocationForm = false;
   locations: Location[] = [];
@@ -110,21 +143,131 @@ export class AdminDashboardComponent {
   userEmail: string = '';
   isSuperAdmin: boolean = false;
 
-  constructor(private http: HttpClient, private loadingService: LoadingService) {
+  constructor(
+    private http: HttpClient,
+    private loadingService: LoadingService,
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private eventService: EventService,
+    private locationService: LocationService,
+    private ApprovalService: ApprovalService
+  ) {
     this.loadEvents();
     this.loadLocations();
     this.loadApprovals();
     this.setUserFromLocalStorageUser();
+
+    this.registerForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required],
+      phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+      role: ['admin']  // Fixed value
+    });
+  }
+
+   toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+  }
+
+  getActiveFiltersCount(): number {
+    let count = 0;
+    if (this.searchQuery && this.searchQuery.trim()) count++;
+    if (this.selectedCategory) count++;
+    if (this.selectedCity) count++;
+    if (this.selectedPriceRange) count++;
+    if (this.dateFrom) count++;
+    if (this.dateTo) count++;
+    return count;
+  }
+
+  // Custom Alert Methods
+  showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) {
+    this.customAlert = {
+      show: true,
+      type,
+      title,
+      message,
+      showCancel: false
+    };
+  }
+
+  showConfirmation(title: string, message: string, confirmAction: () => void, cancelAction?: () => void) {
+    this.customAlert = {
+      show: true,
+      type: 'confirm',
+      title,
+      message,
+      confirmAction,
+      cancelAction,
+      showCancel: true
+    };
+  }
+
+  handleAlertConfirm() {
+    if (this.customAlert.confirmAction) {
+      this.customAlert.confirmAction();
+    }
+    this.closeAlert();
+  }
+
+  handleAlertCancel() {
+    if (this.customAlert.cancelAction) {
+      this.customAlert.cancelAction();
+    }
+    this.closeAlert();
+  }
+
+  closeAlert() {
+    this.customAlert.show = false;
+    this.customAlert.confirmAction = undefined;
+    this.customAlert.cancelAction = undefined;
+  }
+
+  // Updated confirmation methods
+  confirmDeleteEvent(eventId: string, eventTitle: string) {
+    this.showConfirmation(
+      'Delete Event',
+      `Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`,
+      () => this.deleteEvent(eventId)
+    );
+  }
+
+  confirmRemoveUser(eventId: string, userId: string, userName: string) {
+    this.showConfirmation(
+      'Remove User',
+      `Are you sure you want to remove "${userName}" from this event?`,
+      () => this.removeUserFromEvent(eventId, userId)
+    );
+  }
+
+  confirmApproveEvent(eventId: string, eventTitle: string) {
+    this.showConfirmation(
+      'Approve Event',
+      `Are you sure you want to approve "${eventTitle}"?`,
+      () => this.approveEvent(eventId)
+    );
+  }
+
+  confirmDenyEvent(eventId: string, eventTitle: string) {
+    this.showConfirmation(
+      'Deny Event',
+      `Are you sure you want to deny "${eventTitle}"? This action cannot be undone.`,
+      () => this.denyEvent(eventId)
+    );
   }
 
   // Read user info from localStorage key 'user' and set email & isSuperAdmin flag
   setUserFromLocalStorageUser() {
     try {
       const userString = localStorage.getItem('user');
+      console.log('User string from localStorage:', userString);
       if (userString) {
         const user = JSON.parse(userString);
         this.userEmail = user.email || '';
         this.isSuperAdmin = this.userEmail === 'superadmin@gmail.com';
+        console.log('Parsed user:', user);
+        console.log('User email:', this.userEmail);
       } else {
         this.userEmail = '';
         this.isSuperAdmin = false;
@@ -133,6 +276,29 @@ export class AdminDashboardComponent {
       console.error('Failed to parse user from localStorage', error);
       this.userEmail = '';
       this.isSuperAdmin = false;
+    }
+  }
+
+  toggleRegisterForm(): void {
+    this.showRegisterForm = !this.showRegisterForm;
+  }
+
+  onRegisterSubmit(): void {
+    if (this.registerForm.valid) {
+      const data = this.registerForm.value;
+      console.log('Registering admin with data:', data);
+
+      this.authService.registerUser(data).subscribe({
+        next: () => {
+          this.showAlert('success', 'Registration Successful', 'Admin registered successfully!');
+          this.registerForm.reset({ role: 'admin' });
+          this.showRegisterForm = false;
+        },
+        error: (error) => {
+          console.error('Registration failed', error);
+          this.showAlert('error', 'Registration Failed', 'Registration failed. Please try again.');
+        }
+      });
     }
   }
 
@@ -146,10 +312,12 @@ export class AdminDashboardComponent {
         this.applySorting();
         res.data.forEach(event => this.loadRegisteredUsers(event._id));
         this.loadingService.hide();
+        this.showAlert('success', 'Events Loaded', 'Successfully loaded all approved events!');
       },
       error: err => {
         console.error('Error loading events', err);
         this.loadingService.hide();
+        this.showAlert('error', 'Loading Failed', 'Failed to load events. Please try again later.');
       }
     });
   }
@@ -164,10 +332,56 @@ export class AdminDashboardComponent {
         this.applySorting();
         res.data.forEach(event => this.loadRegisteredUsers(event._id));
         this.loadingService.hide();
+        if (res.data.length > 0) {
+          this.showAlert('info', 'Pending Approvals', `${res.data.length} events are waiting for approval.`);
+        }
       },
       error: err => {
         console.error('Error loading events', err);
         this.loadingService.hide();
+        this.showAlert('error', 'Loading Failed', 'Failed to load pending events. Please try again later.');
+      }
+    });
+  }
+
+  approveEvent(eventId: string) {
+    const eventToApprove = this.eventsone.find(e => e._id === eventId);
+
+    if (!eventToApprove) {
+      this.showAlert('error', 'Event Not Found', 'The event could not be found.');
+      return;
+    }
+
+    return this.http.post(
+      `${environment.apiBaseUrl}${environment.apis.approveEvent}`,
+      eventToApprove
+    ).subscribe({
+      next: (res) => {
+        this.loadApprovals();
+        this.loadEvents();
+        this.showAlert('success', 'Event Approved', `Event "${eventToApprove.title}" has been approved successfully!`);
+        console.log('Approved:', res);
+      },
+      error: (err) => {
+        console.error('Approval failed:', err);
+        this.showAlert('error', 'Approval Failed', 'Failed to approve the event. Please try again.');
+      }
+    });
+  }
+
+  denyEvent(eventId: string) {
+    const eventToDeny = this.eventsone.find(e => e._id === eventId);
+    const eventTitle = eventToDeny ? eventToDeny.title : 'Unknown Event';
+
+    this.http.delete(`${environment.apiBaseUrl}${environment.apis.denyEvent(eventId)}`).subscribe({
+      next: (res) => {
+        console.log('Delete successful:', res);
+        this.loadApprovals();
+        this.showAlert('success', 'Event Denied', `Event "${eventTitle}" has been denied and removed.`);
+      },
+      error: (err) => {
+        console.error('Delete failed:', err);
+        this.showAlert('error', 'Deny Failed', 'Failed to deny the event. Please try again.');
       }
     });
   }
@@ -269,6 +483,7 @@ export class AdminDashboardComponent {
     this.selectedPriceRange = '';
     this.sortBy = 'date';
     this.applyFilters();
+    this.showAlert('info', 'Filters Cleared', 'All filters have been cleared.');
   }
 
   clearSearch() {
@@ -309,21 +524,29 @@ export class AdminDashboardComponent {
   }
 
   deleteEvent(eventId: string) {
-    if (confirm('Are you sure you want to delete this event?')) {
-      this.http.delete(`${this.baseEventUrl}/${eventId}`).subscribe({
-        next: () => this.loadEvents(),
-        error: err => alert('Failed to delete event')
-      });
-    }
+    this.http.delete(`${this.baseEventUrl}/${eventId}`).subscribe({
+      next: () => {
+        this.loadEvents();
+        this.showAlert('success', 'Event Deleted', 'The event has been deleted successfully.');
+      },
+      error: err => {
+        console.error('Failed to delete event', err);
+        this.showAlert('error', 'Delete Failed', 'Failed to delete event. Please try again.');
+      }
+    });
   }
 
   removeUserFromEvent(eventId: string, userId: string) {
-    if (confirm('Remove user from event?')) {
-      this.http.delete(`${this.removeUser}${environment.apis.removeUserFromEvent(eventId, userId)}`).subscribe({
-        next: () => this.loadRegisteredUsers(eventId),
-        error: err => alert('Failed to remove user')
-      });
-    }
+    this.http.delete(`${this.removeUser}${environment.apis.removeUserFromEvent(eventId, userId)}`).subscribe({
+      next: () => {
+        this.loadRegisteredUsers(eventId);
+        this.showAlert('success', 'User Removed', 'User has been successfully removed from the event.');
+      },
+      error: err => {
+        console.error('Failed to remove user', err);
+        this.showAlert('error', 'Remove Failed', 'Failed to remove user. Please try again.');
+      }
+    });
   }
 
   toggleUsersDropdown(eventId: string) {
@@ -344,10 +567,18 @@ export class AdminDashboardComponent {
   }
 
   logout() {
-    localStorage.clear();
-    sessionStorage.clear();
-    alert('You have been logged out.');
-    window.location.href = '/login';
+    this.showConfirmation(
+      'Logout Confirmation',
+      'Are you sure you want to logout?',
+      () => {
+        localStorage.clear();
+        sessionStorage.clear();
+        this.showAlert('success', 'Logged Out', 'You have been logged out successfully.');
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
+      }
+    );
   }
 
   toggleLocationForm() {
@@ -371,19 +602,25 @@ export class AdminDashboardComponent {
   addLocation(location: Location) {
     this.http.post<{ data: Location }>(`${environment.apiBaseUrl}${environment.apis.addLocation}`, location).subscribe({
       next: () => {
-        alert('Location added successfully!');
+        this.showAlert('success', 'Location Added', 'Location has been added successfully!');
         this.loadLocations();
         this.showLocationForm = false;
         this.resetForm();
       },
-      error: err => alert('Failed to add location')
+      error: err => {
+        console.error('Failed to add location', err);
+        this.showAlert('error', 'Add Location Failed', 'Failed to add location. Please try again.');
+      }
     });
   }
 
   loadLocations() {
     this.http.get<{ data: Location[] }>(this.baseLocationUrl).subscribe({
       next: res => this.locations = res.data,
-      error: err => console.error('Error loading locations', err)
+      error: err => {
+        console.error('Error loading locations', err);
+        this.showAlert('error', 'Loading Failed', 'Failed to load locations.');
+      }
     });
   }
 

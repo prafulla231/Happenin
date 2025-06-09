@@ -1,5 +1,4 @@
-// :root {  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-//   --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);  --card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);  --registered-gradient: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%);  --text-primary: #2c3e50;  --text-secondary: #546e7a;  --shadow-light: 0 4px 20px rgba(0, 0, 0, 0.1);  --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.15);  --shadow-heavy: 0 12px 40px rgba(0, 0, 0, 0.2);  --border-radius: 16px;  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);}
+
 * {
   box-sizing: border-box;
 }
@@ -1103,11 +1102,6 @@
 }
 
 
-//modal styles
-
-// Add these modal styles to your existing CSS file
-
-// Modal Styles - Add these to your CSS
 .modal-overlay {
   position: fixed;
   top: 0;

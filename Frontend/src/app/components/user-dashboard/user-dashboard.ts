@@ -7,7 +7,7 @@ import jsPDF from 'jspdf';
 import { environment } from '../../../environment';
 import { LoadingService } from '../loading';
 
-interface Event {
+export interface Event {
   _id: string;
   title: string;
   description: string;
@@ -23,7 +23,7 @@ interface Event {
   organization?: string;
 }
 
-interface CustomAlert {
+export interface CustomAlert {
   show: boolean;
   type: 'success' | 'error' | 'warning' | 'info' | 'confirm';
   title: string;
@@ -400,68 +400,124 @@ export class UserDashboardComponent {
   }
 
   private generateTicketPDF(event: Event) {
-    this.loadingService.show();
-    try {
-      const doc = new jsPDF();
-      const pageWidth = doc.internal.pageSize.width;
-      const margin = 20;
+  this.loadingService.show();
+  try {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 20;
+    const contentWidth = pageWidth - (margin * 2);
 
-      doc.setFillColor(102, 126, 234);
-      doc.rect(0, 0, pageWidth, 60, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(24);
+    // Header Background
+    doc.setFillColor(102, 126, 234);
+    doc.rect(0, 0, pageWidth, 60, 'F');
+
+    // Header Text
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text('EVENT TICKET', pageWidth / 2, 30, { align: 'center' });
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Official Entry Pass', pageWidth / 2, 45, { align: 'center' });
+
+    // Reset text color for content
+    doc.setTextColor(0, 0, 0);
+
+    // Start content below header with more spacing
+    let yPosition = 80;
+    const lineHeight = 8;
+    const sectionSpacing = 15;
+
+    // Event details with better formatting
+    const details = [
+      { label: 'Event Name', value: event.title },
+      { label: 'Description', value: event.description },
+      { label: 'Date', value: this.formatDate(event.date) },
+      { label: 'Time', value: event.timeSlot },
+      { label: 'Duration', value: event.duration },
+      { label: 'Location', value: event.location },
+      { label: 'Category', value: event.category || 'General' },
+      { label: 'Price', value: `${event.price}` },
+      { label: 'Ticket Holder', value: this.userName || 'Guest' }
+    ];
+
+    details.forEach((detail, index) => {
+      // Check if we need a new page
+      if (yPosition > pageHeight - 40) {
+        doc.addPage();
+        yPosition = 30;
+      }
+
+      // Label
       doc.setFont('helvetica', 'bold');
-      doc.text('EVENT TICKET', pageWidth / 2, 25, { align: 'center' });
-      doc.setFontSize(12);
+      doc.setFontSize(11);
+      doc.text(`${detail.label}:`, margin, yPosition);
+
+      // Value with text wrapping
       doc.setFont('helvetica', 'normal');
-      doc.text('Official Entry Pass', pageWidth / 2, 35, { align: 'center' });
-
-      let yPosition = 100;
-      const details = [
-        { label: 'Event Name:', value: event.title },
-        { label: 'Description:', value: event.description },
-        { label: 'Date:', value: event.date },
-        { label: 'Time:', value: event.timeSlot },
-        { label: 'Duration:', value: event.duration },
-        { label: 'Location:', value: event.location },
-        { label: 'Category:', value: event.category || 'General' },
-        { label: 'Price:', value: `₹${event.price}` },
-        { label: 'Ticket Holder:', value: this.userName || 'N/A' }
-      ];
-
-      details.forEach(detail => {
-        doc.setFont('helvetica', 'bold');
-        doc.text(detail.label, margin, yPosition);
-        doc.setFont('helvetica', 'normal');
-        const maxWidth = pageWidth - margin * 2 - 80;
-        const splitText = doc.splitTextToSize(detail.value, maxWidth);
-        doc.text(splitText, margin + 80, yPosition);
-        yPosition += splitText.length * 7 + 5;
-      });
-
-      yPosition += 20;
-      doc.setDrawColor(102, 126, 234);
-      doc.line(margin, yPosition, pageWidth - margin, yPosition);
-
-      yPosition += 15;
       doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text('This is an official ticket. Please present this ticket at the event entrance.', pageWidth / 2, yPosition, { align: 'center' });
 
-      yPosition += 10;
-      doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, yPosition, { align: 'center' });
+      const labelWidth = 60;
+      const valueX = margin + labelWidth;
+      const maxValueWidth = contentWidth - labelWidth;
 
-      const fileName = `ticket-${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
-      doc.save(fileName);
+      // Handle long text with proper wrapping
+      const splitText = doc.splitTextToSize(detail.value, maxValueWidth);
+      doc.text(splitText, valueX, yPosition);
 
-      this.loadingService.hide();
-      this.showAlert('success', 'Ticket Downloaded', `Your ticket for "${event.title}" has been downloaded successfully!`);
-    } catch (error) {
-      console.error('Error generating ticket PDF:', error);
-      this.loadingService.hide();
-      this.showAlert('error', 'Download Failed', 'Failed to generate the ticket. Please try again.');
+      // Calculate next position based on wrapped text
+      const textHeight = Array.isArray(splitText) ? splitText.length * lineHeight : lineHeight;
+      yPosition += Math.max(textHeight, lineHeight) + 5;
+    });
+
+    // Add some spacing before footer
+    yPosition += sectionSpacing;
+
+    // Separator line
+    if (yPosition > pageHeight - 60) {
+      doc.addPage();
+      yPosition = 30;
     }
+
+    doc.setDrawColor(102, 126, 234);
+    doc.setLineWidth(0.5);
+    doc.line(margin, yPosition, pageWidth - margin, yPosition);
+
+    // Footer
+    yPosition += 15;
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont('helvetica', 'normal');
+
+    const footerText1 = 'This is an official ticket. Please present this ticket at the event entrance.';
+    doc.text(footerText1, pageWidth / 2, yPosition, { align: 'center' });
+
+    yPosition += 10;
+    const footerText2 = `Generated on: ${new Date().toLocaleString()}`;
+    doc.text(footerText2, pageWidth / 2, yPosition, { align: 'center' });
+
+    // Add ticket ID for authenticity
+    yPosition += 10;
+    const ticketId = `Ticket ID: ${Date.now()}-${event._id.slice(-6)}`;
+    doc.text(ticketId, pageWidth / 2, yPosition, { align: 'center' });
+
+    // Generate filename
+    const fileName = `ticket-${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+
+    // Save the PDF
+    doc.save(fileName);
+
+    this.loadingService.hide();
+    this.showAlert('success', 'Ticket Downloaded', `Your ticket for "${event.title}" has been downloaded successfully!`);
+
+  } catch (error) {
+    console.error('Error generating ticket PDF:', error);
+    this.loadingService.hide();
+    this.showAlert('error', 'Download Failed', 'Failed to generate the ticket. Please try again.');
   }
+}
 
   logout() {
     this.showConfirmation(

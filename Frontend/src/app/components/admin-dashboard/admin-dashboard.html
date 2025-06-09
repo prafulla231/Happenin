@@ -1,9 +1,25 @@
-<div class="admin-dashboard-container">
-  <!-- ========= HEADER ========= -->
+<!-- ========= HEADER ========= -->
   <div class="admin-dashboard-header">
     <h2>Admin Dashboard</h2>
     <button class="admin-logout-btn" (click)="logout()">Logout</button>
   </div>
+
+<!-- Button to Toggle Admin Register Form (only visible to SuperAdmin) -->
+<button *ngIf="isSuperAdmin" class="add-admin-btn" (click)="toggleRegisterForm()">
+  ➕ Add New Admin
+</button>
+
+<!-- Admin Registration Form -->
+<div *ngIf="showRegisterForm" class="admin-register-form">
+  <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()">
+    <input formControlName="name" placeholder="Name" />
+    <input formControlName="email" placeholder="Email" type="email" />
+    <input formControlName="password" placeholder="Password" type="password" />
+    <input formControlName="phone" placeholder="Phone Number" />
+    <button type="submit" [disabled]="registerForm.invalid">Register Admin</button>
+  </form>
+</div>
+
 
   <!-- ========= TOGGLE BUTTON FOR LOCATION FORM ========= -->
   <div class="add-location-header">
@@ -124,8 +140,21 @@
     </form>
   </div>
 
+  <!-- ========= TOGGLE BUTTON FOR FILTERS ========= -->
+  <div class="toggle-filters-header">
+    <button class="toggle-filters-btn" (click)="toggleFilters()">
+      <span class="btn-icon">🔍</span>
+      <span class="btn-text">{{ showFilters ? 'Hide Filters' : 'Show Filters' }}</span>
+      <span class="dropdown-icon" [class.rotated]="showFilters">▼</span>
+    </button>
+    <!-- Show active filters count when filters are hidden -->
+    <span class="active-filters-count" *ngIf="!showFilters && getActiveFiltersCount() > 0">
+      ({{ getActiveFiltersCount() }} active)
+    </span>
+  </div>
+
   <!-- ========= SEARCH AND FILTERS SECTION ========= -->
-  <div class="filters-container">
+  <div class="filters-container" *ngIf="showFilters">
     <div class="filters-header">
       <h3>Event Filters & Search</h3>
       <div class="filter-actions">
@@ -314,7 +343,7 @@
       </div>
 
       <div class="event-actions">
-        <button class="delete-btn" (click)="deleteEvent(event._id)">Delete Event</button>
+        <button class="delete-btn" (click)="confirmDeleteEvent(event._id, event.title)">Delete Event</button>
         <button class="view-details-btn" (click)="showEventDetail(event)">
           <span class="btn-icon">👁️</span>
           <span class="btn-text">Details</span>
@@ -353,7 +382,7 @@
               </div>
               <button
                 class="remove-user-btn"
-                (click)="removeUserFromEvent(event._id, user._id)"
+                (click)="confirmRemoveUser(event._id, user._id, user.name)"
                 title="Remove user"
               >
                 Remove
@@ -468,7 +497,7 @@
         <div class="admin-modal-actions">
           <button
             class="admin-modal-delete-btn"
-            (click)="deleteEvent(selectedEvent._id); closeEventDetails()"
+            (click)="confirmDeleteEvent(selectedEvent._id, selectedEvent.title); closeEventDetails()"
           >
             <span class="btn-icon">🗑️</span>
             <span class="btn-text">Delete Event</span>
@@ -477,11 +506,11 @@
       </div>
     </div>
   </div>
-</div>
+
 
 
 <div>
-  <h2>Approved Events</h2>
+  <h2>Waiting for Approval</h2>
    <div class="admin-events-grid">
     <div *ngFor="let event of filteredEventsone" class="admin-event-card">
       <div class="event-header">
@@ -499,51 +528,79 @@
       </div>
 
       <div class="event-actions">
-        <button class="delete-btn" (click)="deleteEvent(event._id)">Delete Event</button>
+        <button class="delete-btn" (click)="confirmDenyEvent(event._id, event.title)">Deny Event</button>
         <button class="view-details-btn" (click)="showEventDetail(event)">
           <span class="btn-icon">👁️</span>
           <span class="btn-text">Details</span>
         </button>
+        <button class="delete-btn" (click)="confirmApproveEvent(event._id, event.title)">Approve event</button>
       </div>
 
-      <div class="registered-users-section">
-        <h4>Registered Users</h4>
 
-        <div *ngIf="usersMap[event._id]" class="users-dropdown">
-          <button
-            class="users-toggle-btn"
-            (click)="toggleUsersDropdown(event._id)"
+    </div>
+  </div>
+</div>
 
-          >
-            Registered users: {{ usersMap[event._id].currentRegistration }}
-            <span
-              class="dropdown-icon"
-              [class.rotated]="showUsersDropdown[event._id]"
-              >▼</span
-            >
-          </button>
+<!-- Custom Alert/Confirmation Modal  -->
+<div class="custom-alert-overlay" *ngIf="customAlert.show" (click)="closeAlert()">
+  <div class="custom-alert-modal" (click)="$event.stopPropagation()"
+       [class.alert-success]="customAlert.type === 'success'"
+       [class.alert-error]="customAlert.type === 'error'"
+       [class.alert-warning]="customAlert.type === 'warning'"
+       [class.alert-info]="customAlert.type === 'info'"
+       [class.alert-confirm]="customAlert.type === 'confirm'">
 
-          <ul
-            id="usersList-{{ event._id }}"
-            class="users-list"
-            *ngIf="showUsersDropdown[event._id]"
-          >
-            <li *ngFor="let user of usersMap[event._id].users" class="user-item">
-              <div class="user-info">
-                <span class="user-name">{{ user.name }}</span>
-                <span class="user-email">{{ user.email }}</span>
-              </div>
-              <button
-                class="remove-user-btn"
-                (click)="removeUserFromEvent(event._id, user._id)"
-                title="Remove user"
-              >
-                Remove
-              </button>
-            </li>
-          </ul>
+    <!-- Alert Header -->
+    <div class="custom-alert-header">
+      <div class="alert-icon-container">
+        <div class="alert-icon">
+          <span *ngIf="customAlert.type === 'success'">✅</span>
+          <span *ngIf="customAlert.type === 'error'">❌</span>
+          <span *ngIf="customAlert.type === 'warning'">⚠️</span>
+          <span *ngIf="customAlert.type === 'info'">ℹ️</span>
+          <span *ngIf="customAlert.type === 'confirm'">❓</span>
         </div>
       </div>
+      <div class="alert-title-container">
+        <h3 class="alert-title">{{ customAlert.title }}</h3>
+        <button class="alert-close-btn" (click)="closeAlert()">
+          <span>✕</span>
+        </button>
+      </div>
     </div>
+
+    <!-- Alert Content -->
+    <div class="custom-alert-content">
+      <p class="alert-message">{{ customAlert.message }}</p>
+    </div>
+
+    <!-- Alert Actions -->
+    <div class="custom-alert-actions">
+      <button
+        *ngIf="customAlert.type !== 'confirm'"
+        class="alert-btn alert-ok-btn"
+        (click)="closeAlert()">
+        <span class="btn-text">OK</span>
+        <div class="btn-ripple"></div>
+      </button>
+
+      <div *ngIf="customAlert.type === 'confirm'" class="confirmation-buttons">
+        <button
+          class="alert-btn alert-cancel-btn"
+          (click)="handleAlertCancel()">
+          <span class="btn-text">Cancel</span>
+          <div class="btn-ripple"></div>
+        </button>
+        <button
+          class="alert-btn alert-confirm-btn"
+          (click)="handleAlertConfirm()">
+          <span class="btn-text">Confirm</span>
+          <div class="btn-ripple"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Animated border -->
+    <div class="alert-border-animation"></div>
   </div>
 </div>

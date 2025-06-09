@@ -8,7 +8,7 @@ import { environment } from '../../../environment';
 import { forkJoin } from 'rxjs';
 
 // Interfaces
-interface Event {
+export interface Event {
   _id: string;
   title: string;
   description: string;
@@ -24,19 +24,19 @@ interface Event {
   organization?: string;
 }
 
-interface RegisteredUser {
+export interface RegisteredUser {
   userId: string;
   name: string;
   email: string;
   _id: string;
 }
 
-interface RegisteredUsersResponse {
+export interface RegisteredUsersResponse {
   users: RegisteredUser[];
   currentRegistration: number;
 }
 
-interface PopupConfig {
+export interface PopupConfig {
   title: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
@@ -58,6 +58,7 @@ export class OrganizerDashboardComponent {
   posterFile: File | null = null;
   uploadedPosterUrl: string | null = null;
   events: Event[] = [];
+  eventsone: Event[] = [];
   currentEditEventId: string | null = null;
   organizerId: string | null = null;
   isLoading = false;
@@ -78,6 +79,8 @@ export class OrganizerDashboardComponent {
   popupResolve: ((value: boolean) => void) | null = null;
 
   selectedEventId: string | null = null;
+   selectedEvent: Event | null = null;  // ✅ Add this line
+  isEventDetailVisible: boolean = false;
 
   constructor(private fb: FormBuilder, private http: HttpClient, private loadingService: LoadingService) {
     this.eventForm = this.fb.group({
@@ -100,6 +103,7 @@ export class OrganizerDashboardComponent {
     this.decodeToken();
     this.loadEvents();
     this.fetchLocations();
+    this.loadRequests();
   }
 
   decodeToken() {
@@ -131,6 +135,26 @@ export class OrganizerDashboardComponent {
       }
     });
   }
+
+  loadRequests() {
+    if (!this.organizerId) return;
+    this.loadingService.show();
+
+    this.http.get<{ data: Event[] }>(
+      `${environment.apiBaseUrl}${environment.apis.viewApprovalRequestById(this.organizerId)}`
+    ).subscribe({
+      next: res => {
+        this.eventsone = res.data;
+        this.loadingService.hide();
+      },
+      error: () => {
+        this.loadingService.hide();
+        this.showAlert('Error', 'Failed to load events', 'error');
+      }
+    });
+  }
+
+
 
   fetchLocations() {
     this.loadingService.show();
@@ -279,15 +303,16 @@ export class OrganizerDashboardComponent {
     this.currentEditEventId = null;
   }
 
-  async logout() {
-    const confirm = await this.showConfirm('Logout', 'Are you sure you want to logout?', 'Logout', 'Cancel');
-    if (confirm) {
-      localStorage.clear();
-      sessionStorage.clear();
-      await this.showAlert('Logged out', 'You have been logged out', 'success');
-      setTimeout(() => (window.location.href = '/'), 1000);
-    }
+ async logout() {
+  const confirmed = window.confirm('Are you sure you want to logout?');
+  if (confirmed) {
+    localStorage.clear();
+    sessionStorage.clear();
+    alert('You have been logged out');
+    setTimeout(() => (window.location.href = '/'), 1000);
   }
+}
+
 
   // Popup logic
   showAlert(title: string, message: string, type: PopupConfig['type']): Promise<boolean> {
@@ -325,4 +350,16 @@ export class OrganizerDashboardComponent {
   closeUserModal() {
     this.selectedEventId = null;
   }
+
+   showEventDetail(event: Event) {
+  this.selectedEvent = event;
+  this.isEventDetailVisible = true;
+  document.body.style.overflow = 'auto';
+}
+
+closeEventDetails() {
+  this.isEventDetailVisible = false;
+  this.selectedEvent = null;
+  document.body.style.overflow = 'auto';
+}
 }
