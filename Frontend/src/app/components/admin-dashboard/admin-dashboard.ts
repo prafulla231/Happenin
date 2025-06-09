@@ -104,14 +104,10 @@ export class AdminDashboardComponent {
   availableCategories: string[] = [];
   availableCities: string[] = [];
 
-  baseEventUrl = environment.apiBaseUrl + environment.apis.getAllEvents;
-  eventurlapproval = environment.apiBaseUrl + environment.apis.viewApprovalRequests;
-  baseRegistrationUrl = environment.apiBaseUrl;
-  removeUser = environment.apiBaseUrl;
-  baseLocationUrl = environment.apiBaseUrl + environment.apis.fetchLocations;
+
   registerForm: FormGroup;
   showRegisterForm = false;
-  registerUrl = environment.apiBaseUrl + environment.apis.registerUser;
+
 
   showLocationForm = false;
   locations: Location[] = [];
@@ -150,7 +146,8 @@ export class AdminDashboardComponent {
     private authService: AuthService,
     private eventService: EventService,
     private locationService: LocationService,
-    private ApprovalService: ApprovalService
+    private ApprovalService: ApprovalService,
+
   ) {
     this.loadEvents();
     this.loadLocations();
@@ -302,47 +299,77 @@ export class AdminDashboardComponent {
     }
   }
 
-  loadEvents() {
-    this.loadingService.show();
-    this.http.get<{ data: Event[] }>(this.baseEventUrl).subscribe({
-      next: res => {
-        this.events = res.data;
-        this.filteredEvents = [...this.events];
-        this.extractFilterOptions();
-        this.applySorting();
-        res.data.forEach(event => this.loadRegisteredUsers(event._id));
-        this.loadingService.hide();
-        this.showAlert('success', 'Events Loaded', 'Successfully loaded all approved events!');
-      },
-      error: err => {
-        console.error('Error loading events', err);
-        this.loadingService.hide();
-        this.showAlert('error', 'Loading Failed', 'Failed to load events. Please try again later.');
-      }
-    });
-  }
+  // loadEvents() {
+  //   this.loadingService.show();
+  //   this.http.get<{ data: Event[] }>(this.baseEventUrl).subscribe({
+  //     next: res => {
+  //       this.events = res.data;
+  //       this.filteredEvents = [...this.events];
+  //       this.extractFilterOptions();
+  //       this.applySorting();
+  //       res.data.forEach(event => this.loadRegisteredUsers(event._id));
+  //       this.loadingService.hide();
+  //       this.showAlert('success', 'Events Loaded', 'Successfully loaded all approved events!');
+  //     },
+  //     error: err => {
+  //       console.error('Error loading events', err);
+  //       this.loadingService.hide();
+  //       this.showAlert('error', 'Loading Failed', 'Failed to load events. Please try again later.');
+  //     }
+  //   });
+  // }
 
-  loadApprovals() {
-    this.loadingService.show();
-    this.http.get<{ data: Event[] }>(this.eventurlapproval).subscribe({
-      next: res => {
-        this.eventsone = res.data;
-        this.filteredEventsone = [...this.eventsone];
-        this.extractFilterOptions();
-        this.applySorting();
-        res.data.forEach(event => this.loadRegisteredUsers(event._id));
-        this.loadingService.hide();
-        if (res.data.length > 0) {
-          this.showAlert('info', 'Pending Approvals', `${res.data.length} events are waiting for approval.`);
-        }
-      },
-      error: err => {
-        console.error('Error loading events', err);
-        this.loadingService.hide();
-        this.showAlert('error', 'Loading Failed', 'Failed to load pending events. Please try again later.');
+  loadEvents(): void {
+  this.loadingService.show();
+
+  this.eventService.getAllEvents().subscribe({
+    next: (events) => {
+      this.events = events;
+      this.filteredEvents = [...events];
+      this.extractFilterOptions();
+      this.applySorting();
+        this.events.forEach(event => {
+        this.loadRegisteredUsers(event._id);  // keep your existing method call
+      });
+      this.loadingService.hide();
+      this.showAlert('success', 'Events Loaded', 'Successfully loaded all available events!');
+    },
+    error: (err) => {
+      console.error('Error loading events', err);
+      this.loadingService.hide();
+      this.showAlert('error', 'Loading Failed', 'Failed to load events. Please try again later.');
+    }
+  });
+}
+
+
+  loadApprovals(): void {
+  this.loadingService.show();
+
+  this.ApprovalService.viewApprovalRequests().subscribe({
+    next: (res: { data: Event[] }) => {
+      this.eventsone = res.data;
+      this.filteredEventsone = [...this.eventsone];
+      this.extractFilterOptions();
+      this.applySorting();
+
+      res.data.forEach((event: Event) => this.loadRegisteredUsers(event._id));
+
+      this.loadingService.hide();
+
+      if (res.data.length > 0) {
+        this.showAlert('info', 'Pending Approvals', `${res.data.length} events are waiting for approval.`);
       }
-    });
-  }
+    },
+    error: (err: any) => {
+      console.error('Error loading events', err);
+      this.loadingService.hide();
+      this.showAlert('error', 'Loading Failed', 'Failed to load pending events. Please try again later.');
+    }
+  });
+}
+
+
 
   approveEvent(eventId: string) {
     const eventToApprove = this.eventsone.find(e => e._id === eventId);
@@ -517,14 +544,14 @@ export class AdminDashboardComponent {
   }
 
   loadRegisteredUsers(eventId: string) {
-    this.http.get<{ data: RegisteredUsersResponse }>(`${this.baseRegistrationUrl}${environment.apis.getRegisteredUsers(eventId)}`).subscribe({
+    this.eventService.getRegisteredUsers(eventId).subscribe({
       next: res => this.usersMap[eventId] = res.data,
       error: err => console.error('Error loading users for event', err)
     });
   }
 
   deleteEvent(eventId: string) {
-    this.http.delete(`${this.baseEventUrl}/${eventId}`).subscribe({
+    this.eventService.deleteEvent(eventId).subscribe({
       next: () => {
         this.loadEvents();
         this.showAlert('success', 'Event Deleted', 'The event has been deleted successfully.');
@@ -537,7 +564,7 @@ export class AdminDashboardComponent {
   }
 
   removeUserFromEvent(eventId: string, userId: string) {
-    this.http.delete(`${this.removeUser}${environment.apis.removeUserFromEvent(eventId, userId)}`).subscribe({
+    this.eventService.removeUserFromEvent(eventId,userId).subscribe({
       next: () => {
         this.loadRegisteredUsers(eventId);
         this.showAlert('success', 'User Removed', 'User has been successfully removed from the event.');
@@ -599,30 +626,34 @@ export class AdminDashboardComponent {
     else this.newLocation.amenities = this.newLocation.amenities.filter(a => a !== amenity);
   }
 
-  addLocation(location: Location) {
-    this.http.post<{ data: Location }>(`${environment.apiBaseUrl}${environment.apis.addLocation}`, location).subscribe({
-      next: () => {
-        this.showAlert('success', 'Location Added', 'Location has been added successfully!');
-        this.loadLocations();
-        this.showLocationForm = false;
-        this.resetForm();
-      },
-      error: err => {
-        console.error('Failed to add location', err);
-        this.showAlert('error', 'Add Location Failed', 'Failed to add location. Please try again.');
-      }
-    });
-  }
+  addLocation(location: Location): void {
+  this.locationService.addLocation(location).subscribe({
+    next: () => {
+      this.showAlert('success', 'Location Added', 'Location has been added successfully!');
+      this.loadLocations();
+      this.showLocationForm = false;
+      this.resetForm();
+    },
+    error: (err) => {
+      console.error('Failed to add location', err);
+      this.showAlert('error', 'Add Location Failed', 'Failed to add location. Please try again.');
+    }
+  });
+}
 
-  loadLocations() {
-    this.http.get<{ data: Location[] }>(this.baseLocationUrl).subscribe({
-      next: res => this.locations = res.data,
-      error: err => {
-        console.error('Error loading locations', err);
-        this.showAlert('error', 'Loading Failed', 'Failed to load locations.');
-      }
-    });
-  }
+
+  loadLocations(): void {
+  this.locationService.fetchLocations().subscribe({
+    next: (response) => {
+      this.locations = response.data;
+    },
+    error: (err) => {
+      console.error('Error loading locations', err);
+      this.showAlert('error', 'Loading Failed', 'Failed to load locations.');
+    }
+  });
+}
+
 
   resetForm() {
     this.newLocation = {

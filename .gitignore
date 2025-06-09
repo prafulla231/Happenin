@@ -16,9 +16,9 @@ Thumbs.db
 
 
 # Build output
-dist/
-build/
-out/
+# dist/
+# build/
+# out/
 
 # Environment files
 .env

@@ -19,11 +19,6 @@ export class LoginComponent {
   loginForm: FormGroup;
   registerForm: FormGroup;
 
-  loginUrl = environment.apiBaseUrl + environment.apis.loginUser;
-  registerUrl = environment.apiBaseUrl + environment.apis.registerUser;
-
-
-
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -88,7 +83,7 @@ export class LoginComponent {
     if (this.registerForm.valid) {
       const data = this.registerForm.value;
 
-      this.http.post(this.registerUrl, data).subscribe({
+      this.authService.registerUser(data).subscribe({
         next: () => {
           alert('Registration successful! You can now log in.');
           this.toggleForm(true); // switch to login after successful registration

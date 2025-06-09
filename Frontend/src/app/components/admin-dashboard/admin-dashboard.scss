@@ -1,5 +1,4 @@
-// ========= ADMIN DASHBOARD 3D MODERN STYLES =========
-// Color Variables
+
 $admin-primary-purple: #8B5FBF;
 $admin-light-purple: #B794C7;
 $admin-violet: #9D7BEA;
@@ -116,6 +115,16 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  .brand-highlight{
+    display: block;
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
 }
 
 .admin-logout-btn {
@@ -124,6 +133,69 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
 
   &:hover {
     background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+  }
+}
+
+// Container for both buttons in a single row
+.admin-buttons-row {
+  display: flex;
+  gap: 16px;
+  margin: 20px 0;
+  align-items: center;
+
+  // Responsive behavior
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+
+    .add-admin-btn,
+    .close-location-btn,
+    .add-location-btn {
+      width: 100%;
+    }
+  }
+}
+
+// Ensure buttons have consistent styling
+.add-admin-btn,
+.close-location-btn,
+.add-location-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+
+
+.add-admin-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  &:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  }
+}
+
+.add-location-btn ,.close-location-btn{
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+
+  &:hover {
+    background: linear-gradient(135deg, #ee82f0 0%, #f04558 100%);
   }
 }
 
@@ -1665,94 +1737,94 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   }
 }
 
-// ========= ADD NEW ADMIN BUTTON =========
-.add-admin-btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
-  margin: 1rem 0 1.5rem 0;
+// // ========= ADD NEW ADMIN BUTTON =========
+// .add-admin-btn {
+//   position: relative;
+//   display: inline-flex;
+//   align-items: center;
+//   gap: 0.5rem;
+//   padding: 0.875rem 1.5rem;
+//   margin: 1rem 0 1.5rem 0;
 
-  // Typography
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.025em;
-  text-transform: none;
+//   // Typography
+//   font-size: 0.95rem;
+//   font-weight: 600;
+//   letter-spacing: 0.025em;
+//   text-transform: none;
 
-  // Colors & Background
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
+//   // Colors & Background
+//   background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+//   color: white;
+//   border: none;
+//   border-radius: 12px;
 
-  // 3D Effect
-  box-shadow:
-    0 4px 14px 0 rgba(79, 70, 229, 0.3),
-    0 2px 4px 0 rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+//   // 3D Effect
+//   box-shadow:
+//     0 4px 14px 0 rgba(79, 70, 229, 0.3),
+//     0 2px 4px 0 rgba(0, 0, 0, 0.1),
+//     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 
-  // Transform & Transition
-  transform: translateY(0);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  overflow: hidden;
+//   // Transform & Transition
+//   transform: translateY(0);
+//   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+//   cursor: pointer;
+//   overflow: hidden;
 
-  // Hover Effects
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 8px 25px 0 rgba(79, 70, 229, 0.4),
-      0 4px 8px 0 rgba(0, 0, 0, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    background: linear-gradient(135deg, #5b52f0 0%, #8b46f7 100%);
-  }
+//   // Hover Effects
+//   &:hover {
+//     transform: translateY(-2px);
+//     box-shadow:
+//       0 8px 25px 0 rgba(79, 70, 229, 0.4),
+//       0 4px 8px 0 rgba(0, 0, 0, 0.15),
+//       inset 0 1px 0 rgba(255, 255, 255, 0.3);
+//     background: linear-gradient(135deg, #5b52f0 0%, #8b46f7 100%);
+//   }
 
-  // Active State
-  &:active {
-    transform: translateY(-1px);
-    transition: all 0.1s ease;
-    box-shadow:
-      0 6px 20px 0 rgba(79, 70, 229, 0.35),
-      0 2px 6px 0 rgba(0, 0, 0, 0.12),
-      inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  }
+//   // Active State
+//   &:active {
+//     transform: translateY(-1px);
+//     transition: all 0.1s ease;
+//     box-shadow:
+//       0 6px 20px 0 rgba(79, 70, 229, 0.35),
+//       0 2px 6px 0 rgba(0, 0, 0, 0.12),
+//       inset 0 1px 0 rgba(255, 255, 255, 0.25);
+//   }
 
-  // Focus State
-  &:focus {
-    outline: none;
-    box-shadow:
-      0 4px 14px 0 rgba(79, 70, 229, 0.3),
-      0 2px 4px 0 rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2),
-      0 0 0 3px rgba(79, 70, 229, 0.2);
-  }
+//   // Focus State
+//   &:focus {
+//     outline: none;
+//     box-shadow:
+//       0 4px 14px 0 rgba(79, 70, 229, 0.3),
+//       0 2px 4px 0 rgba(0, 0, 0, 0.1),
+//       inset 0 1px 0 rgba(255, 255, 255, 0.2),
+//       0 0 0 3px rgba(79, 70, 229, 0.2);
+//   }
 
-  // Ripple Effect
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-  }
+//   // Ripple Effect
+//   &::before {
+//     content: '';
+//     position: absolute;
+//     top: 50%;
+//     left: 50%;
+//     width: 0;
+//     height: 0;
+//     border-radius: 50%;
+//     background: rgba(255, 255, 255, 0.3);
+//     transform: translate(-50%, -50%);
+//     transition: width 0.6s, height 0.6s;
+//   }
 
-  &:active::before {
-    width: 300px;
-    height: 300px;
-  }
+//   &:active::before {
+//     width: 300px;
+//     height: 300px;
+//   }
 
-  // Icon Styling
-  .btn-icon {
-    font-size: 1.1rem;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
-  }
-}
+//   // Icon Styling
+//   .btn-icon {
+//     font-size: 1.1rem;
+//     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+//   }
+// }
 
 // ========= ADMIN REGISTRATION FORM =========
 .admin-register-form {
@@ -2167,6 +2239,69 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
     transform: translateY(0) scale(1);
   }
 }
+
+.dashboard-footer {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 1.2rem;
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+  text-align: center;
+  box-shadow:
+    0 4px 6px -1px rgba(139, 124, 246, 0.1),
+    0 2px 4px -1px rgba(139, 124, 246, 0.2);
+  border: 1px solid rgba(139, 124, 246, 0.1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  h2{
+    .brand-highlight {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+  }
+
+  .footer-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-text {
+    font-size: 1rem;
+    color: #555;
+
+    .gmailid{
+        color: rebeccapurple;
+        font-weight: 600;
+      }
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }}
 
 // Responsive Design for Modal
 @media (max-width: 768px) {

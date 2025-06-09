@@ -1550,7 +1550,7 @@
   h2{
     .brand-highlight {
     display: block;
-    font-size: 2rem;
+    font-size: 2.5rem;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -1572,6 +1572,7 @@
 
     .gmailid{
         color: rebeccapurple;
+        font-weight: 600;
       }
 
     a {

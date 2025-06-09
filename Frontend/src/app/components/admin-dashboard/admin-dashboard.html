@@ -1,13 +1,111 @@
 <!-- ========= HEADER ========= -->
   <div class="admin-dashboard-header">
-    <h2>Admin Dashboard</h2>
-    <button class="admin-logout-btn" (click)="logout()">Logout</button>
-  </div>
+    <span class="brand-highlight"> Happenin'</span>
+  <h2>Admin Dashboard</h2>
+  <button class="admin-logout-btn" (click)="logout()">Logout</button>
+</div>
 
-<!-- Button to Toggle Admin Register Form (only visible to SuperAdmin) -->
-<button *ngIf="isSuperAdmin" class="add-admin-btn" (click)="toggleRegisterForm()">
-  ➕ Add New Admin
-</button>
+<!-- Buttons Row Container -->
+<!-- Location Form Toggle Button Row -->
+<div class="admin-buttons-row">
+  <button *ngIf="isSuperAdmin" class="add-admin-btn" (click)="toggleRegisterForm()">
+    ➕ Add New Admin
+  </button>
+
+  <ng-container *ngIf="!showLocationForm">
+    <button class="add-location-btn" (click)="toggleLocationForm()">
+      📍 Add Location
+    </button>
+  </ng-container>
+
+  <ng-container *ngIf="showLocationForm">
+    <button class="close-location-btn" (click)="toggleLocationForm()">
+      ✖ Close Location Form
+    </button>
+  </ng-container>
+</div>
+
+<!-- Location Form -->
+<div *ngIf="showLocationForm" class="admin-location-section">
+  <h3>Add New Location</h3>
+
+  <form #locationForm="ngForm" (ngSubmit)="addLocation(newLocation)" class="location-form" novalidate>
+
+    <!-- First Row: State and City -->
+    <div class="admin-form-row">
+      <!-- State -->
+      <div class="admin-form-group">
+        <label for="stateSelect">State:</label>
+        <select id="stateSelect" [(ngModel)]="newLocation.state" name="state" required (change)="onStateChange()" class="form-select">
+          <option value="" disabled>Select State</option>
+          <option *ngFor="let state of getStates()" [value]="state">{{ state }}</option>
+        </select>
+      </div>
+
+      <!-- City -->
+      <div class="admin-form-group">
+        <label for="citySelect">City:</label>
+        <select id="citySelect" [(ngModel)]="newLocation.city" name="city" required class="form-select">
+          <option value="" disabled>Select City</option>
+          <option *ngFor="let city of availablecitys" [value]="city">{{ city }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Second Row: Place Name & Seating -->
+    <div class="admin-form-row">
+      <div class="admin-form-group">
+        <label for="placeNameInput">Place Name:</label>
+        <input id="placeNameInput" type="text" [(ngModel)]="newLocation.placeName" name="placeName" required class="form-input" />
+      </div>
+
+      <div class="admin-form-group">
+        <label for="maxSeatingInput">Max Seating Capacity:</label>
+        <input
+          id="maxSeatingInput"
+          type="number"
+          [(ngModel)]="newLocation.maxSeatingCapacity"
+          name="maxSeatingCapacity"
+          min="31"
+          #maxCap="ngModel"
+          required
+          class="form-input"
+        />
+        <div class="error" *ngIf="maxCap.invalid && maxCap.touched">
+          <span *ngIf="maxCap.errors?.['min']">Seating capacity must be greater than 30.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Address -->
+    <div class="admin-form-group">
+      <label for="addressTextarea">Address:</label>
+      <textarea id="addressTextarea" [(ngModel)]="newLocation.address" name="address" required class="form-textarea"></textarea>
+    </div>
+
+    <!-- Amenities -->
+    <div class="admin-form-group">
+      <label>Amenities:</label>
+      <div class="amenities-checkboxes">
+        <label *ngFor="let amenity of amenities" class="checkbox-label">
+          <input type="checkbox" [value]="amenity" (change)="toggleAmenity(amenity, $event)" class="checkbox-input" />
+          <span class="checkbox-text">{{ amenity }}</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Submit and Close Buttons at Bottom -->
+    <div class="form-actions">
+      <button type="submit" [disabled]="!locationForm.form.valid" class="submit-btn">
+        ✅ Submit Location
+      </button>
+      <!-- <button type="button" (click)="toggleLocationForm()" class="close-btn">
+        ✖ Close Form
+      </button> -->
+    </div>
+  </form>
+</div>
+
 
 <!-- Admin Registration Form -->
 <div *ngIf="showRegisterForm" class="admin-register-form">
@@ -22,123 +120,13 @@
 
 
   <!-- ========= TOGGLE BUTTON FOR LOCATION FORM ========= -->
-  <div class="add-location-header">
+  <!-- <div class="add-location-header">
     <button class="toggle-location-btn" (click)="toggleLocationForm()">
       {{ showLocationForm ? 'Hide Location Form' : 'Add New Location' }}
     </button>
-  </div>
+  </div> -->
 
   <!-- ========= LOCATION FORM ========= -->
-  <div *ngIf="showLocationForm" class="admin-location-section">
-    <h3>Add New Location</h3>
-    <form #locationForm="ngForm" (ngSubmit)="addLocation(newLocation)" class="location-form" novalidate>
-
-      <!-- First Row: State and City -->
-      <div class="admin-form-row">
-        <div class="admin-form-group">
-          <label for="stateSelect">State:</label>
-          <select
-            id="stateSelect"
-            [(ngModel)]="newLocation.state"
-            name="state"
-            required
-            (change)="onStateChange()"
-            class="form-select"
-            >
-            <option value="" disabled>Select State</option>
-            <option *ngFor="let state of getStates()" [value]="state">
-              {{ state }}
-            </option>
-          </select>
-        </div>
-
-        <div class="admin-form-group">
-          <label for="citySelect">City:</label>
-          <select
-            id="citySelect"
-            [(ngModel)]="newLocation.city"
-            name="city"
-            required
-            class="form-select"
-          >
-            <option value="" disabled>Select City</option>
-            <option *ngFor="let city of availablecitys" [value]="city">
-              {{ city }}
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Second Row: Place Name and Max Seating Capacity -->
-      <div class="admin-form-row">
-        <div class="admin-form-group">
-          <label for="placeNameInput">Place Name:</label>
-          <input
-            id="placeNameInput"
-            type="text"
-            [(ngModel)]="newLocation.placeName"
-            name="placeName"
-            required
-            class="form-input"
-          />
-        </div>
-
-        <div class="admin-form-group">
-          <label for="maxSeatingInput">Max Seating Capacity:</label>
-          <input
-            id="maxSeatingInput"
-            type="number"
-            [(ngModel)]="newLocation.maxSeatingCapacity"
-            name="maxSeatingCapacity"
-            min="31"
-            #maxCap="ngModel"
-            class="form-input"
-          />
-          <div class="error" *ngIf="maxCap.invalid && maxCap.touched">
-            <span *ngIf="maxCap.errors?.['min']">
-              Seating capacity must be greater than 30.
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Third Row: Address (Full Width) -->
-      <div class="admin-form-group">
-        <label for="addressTextarea">Address:</label>
-        <textarea
-          id="addressTextarea"
-          [(ngModel)]="newLocation.address"
-          name="address"
-          required
-          class="form-textarea"
-        ></textarea>
-      </div>
-
-      <!-- Fourth Row: Amenities (Full Width) -->
-      <div class="admin-form-group">
-        <label>Amenities:</label>
-        <div class="amenities-checkboxes">
-          <label *ngFor="let amenity of amenities" class="checkbox-label">
-            <input
-              type="checkbox"
-              [value]="amenity"
-              (change)="toggleAmenity(amenity, $event)"
-              class="checkbox-input"
-            />
-            <span class="checkbox-text">{{ amenity }}</span>
-          </label>
-        </div>
-      </div>
-
-      <button
-        type="submit"
-        [disabled]="!locationForm.form.valid"
-        class="submit-btn"
-      >
-        Add Location
-      </button>
-    </form>
-  </div>
 
   <!-- ========= TOGGLE BUTTON FOR FILTERS ========= -->
   <div class="toggle-filters-header">
@@ -540,6 +528,22 @@
     </div>
   </div>
 </div>
+
+<footer class="dashboard-footer">
+    <h2 class="footer-title"><span class="brand-highlight">Happenin'</span></h2>
+    <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin&#64;gmail.com</span></p>
+    <!-- <div class="footer-socials">
+      <a href="https://www.instagram.com" target="_blank" aria-label="Instagram" class="social-icon">
+        <img class="insta-logo" src="/images/instagram.png" alt="Instagram" />
+      </a>
+      <a href="https://www.twitter.com" target="_blank" aria-label="Twitter" class="social-icon">
+        <img class="twitter-logo" src="/images/twitter.png" alt="Twitter" />
+      </a>
+      <a href="https://www.linkedin.com" target="_blank" aria-label="LinkedIn" class="social-icon">
+        <img class="linkedin-logo" src="/images/linkedin.png" alt="LinkedIn" />
+      </a>
+    </div> -->
+  </footer>
 
 <!-- Custom Alert/Confirmation Modal  -->
 <div class="custom-alert-overlay" *ngIf="customAlert.show" (click)="closeAlert()">
