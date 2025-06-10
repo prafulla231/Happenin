@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import jsPDF from 'jspdf';
-import { environment } from '../../../environment';
 import { LoadingService } from '../loading';
 import { LocationService } from '../../services/location';
 import { ApprovalService } from '../../services/approval';
@@ -80,7 +79,7 @@ export class UserDashboardComponent {
   constructor(
     private http: HttpClient,
     private loadingService: LoadingService,
-     private authService: AuthService,
+    private authService: AuthService,
     private eventService: EventService,
     private locationService: LocationService,
     private ApprovalService: ApprovalService,
@@ -92,7 +91,7 @@ export class UserDashboardComponent {
     this.loadAllEvents();
     this.loadRegisteredEvents();
   }
-showFilters: boolean = false;
+  showFilters: boolean = false;
   // Custom Alert Methods
   showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) {
     this.customAlert = {
@@ -137,8 +136,8 @@ showFilters: boolean = false;
   }
 
   toggleFilters(): void {
-  this.showFilters = !this.showFilters;
-}
+    this.showFilters = !this.showFilters;
+  }
 
   loadAllEvents() {
     this.loadingService.show();
@@ -172,6 +171,7 @@ showFilters: boolean = false;
     });
   }
 
+  // Updated component function
   registerForEvent(eventId: string) {
     const event = this.events.find(e => e._id === eventId);
     const eventTitle = event ? event.title : 'this event';
@@ -180,14 +180,10 @@ showFilters: boolean = false;
       'Register for Event',
       `Are you sure you want to register for "${eventTitle}"?`,
       () => {
-        const url = `${environment.apiBaseUrl}/events/register`;
-        const payload = {
-          userId: this.userId,
-          eventId: eventId
-        };
-
         this.loadingService.show();
-        this.http.post(url, payload).subscribe({
+
+        // Use the service method instead of direct HTTP call
+        this.eventService.registerForEvent(this.userId!, eventId).subscribe({
           next: () => {
             this.loadRegisteredEvents();
             this.loadingService.hide();
@@ -204,6 +200,7 @@ showFilters: boolean = false;
   }
 
 
+
   deregister(userId: string, eventId: string) {
     const event = this.registeredEvents.find(e => e._id === eventId);
     const eventTitle = event ? event.title : 'this event';
@@ -212,11 +209,9 @@ showFilters: boolean = false;
       'Confirm Deregistration',
       `Are you sure you want to deregister from "${eventTitle}"? This action cannot be undone.`,
       () => {
-        const url = `${environment.apiBaseUrl}/events/deregister`;
-        const payload = { userId, eventId };
-
         this.loadingService.show();
-        this.http.request('delete', url, { body: payload }).subscribe({
+
+        this.eventService.deregisterFromEvent(userId, eventId).subscribe({
           next: () => {
             this.loadRegisteredEvents();
             this.loadingService.hide();
@@ -235,6 +230,7 @@ showFilters: boolean = false;
     );
   }
 
+
   extractFilterOptions() {
     this.availableCategories = [...new Set(
       this.events.map(e => e.category).filter(Boolean)
@@ -246,14 +242,14 @@ showFilters: boolean = false;
   }
 
   extractCityFromLocation(location: string): string {
-  if (!location) return '';
-  const parts = location.split(',').map(part => part.trim());
-  if (parts.length >= 2) {
-    return parts[parts.length - 1];
-  } else {
-    return parts[0];
+    if (!location) return '';
+    const parts = location.split(',').map(part => part.trim());
+    if (parts.length >= 2) {
+      return parts[parts.length - 1];
+    } else {
+      return parts[0];
+    }
   }
-}
 
   decodeToken() {
     const token = localStorage.getItem('token');
@@ -417,134 +413,134 @@ showFilters: boolean = false;
   }
 
   private generateTicketPDF(event: Event) {
-  this.loadingService.show();
-  try {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-    const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
+    this.loadingService.show();
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
+      const margin = 20;
+      const contentWidth = pageWidth - (margin * 2);
 
-    // Header Background
-    doc.setFillColor(102, 126, 234);
-    doc.rect(0, 0, pageWidth, 60, 'F');
+      // Header Background
+      doc.setFillColor(102, 126, 234);
+      doc.rect(0, 0, pageWidth, 60, 'F');
 
-    // Header Text
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
-    doc.text('EVENT TICKET', pageWidth / 2, 30, { align: 'center' });
+      // Header Text
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.setFont('helvetica', 'bold');
+      doc.text('EVENT TICKET', pageWidth / 2, 30, { align: 'center' });
 
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Official Entry Pass', pageWidth / 2, 45, { align: 'center' });
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Official Entry Pass', pageWidth / 2, 45, { align: 'center' });
 
-    // Reset text color for content
-    doc.setTextColor(0, 0, 0);
+      // Reset text color for content
+      doc.setTextColor(0, 0, 0);
 
-    // Start content below header with more spacing
-    let yPosition = 80;
-    const lineHeight = 8;
-    const sectionSpacing = 15;
+      // Start content below header with more spacing
+      let yPosition = 80;
+      const lineHeight = 8;
+      const sectionSpacing = 15;
 
-    // Event details with better formatting
-    const details = [
-      { label: 'Event Name', value: event.title },
-      { label: 'Description', value: event.description },
-      { label: 'Date', value: this.formatDate(event.date) },
-      { label: 'Time', value: event.timeSlot },
-      { label: 'Duration', value: event.duration },
-      { label: 'Location', value: event.location },
-      { label: 'Category', value: event.category || 'General' },
-      { label: 'Price', value: `${event.price}` },
-      { label: 'Ticket Holder', value: this.userName || 'Guest' }
-    ];
+      // Event details with better formatting
+      const details = [
+        { label: 'Event Name', value: event.title },
+        { label: 'Description', value: event.description },
+        { label: 'Date', value: this.formatDate(event.date) },
+        { label: 'Time', value: event.timeSlot },
+        { label: 'Duration', value: event.duration },
+        { label: 'Location', value: event.location },
+        { label: 'Category', value: event.category || 'General' },
+        { label: 'Price', value: `${event.price}` },
+        { label: 'Ticket Holder', value: this.userName || 'Guest' }
+      ];
 
-    details.forEach((detail, index) => {
-      // Check if we need a new page
-      if (yPosition > pageHeight - 40) {
+      details.forEach((detail, index) => {
+        // Check if we need a new page
+        if (yPosition > pageHeight - 40) {
+          doc.addPage();
+          yPosition = 30;
+        }
+
+        // Label
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text(`${detail.label}:`, margin, yPosition);
+
+        // Value with text wrapping
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+
+        const labelWidth = 60;
+        const valueX = margin + labelWidth;
+        const maxValueWidth = contentWidth - labelWidth;
+
+        // Handle long text with proper wrapping
+        const splitText = doc.splitTextToSize(detail.value, maxValueWidth);
+        doc.text(splitText, valueX, yPosition);
+
+        // Calculate next position based on wrapped text
+        const textHeight = Array.isArray(splitText) ? splitText.length * lineHeight : lineHeight;
+        yPosition += Math.max(textHeight, lineHeight) + 5;
+      });
+
+      // Add some spacing before footer
+      yPosition += sectionSpacing;
+
+      // Separator line
+      if (yPosition > pageHeight - 60) {
         doc.addPage();
         yPosition = 30;
       }
 
-      // Label
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text(`${detail.label}:`, margin, yPosition);
+      doc.setDrawColor(102, 126, 234);
+      doc.setLineWidth(0.5);
+      doc.line(margin, yPosition, pageWidth - margin, yPosition);
 
-      // Value with text wrapping
+      // Footer
+      yPosition += 15;
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
 
-      const labelWidth = 60;
-      const valueX = margin + labelWidth;
-      const maxValueWidth = contentWidth - labelWidth;
+      const footerText1 = 'This is an official ticket. Please present this ticket at the event entrance.';
+      doc.text(footerText1, pageWidth / 2, yPosition, { align: 'center' });
 
-      // Handle long text with proper wrapping
-      const splitText = doc.splitTextToSize(detail.value, maxValueWidth);
-      doc.text(splitText, valueX, yPosition);
+      yPosition += 10;
+      const footerText2 = `Generated on: ${new Date().toLocaleString()}`;
+      doc.text(footerText2, pageWidth / 2, yPosition, { align: 'center' });
 
-      // Calculate next position based on wrapped text
-      const textHeight = Array.isArray(splitText) ? splitText.length * lineHeight : lineHeight;
-      yPosition += Math.max(textHeight, lineHeight) + 5;
-    });
+      // Add ticket ID for authenticity
+      yPosition += 10;
+      const ticketId = `Ticket ID: ${Date.now()}-${event._id.slice(-6)}`;
+      doc.text(ticketId, pageWidth / 2, yPosition, { align: 'center' });
 
-    // Add some spacing before footer
-    yPosition += sectionSpacing;
+      // Generate filename
+      const fileName = `ticket-${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
 
-    // Separator line
-    if (yPosition > pageHeight - 60) {
-      doc.addPage();
-      yPosition = 30;
+      // Save the PDF
+      doc.save(fileName);
+
+      this.loadingService.hide();
+      this.showAlert('success', 'Ticket Downloaded', `Your ticket for "${event.title}" has been downloaded successfully!`);
+
+    } catch (error) {
+      console.error('Error generating ticket PDF:', error);
+      this.loadingService.hide();
+      this.showAlert('error', 'Download Failed', 'Failed to generate the ticket. Please try again.');
     }
-
-    doc.setDrawColor(102, 126, 234);
-    doc.setLineWidth(0.5);
-    doc.line(margin, yPosition, pageWidth - margin, yPosition);
-
-    // Footer
-    yPosition += 15;
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.setFont('helvetica', 'normal');
-
-    const footerText1 = 'This is an official ticket. Please present this ticket at the event entrance.';
-    doc.text(footerText1, pageWidth / 2, yPosition, { align: 'center' });
-
-    yPosition += 10;
-    const footerText2 = `Generated on: ${new Date().toLocaleString()}`;
-    doc.text(footerText2, pageWidth / 2, yPosition, { align: 'center' });
-
-    // Add ticket ID for authenticity
-    yPosition += 10;
-    const ticketId = `Ticket ID: ${Date.now()}-${event._id.slice(-6)}`;
-    doc.text(ticketId, pageWidth / 2, yPosition, { align: 'center' });
-
-    // Generate filename
-    const fileName = `ticket-${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
-
-    // Save the PDF
-    doc.save(fileName);
-
-    this.loadingService.hide();
-    this.showAlert('success', 'Ticket Downloaded', `Your ticket for "${event.title}" has been downloaded successfully!`);
-
-  } catch (error) {
-    console.error('Error generating ticket PDF:', error);
-    this.loadingService.hide();
-    this.showAlert('error', 'Download Failed', 'Failed to generate the ticket. Please try again.');
   }
-}
 
-scrollToRegisteredEvents() {
-  const registeredSection = document.querySelector('.registered-section');
-  if (registeredSection) {
-    registeredSection.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
+  scrollToRegisteredEvents() {
+    const registeredSection = document.querySelector('.registered-section');
+    if (registeredSection) {
+      registeredSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
   }
-}
 
   logout() {
     this.showConfirmation(
