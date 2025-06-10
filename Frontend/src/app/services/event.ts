@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Event } from '../components/admin-dashboard/admin-dashboard';
+import { Event } from '../components/user-dashboard/user-dashboard';
 import { RegisteredUser } from '../components/organizer-dashboard/organizer-dashboard';
 import { RegisteredUsersResponse } from '../components/organizer-dashboard/organizer-dashboard';
 import  { Location } from '../components/admin-dashboard/admin-dashboard';
@@ -27,8 +27,8 @@ export class EventService {
   }
 
 
-  getEventById(organizerId: string) {
-    return this.http.get(`${environment.apiBaseUrl}${environment.apis.getEventsByOrganizer(organizerId)}`);
+  getEventById(organizerId: string): Observable<Event[]> {
+    return this.http.get<{ data: Event[] }>(`${environment.apiBaseUrl}${environment.apis.getEventsByOrganizer(organizerId)}`).pipe(map(res => res.data));
   }
 
   updateEvent(eventId: string, data: any) {
@@ -46,4 +46,18 @@ export class EventService {
   removeUserFromEvent(eventId: string, userId: string) {
     return this.http.delete(`${environment.apiBaseUrl}${environment.apis.removeUserFromEvent(eventId, userId)}`);
   }
+
+  getRegisteredEvents(userId: string): Observable<Event[]> {
+  return this.http
+    .get<{ events: Event[] }>(`${environment.apiBaseUrl}${environment.apis.registeredEvents(userId)}`)
+    .pipe(map(res => res.events));
+}
+
+registerForEvent(userId: string, eventId: string): Observable<any> {
+  const payload = { userId, eventId };
+  const url = `${environment.apiBaseUrl}${environment.apis.registerEvent}`;
+  return this.http.post(url, payload);
+}
+
+
 }

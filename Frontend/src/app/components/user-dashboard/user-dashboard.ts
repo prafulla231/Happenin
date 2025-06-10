@@ -6,6 +6,10 @@ import { RouterModule } from '@angular/router';
 import jsPDF from 'jspdf';
 import { environment } from '../../../environment';
 import { LoadingService } from '../loading';
+import { LocationService } from '../../services/location';
+import { ApprovalService } from '../../services/approval';
+import { AuthService } from '../../services/auth';
+import { EventService } from '../../services/event';
 
 export interface Event {
   _id: string;
@@ -32,6 +36,9 @@ export interface CustomAlert {
   cancelAction?: () => void;
   showCancel?: boolean;
 }
+
+
+
 
 @Component({
   selector: 'app-user-dashboard',
@@ -72,13 +79,19 @@ export class UserDashboardComponent {
 
   constructor(
     private http: HttpClient,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+     private authService: AuthService,
+    private eventService: EventService,
+    private locationService: LocationService,
+    private ApprovalService: ApprovalService,
+
   ) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     this.decodeToken();
     this.loadAllEvents();
     this.loadRegisteredEvents();
   }
-
+showFilters: boolean = false;
   // Custom Alert Methods
   showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) {
     this.customAlert = {
@@ -122,13 +135,15 @@ export class UserDashboardComponent {
     this.customAlert.cancelAction = undefined;
   }
 
+  toggleFilters(): void {
+  this.showFilters = !this.showFilters;
+}
+
   loadAllEvents() {
     this.loadingService.show();
-    const url = `${environment.apiBaseUrl}${environment.apis.getAllEvents}`;
-
-    this.http.get<{ data: Event[] }>(url).subscribe({
+    this.eventService.getAllEvents().subscribe({
       next: (res) => {
-        this.events = res.data;
+        this.events = res;
         this.filteredEvents = [...this.events];
         this.extractFilterOptions();
         this.applySorting();
@@ -145,11 +160,9 @@ export class UserDashboardComponent {
 
   loadRegisteredEvents() {
     if (!this.userId) return;
-
-    const url = `${environment.apiBaseUrl}/events/registered-events/${this.userId}`;
-    this.http.get<{ events: Event[] }>(url).subscribe({
+    this.eventService.getRegisteredEvents(this.userId).subscribe({
       next: (res) => {
-        this.registeredEvents = res.events;
+        this.registeredEvents = res;
       },
       error: (err) => {
         console.error('Error loading registered events', err);
@@ -159,35 +172,36 @@ export class UserDashboardComponent {
   }
 
   registerForEvent(eventId: string) {
-    const event = this.events.find(e => e._id === eventId);
-    const eventTitle = event ? event.title : 'this event';
+  const event = this.events.find(e => e._id === eventId);
+  const eventTitle = event ? event.title : 'this event';
 
-    this.showConfirmation(
-      'Register for Event',
-      `Are you sure you want to register for "${eventTitle}"?`,
-      () => {
-        const url = `${environment.apiBaseUrl}/events/register`;
-        const payload = {
-          userId: this.userId,
-          eventId: eventId
-        };
+  const userId = localStorage.getItem('userId');
+if (!userId) {
+  this.showAlert('error', 'Missing User ID', 'Please log in first.');
+  return;
+}
 
-        this.loadingService.show();
-        this.http.post(url, payload).subscribe({
-          next: () => {
-            this.loadRegisteredEvents();
-            this.loadingService.hide();
-            this.showAlert('success', 'Registration Successful', `You have successfully registered for "${eventTitle}"!`);
-          },
-          error: (err) => {
-            console.error('Registration failed', err);
-            this.loadingService.hide();
-            this.showAlert('error', 'Registration Failed', 'Failed to register for the event. Please try again.');
-          }
-        });
-      }
-    );
-  }
+  this.showConfirmation(
+    'Register for Event',
+    `Are you sure you want to register for "${eventTitle}"?`,
+    () => {
+      this.loadingService.show();
+      this.eventService.registerForEvent(userId, eventId).subscribe({
+        next: () => {
+          this.loadRegisteredEvents();
+          this.loadingService.hide();
+          this.showAlert('success', 'Registration Successful', `You have successfully registered for "${eventTitle}"!`);
+        },
+        error: (err) => {
+          console.error('Registration failed', err);
+          this.loadingService.hide();
+          this.showAlert('error', 'Registration Failed', 'Failed to register for the event. Please try again.');
+        }
+      });
+    }
+  );
+}
+
 
   deregister(userId: string, eventId: string) {
     const event = this.registeredEvents.find(e => e._id === eventId);
@@ -231,12 +245,14 @@ export class UserDashboardComponent {
   }
 
   extractCityFromLocation(location: string): string {
-    if (!location) return '';
-    const parts = location.split(',');
-    return parts.length >= 2
-      ? parts[parts.length - 2].trim()
-      : parts[0].trim();
+  if (!location) return '';
+  const parts = location.split(',').map(part => part.trim());
+  if (parts.length >= 2) {
+    return parts[parts.length - 1];
+  } else {
+    return parts[0];
   }
+}
 
   decodeToken() {
     const token = localStorage.getItem('token');
@@ -516,6 +532,16 @@ export class UserDashboardComponent {
     console.error('Error generating ticket PDF:', error);
     this.loadingService.hide();
     this.showAlert('error', 'Download Failed', 'Failed to generate the ticket. Please try again.');
+  }
+}
+
+scrollToRegisteredEvents() {
+  const registeredSection = document.querySelector('.registered-section');
+  if (registeredSection) {
+    registeredSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
   }
 }
 

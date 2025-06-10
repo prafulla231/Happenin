@@ -6,6 +6,7 @@ import { RegisteredUser } from '../components/organizer-dashboard/organizer-dash
 import { RegisteredUsersResponse } from '../components/organizer-dashboard/organizer-dashboard';
 import  { Location } from '../components/admin-dashboard/admin-dashboard';
 import  { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
@@ -27,7 +28,12 @@ export class ApprovalService {
   }
 
 
-  viewApprovalRequestById(requestId: string) {
-    return this.http.get(`${environment.apiBaseUrl}${environment.apis.viewApprovalRequestById(requestId)}`);
-  }
+  viewApprovalRequestById(requestId: string): Observable<Event[]> {
+  return this.http
+    .get<{ data: Event[] }>(
+      `${environment.apiBaseUrl}${environment.apis.viewApprovalRequestById(requestId)}`
+    )
+    .pipe(map(res => res.data)); // Extract data only
+}
+
 }

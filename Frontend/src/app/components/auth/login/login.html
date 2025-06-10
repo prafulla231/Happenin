@@ -1,4 +1,12 @@
 <div class="auth-wrapper">
+  <!-- Custom Success Popup -->
+  <div class="success-popup" [class.show]="showSuccessPopup">
+    <div class="popup-content">
+      <div class="popup-icon">✅</div>
+      <div class="popup-message">{{ successMessage }}</div>
+    </div>
+  </div>
+
   <!-- Animated Background Elements -->
   <div class="bg-animation">
     <div class="floating-shape shape-1"></div>
@@ -57,8 +65,13 @@
             placeholder="Enter your email"
             type="email"
             class="form-input"
+            [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
           />
           <div class="input-highlight"></div>
+          <div class="error-message" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+            <span *ngIf="loginForm.get('email')?.errors?.['required']">Email is required</span>
+            <span *ngIf="loginForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+          </div>
         </div>
 
         <div class="input-group">
@@ -68,8 +81,12 @@
             placeholder="Enter your password"
             type="password"
             class="form-input"
+            [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
           />
           <div class="input-highlight"></div>
+          <div class="error-message" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+            <span>{{ getPasswordError(loginForm) }}</span>
+          </div>
         </div>
 
         <button
@@ -117,8 +134,13 @@
             placeholder="Enter your full name"
             type="text"
             class="form-input"
+            [class.error]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched"
           />
           <div class="input-highlight"></div>
+          <div class="error-message" *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
+            <span *ngIf="registerForm.get('name')?.errors?.['required']">Full name is required</span>
+            <span *ngIf="registerForm.get('name')?.errors?.['minlength']">Name must be at least 2 characters long</span>
+          </div>
         </div>
 
         <div class="input-group">
@@ -128,8 +150,13 @@
             placeholder="Enter your phone number"
             type="tel"
             class="form-input"
+            [class.error]="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched"
           />
           <div class="input-highlight"></div>
+          <div class="error-message" *ngIf="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched">
+            <span *ngIf="registerForm.get('phone')?.errors?.['required']">Phone number is required</span>
+            <span *ngIf="registerForm.get('phone')?.errors?.['pattern']">Please enter a valid 10-digit phone number</span>
+          </div>
         </div>
 
         <div class="input-group">
@@ -139,8 +166,13 @@
             placeholder="Enter your email"
             type="email"
             class="form-input"
+            [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
           />
           <div class="input-highlight"></div>
+          <div class="error-message" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+            <span *ngIf="registerForm.get('email')?.errors?.['required']">Email is required</span>
+            <span *ngIf="registerForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+          </div>
         </div>
 
         <div class="input-group">
@@ -150,8 +182,12 @@
             placeholder="Create a password"
             type="password"
             class="form-input"
+            [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
           />
           <div class="input-highlight"></div>
+          <div class="error-message" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+            <span>{{ getPasswordError(registerForm) }}</span>
+          </div>
         </div>
 
         <div class="input-group select-group">

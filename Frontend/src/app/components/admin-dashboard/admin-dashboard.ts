@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LoadingService } from '../loading';
-import { environment } from '../../../environment';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { LocationService } from '../../services/location';
 import { ApprovalService } from '../../services/approval';
@@ -83,6 +82,7 @@ export class AdminDashboardComponent {
 
 
 
+
   // Custom Alert System
   customAlert: CustomAlert = {
     show: false,
@@ -125,7 +125,7 @@ export class AdminDashboardComponent {
     Maharashtra: ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Thane'],
     Gujarat: ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar'],
     Karnataka: ['Bengaluru', 'Mysuru', 'Hubli', 'Mangaluru', 'Belagavi'],
-    'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli'],
+    TamilNadu: ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli'],
     Rajasthan: ['Jaipur', 'Udaipur', 'Jodhpur', 'Ajmer', 'Kota'],
     Delhi: ['New Delhi', 'Central Delhi', 'North Delhi', 'South Delhi'],
     'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Varanasi', 'Agra', 'Noida']
@@ -149,6 +149,7 @@ export class AdminDashboardComponent {
     private ApprovalService: ApprovalService,
 
   ) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     this.loadEvents();
     this.loadLocations();
     this.loadApprovals();
@@ -379,10 +380,7 @@ export class AdminDashboardComponent {
       return;
     }
 
-    return this.http.post(
-      `${environment.apiBaseUrl}${environment.apis.approveEvent}`,
-      eventToApprove
-    ).subscribe({
+    return this.ApprovalService.approveEvent(eventToApprove).subscribe({
       next: (res) => {
         this.loadApprovals();
         this.loadEvents();
@@ -400,7 +398,7 @@ export class AdminDashboardComponent {
     const eventToDeny = this.eventsone.find(e => e._id === eventId);
     const eventTitle = eventToDeny ? eventToDeny.title : 'Unknown Event';
 
-    this.http.delete(`${environment.apiBaseUrl}${environment.apis.denyEvent(eventId)}`).subscribe({
+    this.ApprovalService.denyEvent(eventId).subscribe({
       next: (res) => {
         console.log('Delete successful:', res);
         this.loadApprovals();
@@ -645,7 +643,7 @@ export class AdminDashboardComponent {
   loadLocations(): void {
   this.locationService.fetchLocations().subscribe({
     next: (response) => {
-      this.locations = response.data;
+      this.locations = response;
     },
     error: (err) => {
       console.error('Error loading locations', err);

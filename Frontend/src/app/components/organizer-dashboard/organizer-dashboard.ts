@@ -4,8 +4,12 @@ import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormsModule } 
 import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { LoadingService } from '../loading';
-import { environment } from '../../../environment';
 import { forkJoin } from 'rxjs';
+import { LocationService } from '../../services/location';
+import { ApprovalService } from '../../services/approval';
+import { AuthService } from '../../services/auth';
+import { EventService } from '../../services/event';
+import { map } from 'rxjs/operators';
 
 // Interfaces
 export interface Event {
@@ -79,10 +83,15 @@ export class OrganizerDashboardComponent {
   popupResolve: ((value: boolean) => void) | null = null;
 
   selectedEventId: string | null = null;
-   selectedEvent: Event | null = null;  // ✅ Add this line
+   selectedEvent: Event | null = null;
   isEventDetailVisible: boolean = false;
 
-  constructor(private fb: FormBuilder, private http: HttpClient, private loadingService: LoadingService) {
+  constructor(private fb: FormBuilder, private http: HttpClient, private loadingService: LoadingService,
+     private authService: AuthService,
+    private eventService: EventService,
+    private locationService: LocationService,
+    private ApprovalService: ApprovalService,
+  ) {
     this.eventForm = this.fb.group({
       title: ['', Validators.required],
       description: [''],
@@ -99,13 +108,22 @@ export class OrganizerDashboardComponent {
       state: ['', Validators.required],
       city: ['', Validators.required],
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
+
+     this.eventForm.get('endTime')?.valueChanges.subscribe(() => {
+    this.calculateDuration();
+  });
+  const today = new Date();
+  today.setDate(today.getDate() + 1);
+  this.minDate = today.toISOString().split('T')[0];
     this.decodeToken();
     this.loadEvents();
     this.fetchLocations();
     this.loadRequests();
   }
-
+categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Technical', 'Comedy','Arts','Exhibition','other'];
+  minDate: string = '';
   decodeToken() {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -119,57 +137,82 @@ export class OrganizerDashboardComponent {
   }
 
   loadEvents() {
-    if (!this.organizerId) return;
-    this.loadingService.show();
+  if (!this.organizerId) return;
+  this.loadingService.show();
 
-    this.http.get<{ data: Event[] }>(
-      `${environment.apiBaseUrl}${environment.apis.getEventsByOrganizer(this.organizerId)}`
-    ).subscribe({
-      next: res => {
-        this.events = res.data;
-        this.loadingService.hide();
-      },
-      error: () => {
-        this.loadingService.hide();
-        this.showAlert('Error', 'Failed to load events', 'error');
-      }
-    });
+  this.eventService.getEventById(this.organizerId).subscribe({
+    next: events => {
+      this.events = events;
+      this.loadingService.hide();
+    },
+    error: () => {
+      this.loadingService.hide();
+      this.showAlert('Error', 'Failed to load events', 'error');
+    }
+  });
+}
+
+  calculateDuration() {
+  const start = this.eventForm.get('startTime')?.value;
+  const end = this.eventForm.get('endTime')?.value;
+
+  if (start && end) {
+    const [startHour, startMinute] = start.split(':').map(Number);
+    const [endHour, endMinute] = end.split(':').map(Number);
+
+    let startTotalMinutes = startHour * 60 + startMinute;
+    let endTotalMinutes = endHour * 60 + endMinute;
+
+    // Handle overnight duration (if endTime is next day)
+    if (endTotalMinutes < startTotalMinutes) {
+      endTotalMinutes += 24 * 60;
+    }
+
+    const durationMinutes = endTotalMinutes - startTotalMinutes;
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+
+    const durationStr = `${hours} hour${hours !== 1 ? 's' : ''}${minutes > 0 ? ` ${minutes} min${minutes !== 1 ? 's' : ''}` : ''}`;
+    this.eventForm.get('duration')?.setValue(durationStr);
   }
+}
+
 
   loadRequests() {
-    if (!this.organizerId) return;
-    this.loadingService.show();
+  if (!this.organizerId) return;
+  this.loadingService.show();
 
-    this.http.get<{ data: Event[] }>(
-      `${environment.apiBaseUrl}${environment.apis.viewApprovalRequestById(this.organizerId)}`
-    ).subscribe({
-      next: res => {
-        this.eventsone = res.data;
-        this.loadingService.hide();
-      },
-      error: () => {
-        this.loadingService.hide();
-        this.showAlert('Error', 'Failed to load events', 'error');
-      }
-    });
-  }
+  this.ApprovalService.viewApprovalRequestById(this.organizerId).subscribe({
+    next: events => {
+      this.eventsone = events; // No need for .data now
+      this.loadingService.hide();
+    },
+    error: () => {
+      this.loadingService.hide();
+      this.showAlert('Error', 'Failed to load events', 'error');
+    }
+  });
+}
+
 
 
 
   fetchLocations() {
-    this.loadingService.show();
-    this.http.get<any[]>(`${environment.apiBaseUrl}${environment.apis.fetchLocations}`).subscribe({
-      next: data => {
-        this.locations = data;
-        this.filteredStates = [...new Set(data.map(loc => loc.state?.trim()).filter(Boolean))];
-        this.loadingService.hide();
-      },
-      error: () => {
-        this.loadingService.hide();
-        this.showAlert('Error', 'Failed to fetch locations', 'error');
-      }
-    });
-  }
+  this.loadingService.show();
+  this.locationService.fetchLocations().subscribe({
+    next: data => {
+      this.locations = data;
+      this.filteredStates = [...new Set(data.map(loc => loc.state?.trim()).filter(Boolean))];
+      this.loadingService.hide();
+    },
+    error: () => {
+      this.loadingService.hide();
+      this.showAlert('Error', 'Failed to fetch locations', 'error');
+    }
+  });
+}
+
+
 
   // Event Submit/Create/Update
   async onSubmit() {
@@ -198,11 +241,11 @@ export class OrganizerDashboardComponent {
       placeName: form.location,
     };
 
-    this.http.post(`${environment.apiBaseUrl}/locations/book`, locationData).subscribe({
+    this.locationService.bookLocation(locationData).subscribe({
       next: () => {
         const request = this.isEditMode && this.currentEditEventId
-          ? this.http.put(`${environment.apiBaseUrl}${environment.apis.updateEvent(this.currentEditEventId)}`, eventData)
-          : this.http.post(`${environment.apiBaseUrl}${environment.apis.createEvent}`, eventData);
+          ? this.eventService.updateEvent(this.currentEditEventId,eventData)
+          : this.eventService.createEvent(eventData);
 
         request.subscribe({
           next: async () => {
@@ -243,7 +286,7 @@ export class OrganizerDashboardComponent {
     if (!confirm) return;
 
     this.isLoading = true;
-    this.http.delete(`${environment.apiBaseUrl}${environment.apis.deleteEvent(eventId)}`).subscribe({
+   this.eventService.deleteEvent(eventId).subscribe({
       next: async () => {
         await this.showAlert('Success', 'Event deleted!', 'success');
         this.loadEvents();
@@ -257,9 +300,7 @@ export class OrganizerDashboardComponent {
   }
 
   loadRegisteredUsers(eventId: string, callback?: () => void) {
-    this.http.get<{ data: RegisteredUsersResponse }>(
-      `${environment.apiBaseUrl}${environment.apis.getRegisteredUsers(eventId)}`
-    ).subscribe({
+    this.eventService.getRegisteredUsers(eventId).subscribe({
       next: res => {
         this.usersMap[eventId] = res.data;
         if (callback) callback();

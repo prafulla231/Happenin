@@ -33,74 +33,49 @@
           <!-- Basic Information -->
           <div class="form-group full-width">
             <label class="form-label">Event Title</label>
-            <input
-              type="text"
-              formControlName="title"
-              class="form-input"
-              placeholder="Enter event title"
-              required
-            />
+            <input type="text" formControlName="title" class="form-input" placeholder="Enter event title" required />
           </div>
 
           <div class="form-group full-width">
             <label class="form-label">Description</label>
-            <textarea
-              formControlName="description"
-              class="form-textarea"
-              placeholder="Describe your event..."
-              rows="4"
-            ></textarea>
+            <textarea formControlName="description" class="form-textarea" placeholder="Describe your event..."
+              rows="4"></textarea>
           </div>
 
           <!-- Date and Time -->
           <div class="form-group">
-            <label class="form-label">Event Date</label>
-            <input
-              type="date"
-              formControlName="date"
-              class="form-input"
-              required
-            />
-          </div>
+  <label class="form-label">Event Date</label>
+  <input
+    type="date"
+    formControlName="date"
+    class="form-input"
+    [min]="minDate"
+    required
+  />
+</div>
+
 
           <div class="form-group">
             <label class="form-label">Start Time</label>
-            <input
-              type="time"
-              formControlName="startTime"
-              class="form-input"
-            />
+            <input type="time" formControlName="startTime" class="form-input" />
           </div>
 
           <div class="form-group">
             <label class="form-label">End Time</label>
-            <input
-              type="time"
-              formControlName="endTime"
-              class="form-input"
-            />
+            <input type="time" formControlName="endTime" class="form-input" />
           </div>
 
           <div class="form-group">
             <label class="form-label">Duration</label>
-            <input
-              type="text"
-              formControlName="duration"
-              class="form-input"
-              placeholder="e.g., 2 hours"
-            />
+            <input type="text" formControlName="duration" class="form-input" placeholder="e.g., 2 hours" readonly />
           </div>
+
 
           <!-- Location -->
           <div class="form-group">
             <label class="form-label">State</label>
-            <select
-              formControlName="state"
-              [(ngModel)]="selectedState"
-              (change)="onStateChange()"
-              class="form-select"
-              required
-            >
+            <select formControlName="state" [(ngModel)]="selectedState" (change)="onStateChange()" class="form-select"
+              required>
               <option value="" disabled>Select State</option>
               <option *ngFor="let state of filteredStates" [value]="state">
                 {{ state }}
@@ -110,14 +85,8 @@
 
           <div class="form-group">
             <label class="form-label">City</label>
-            <select
-              formControlName="city"
-              [(ngModel)]="selectedCity"
-              (change)="onCityChange()"
-              [disabled]="!eventForm.get('state')?.value"
-              class="form-select"
-              required
-            >
+            <select formControlName="city" [(ngModel)]="selectedCity" (change)="onCityChange()"
+              [disabled]="!eventForm.get('state')?.value" class="form-select" required>
               <option value="" disabled>Select City</option>
               <option *ngFor="let city of filteredCities" [value]="city">
                 {{ city }}
@@ -127,12 +96,7 @@
 
           <div class="form-group">
             <label class="form-label">Venue</label>
-            <select
-              formControlName="location"
-              [disabled]="!eventForm.get('city')?.value"
-              class="form-select"
-              required
-            >
+            <select formControlName="location" [disabled]="!eventForm.get('city')?.value" class="form-select" required>
               <option value="" disabled>Select Venue</option>
               <option *ngFor="let place of filteredPlaceNames" [value]="place">
                 {{ place }}
@@ -143,64 +107,36 @@
           <!-- Event Details -->
           <div class="form-group">
             <label class="form-label">Category</label>
-            <input
-              type="text"
-              formControlName="category"
-              class="form-input"
-              placeholder="e.g., Music, Sports, Workshop"
-            />
+            <select formControlName="category" class="form-input">
+              <option value="" disabled selected>Select a category</option>
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
           </div>
 
           <div class="form-group">
             <label class="form-label">Price (₹)</label>
-            <input
-              type="number"
-              formControlName="price"
-              class="form-input"
-              placeholder="0"
-              min="0"
-            />
+            <input type="number" formControlName="price" class="form-input" placeholder="0" min="0" />
           </div>
 
           <div class="form-group">
             <label class="form-label">Max Registrations</label>
-            <input
-              type="number"
-              formControlName="maxRegistrations"
-              class="form-input"
-              placeholder="100"
-              min="1"
-              required
-            />
+            <input type="number" formControlName="maxRegistrations" class="form-input" placeholder="100" min="1"
+              required />
           </div>
 
           <div class="form-group">
             <label class="form-label">Artist/Speaker</label>
-            <input
-              type="text"
-              formControlName="artist"
-              class="form-input"
-              placeholder="Featured artist or speaker"
-            />
+            <input type="text" formControlName="artist" class="form-input" placeholder="Featured artist or speaker" />
           </div>
 
           <div class="form-group">
             <label class="form-label">Organization</label>
-            <input
-              type="text"
-              formControlName="organization"
-              class="form-input"
-              placeholder="Organizing body"
-            />
+            <input type="text" formControlName="organization" class="form-input" placeholder="Organizing body" />
           </div>
         </div>
 
         <div class="form-actions">
-          <button
-            type="submit"
-            class="submit-btn"
-            [disabled]="eventForm.invalid || isLoading"
-          >
+          <button type="submit" class="submit-btn" [disabled]="eventForm.invalid || isLoading">
             <span class="btn-icon">{{ isEditMode ? '📝' : '✨' }}</span>
             {{ isEditMode ? 'Update Event' : 'Create Event' }}
           </button>
@@ -299,7 +235,8 @@
   <div class="pending-events-section" *ngIf="eventsone.length > 0">
     <div class="section-header">
       <h2 class="section-title">Events Pending Approval</h2>
-      <div class="events-count pending-count">{{ eventsone.length }} {{ eventsone.length === 1 ? 'Event' : 'Events' }}</div>
+      <div class="events-count pending-count">{{ eventsone.length }} {{ eventsone.length === 1 ? 'Event' : 'Events' }}
+      </div>
     </div>
 
     <div class="events-grid">
@@ -364,7 +301,8 @@
   <!-- Footer -->
   <footer class="dashboard-footer">
     <h2 class="footer-title"><span class="brand-highlight">Happenin'</span></h2>
-    <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin&#64;gmail.com</span></p>
+    <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin&#64;gmail.com</span>
+    </p>
     <!-- <div class="footer-socials">
       <a href="https://www.instagram.com" target="_blank" aria-label="Instagram" class="social-icon">
         <img class="insta-logo" src="/images/instagram.png" alt="Instagram" />
@@ -404,15 +342,10 @@
       </div>
 
       <div class="popup-footer">
-        <button
-          *ngIf="popupConfig.showConfirm"
-          class="popup-btn popup-btn-cancel"
-          (click)="onPopupCancel()">
+        <button *ngIf="popupConfig.showConfirm" class="popup-btn popup-btn-cancel" (click)="onPopupCancel()">
           {{ popupConfig.cancelText || 'Cancel' }}
         </button>
-        <button
-          class="popup-btn popup-btn-confirm"
-          [ngClass]="'popup-btn-' + popupConfig.type"
+        <button class="popup-btn popup-btn-confirm" [ngClass]="'popup-btn-' + popupConfig.type"
           (click)="onPopupConfirm()">
           {{ popupConfig.showConfirm ? (popupConfig.confirmText || 'Confirm') : 'OK' }}
         </button>

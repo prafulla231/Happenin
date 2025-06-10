@@ -6,6 +6,7 @@ import { RegisteredUser } from '../components/organizer-dashboard/organizer-dash
 import { RegisteredUsersResponse } from '../components/organizer-dashboard/organizer-dashboard';
 import  { Location } from '../components/admin-dashboard/admin-dashboard';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 
 @Injectable({
@@ -15,9 +16,13 @@ export class LocationService {
 
    constructor(private http: HttpClient) {}
 
-  fetchLocations(): Observable<{ data: Location[] }> {
-  return this.http.get<{ data: Location[] }>(`${environment.apiBaseUrl}${environment.apis.fetchLocations}`);
+  fetchLocations(): Observable<Location[]> {
+  return this.http.get<Location[]>(`${environment.apiBaseUrl}${environment.apis.fetchLocations}`);
 }
+
+
+
+
 
 
   addLocation(location: Location): Observable<{ data: Location }> {
@@ -32,4 +37,6 @@ export class LocationService {
   cancelBooking(data: any) {
     return this.http.post(`${environment.apiBaseUrl}/${environment.apis.cancelBooking}`, data); // not defined in environment
   }
+
+  // deleteLocation(data)
 }
