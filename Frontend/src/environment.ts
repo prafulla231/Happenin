@@ -11,8 +11,8 @@ export const environment = {
     updateEvent: (eventId: string) => `/events/${eventId}`,
     deleteEvent: (eventId: string) => `/events/${eventId}`,
     registeredEvents : (userId : string) => `/events/registered-events/${userId}`,
-    registerEvent: '/events/register',
-    deregisterEvent: '/events/deregister',
+    registerForEvent: '/events/register',
+    deregisterForEvent: '/events/deregister',
 
     // Registrations
     getRegisteredUsers: (eventId: string) => `/events/registered-users/${eventId}`,
