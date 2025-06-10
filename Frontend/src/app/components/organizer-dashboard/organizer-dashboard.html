@@ -44,16 +44,15 @@
 
           <!-- Date and Time -->
           <div class="form-group">
-  <label class="form-label">Event Date</label>
-  <input
-    type="date"
-    formControlName="date"
-    class="form-input"
-    [min]="minDate"
-    required
-  />
-</div>
-
+            <label class="form-label">Event Date</label>
+            <input
+              type="date"
+              formControlName="date"
+              class="form-input"
+              [min]="minDate"
+              required
+            />
+          </div>
 
           <div class="form-group">
             <label class="form-label">Start Time</label>
@@ -69,7 +68,6 @@
             <label class="form-label">Duration</label>
             <input type="text" formControlName="duration" class="form-input" placeholder="e.g., 2 hours" readonly />
           </div>
-
 
           <!-- Location -->
           <div class="form-group">
@@ -96,12 +94,35 @@
 
           <div class="form-group">
             <label class="form-label">Venue</label>
-            <select formControlName="location" [disabled]="!eventForm.get('city')?.value" class="form-select" required>
+            <select formControlName="location" (change)="onVenueChange()" [disabled]="!eventForm.get('city')?.value" class="form-select" required>
               <option value="" disabled>Select Venue</option>
               <option *ngFor="let place of filteredPlaceNames" [value]="place">
                 {{ place }}
               </option>
             </select>
+          </div>
+
+          <!-- Venue Details (shown only when venue is selected) -->
+          <div *ngIf="selectedVenue" class="form-group">
+            <label class="form-label">Max Seating Capacity</label>
+            <input
+              type="number"
+              class="form-input"
+              [value]="selectedVenue?.maxSeatingCapacity || ''"
+              readonly
+              placeholder="Capacity will appear here"
+            />
+          </div>
+
+          <div *ngIf="selectedVenue" class="form-group">
+            <label class="form-label">Amenities</label>
+            <input
+              type="text"
+              class="form-input"
+              [value]="selectedVenue?.amenities?.join(', ') || 'No amenities listed'"
+              readonly
+              placeholder="Amenities will appear here"
+            />
           </div>
 
           <!-- Event Details -->
@@ -120,8 +141,22 @@
 
           <div class="form-group">
             <label class="form-label">Max Registrations</label>
-            <input type="number" formControlName="maxRegistrations" class="form-input" placeholder="100" min="1"
-              required />
+            <input
+              type="number"
+              formControlName="maxRegistrations"
+              class="form-input"
+              placeholder="Enter max registrations"
+              [max]="selectedVenue?.maxSeatingCapacity || 999999"
+              min="1"
+              required
+              (input)="onMaxRegistrationsChange()"
+            />
+            <small class="form-helper-text" *ngIf="selectedVenue?.maxSeatingCapacity">
+              Maximum venue capacity: {{ selectedVenue.maxSeatingCapacity }}
+            </small>
+            <small class="form-helper-text" *ngIf="eventForm.get('maxRegistrations')?.errors?.['overCapacity']" style="color: #ff6b6b;">
+              Registrations exceed venue capacity!
+            </small>
           </div>
 
           <div class="form-group">
@@ -173,10 +208,6 @@
             <div class="event-detail" *ngIf="event.timeSlot">
               <span class="detail-icon">🕐</span>
               <span class="detail-text">{{ event.timeSlot }}</span>
-            </div>
-            <div class="event-detail" *ngIf="event.maxRegistrations">
-              <span class="detail-icon">👥</span>
-              <span class="detail-text">Max {{ event.maxRegistrations }} attendees</span>
             </div>
           </div>
         </div>
@@ -273,13 +304,6 @@
               <span class="price-value">₹{{ event.price }}</span>
             </div>
           </div>
-
-          <!-- <div class="card-actions">
-            <button class="view-details-btn" (click)="showEventDetail(event)">
-              <span class="btn-icon">👁️</span>
-              <span class="btn-text">Details</span>
-            </button>
-          </div> -->
         </div>
       </div>
     </div>
@@ -303,53 +327,5 @@
     <h2 class="footer-title"><span class="brand-highlight">Happenin'</span></h2>
     <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin&#64;gmail.com</span>
     </p>
-    <!-- <div class="footer-socials">
-      <a href="https://www.instagram.com" target="_blank" aria-label="Instagram" class="social-icon">
-        <img class="insta-logo" src="/images/instagram.png" alt="Instagram" />
-      </a>
-      <a href="https://www.twitter.com" target="_blank" aria-label="Twitter" class="social-icon">
-        <img class="twitter-logo" src="/images/twitter.png" alt="Twitter" />
-      </a>
-      <a href="https://www.linkedin.com" target="_blank" aria-label="LinkedIn" class="social-icon">
-        <img class="linkedin-logo" src="/images/linkedin.png" alt="LinkedIn" />
-      </a>
-    </div> -->
   </footer>
 
-  <!-- Loading State -->
-  <div class="loading-overlay" *ngIf="isLoading">
-    <div class="loading-content">
-      <div class="loading-spinner"></div>
-      <p class="loading-text">Loading...</p>
-    </div>
-  </div>
-
-  <!-- Popup Modal -->
-  <div *ngIf="showPopup" class="popup-overlay" (click)="onPopupCancel()">
-    <div class="popup-container" (click)="$event.stopPropagation()">
-      <div class="popup-header" [ngClass]="'popup-' + popupConfig.type">
-        <div class="popup-icon">
-          <i *ngIf="popupConfig.type === 'success'" class="icon-success">✓</i>
-          <i *ngIf="popupConfig.type === 'error'" class="icon-error">×</i>
-          <i *ngIf="popupConfig.type === 'warning'" class="icon-warning">⚠</i>
-          <i *ngIf="popupConfig.type === 'info'" class="icon-info">i</i>
-        </div>
-        <h3 class="popup-title">{{ popupConfig.title }}</h3>
-      </div>
-
-      <div class="popup-body">
-        <p class="popup-message">{{ popupConfig.message }}</p>
-      </div>
-
-      <div class="popup-footer">
-        <button *ngIf="popupConfig.showConfirm" class="popup-btn popup-btn-cancel" (click)="onPopupCancel()">
-          {{ popupConfig.cancelText || 'Cancel' }}
-        </button>
-        <button class="popup-btn popup-btn-confirm" [ngClass]="'popup-btn-' + popupConfig.type"
-          (click)="onPopupConfirm()">
-          {{ popupConfig.showConfirm ? (popupConfig.confirmText || 'Confirm') : 'OK' }}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>

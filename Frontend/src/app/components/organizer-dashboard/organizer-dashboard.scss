@@ -162,6 +162,7 @@
       border-radius: 12px;
       font-size: 0.8rem;
       font-weight: 600;
+      margin: 12px;
       white-space: nowrap;
       flex-shrink: 0;
       top: +20px;
@@ -176,7 +177,7 @@
     flex-grow: 0.2;
     // display: -webkit-box;
     // -webkit-box-orient: vertical;
-    overflow: hidden;
+    // overflow: hidden;
   }
 
   .event-details {

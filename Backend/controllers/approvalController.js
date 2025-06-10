@@ -8,7 +8,7 @@ import { Approval } from '../models/approval.js';
 export const approveEvent = async (req, res) => {
   try {
     const {
-      _id, // 👈 get the Approval document ID here
+      _id, 
       title, description, date, timeSlot, duration, location,
       category, price, maxRegistrations, createdBy,
       artist, organization,
@@ -41,17 +41,17 @@ export const approveEvent = async (req, res) => {
 
     await newEvent.save();
 
-    // ✅ delete by approval doc ID
+    
     const deletedApproval = await Approval.findByIdAndDelete(_id);
 
     if (!deletedApproval) {
-      console.warn('⚠️ Approval record not found for deletion.');
+      console.warn('Approval record not found for deletion.');
     }
 
     return apiResponse(res, 201, 'Event created and approval deleted successfully', newEvent);
 
   } catch (error) {
-    console.error('❌ Approval error:', error.message);
+    console.error('Approval error:', error.message);
     return apiError(res, 500, 'Server error during approval.', error);
   }
 };
@@ -62,7 +62,7 @@ export const viewApprovalRequest = async (req, res) => {
     const events = await Approval.find().populate('createdBy', 'name email role');
     return apiResponse(res, 200, 'Events fetched successfully', events);
   } catch (error) {
-    console.error('❌ Get Events error:', error.message);
+    console.error('Get Events error:', error.message);
     return apiError(res, 500, 'Server error while fetching events', error);
   }
 };
@@ -102,7 +102,7 @@ export const viewApprovalRequestforOrganizer = async (req, res) => {
   
       return apiResponse(res, 200, 'Events fetched successfully', events);
     } catch (error) {
-      console.error('❌ Error fetching events by user ID:', error.message);
+      console.error('Error fetching events by user ID:', error.message);
       return apiError(res, 500, 'Server error while fetching events', error);
     }
 };

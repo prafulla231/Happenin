@@ -1,5 +1,5 @@
 import express from 'express';
-import { createLocation, getAllLocations } from '../controllers/locationController.js';
+import { createLocation, getAllLocations , viewLocations , deleteLocation } from '../controllers/locationController.js';
 import { bookLocation , cancelBooking } from '../controllers/bookingController.js';
 // import asyncHandler from 'express-async-handler';
 
@@ -14,6 +14,8 @@ router.get('/', getAllLocations);
 router.post('/book', bookLocation);
 
 router.post('/cancel', cancelBooking);
+router.get('/getLocations', viewLocations);
+router.delete('/deleteLocation', deleteLocation);
 
 
 

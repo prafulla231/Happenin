@@ -79,7 +79,7 @@ export class AdminDashboardComponent {
   showEventDetails: boolean = false;
 
    showFilters: boolean = false;
-
+showViewLocations = false;
 
 
 
@@ -153,7 +153,7 @@ export class AdminDashboardComponent {
     this.loadEvents();
     this.loadLocations();
     this.loadApprovals();
-    this.setUserFromLocalStorageUser();
+    this.setUserFromLocalUser();
 
     this.registerForm = this.fb.group({
       name: ['', Validators.required],
@@ -222,6 +222,44 @@ export class AdminDashboardComponent {
     this.customAlert.cancelAction = undefined;
   }
 
+
+  toggleViewLocations(): void {
+  this.showViewLocations = !this.showViewLocations;
+  if (this.showViewLocations) {
+    this.loadLocations(); // Refresh locations when opening
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'auto';
+  }
+}
+
+closeViewLocations(): void {
+  this.showViewLocations = false;
+  document.body.style.overflow = 'auto';
+}
+
+confirmDeleteLocation(state: string, city: string, placeName: string): void {
+  this.showConfirmation(
+    'Delete Location',
+    `Are you sure you want to delete "${placeName}" in ${city}, ${state}? This action cannot be undone.`,
+    () => this.deleteLocation(state, city, placeName)
+  );
+}
+
+deleteLocation(state: string, city: string, placeName: string): void {
+  this.locationService.deleteLocation(state, city, placeName).subscribe({
+    next: () => {
+      this.showAlert('success', 'Location Deleted', `Location "${placeName}" has been deleted successfully.`);
+      this.loadLocations(); // Refresh the locations list
+    },
+    error: (err) => {
+      console.error('Failed to delete location', err);
+      this.showAlert('error', 'Delete Failed', 'Failed to delete location. Please try again.');
+    }
+  });
+}
+
+
   // Updated confirmation methods
   confirmDeleteEvent(eventId: string, eventTitle: string) {
     this.showConfirmation(
@@ -255,27 +293,29 @@ export class AdminDashboardComponent {
     );
   }
 
-  // Read user info from localStorage key 'user' and set email & isSuperAdmin flag
-  setUserFromLocalStorageUser() {
-    try {
-      const userString = localStorage.getItem('user');
-      console.log('User string from localStorage:', userString);
-      if (userString) {
-        const user = JSON.parse(userString);
-        this.userEmail = user.email || '';
-        this.isSuperAdmin = this.userEmail === 'superadmin@gmail.com';
-        console.log('Parsed user:', user);
-        console.log('User email:', this.userEmail);
-      } else {
-        this.userEmail = '';
-        this.isSuperAdmin = false;
-      }
-    } catch (error) {
-      console.error('Failed to parse user from localStorage', error);
+  // Read user info from sessiontorage key 'user' and set email & isSuperAdmin flag
+  setUserFromLocalUser() {
+  try {
+    const userString = localStorage.getItem('user');
+    console.log('User string from sessionStorage:', userString);
+
+    if (userString) {
+      const user = JSON.parse(userString);
+      this.userEmail = user.email || '';
+      this.isSuperAdmin = this.userEmail === 'superadmin@gmail.com';
+      console.log('Parsed user:', user);
+      console.log('User email:', this.userEmail);
+    } else {
       this.userEmail = '';
       this.isSuperAdmin = false;
     }
+  } catch (error) {
+    console.error('Failed to parse user from sessionStorage', error);
+    this.userEmail = '';
+    this.isSuperAdmin = false;
   }
+}
+
 
   toggleRegisterForm(): void {
     this.showRegisterForm = !this.showRegisterForm;
@@ -641,9 +681,9 @@ export class AdminDashboardComponent {
 
 
   loadLocations(): void {
-  this.locationService.fetchLocations().subscribe({
-    next: (response) => {
-      this.locations = response;
+  this.locationService.viewLocation().subscribe({
+    next: (locations) => {
+      this.locations = locations;
     },
     error: (err) => {
       console.error('Error loading locations', err);
@@ -651,7 +691,6 @@ export class AdminDashboardComponent {
     }
   });
 }
-
 
   resetForm() {
     this.newLocation = {

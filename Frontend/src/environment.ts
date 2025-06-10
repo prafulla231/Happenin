@@ -12,6 +12,7 @@ export const environment = {
     deleteEvent: (eventId: string) => `/events/${eventId}`,
     registeredEvents : (userId : string) => `/events/registered-events/${userId}`,
     registerEvent: '/events/register',
+    deregisterEvent: '/events/deregister',
 
     // Registrations
     getRegisteredUsers: (eventId: string) => `/events/registered-users/${eventId}`,
@@ -22,6 +23,8 @@ export const environment = {
     addLocation: '/locations' ,
     bookLocation: '/locations/book', // not defined in environment — consider adding
     cancelBooking: '/locations/cancel', // not defined in environment
+    viewLocation: '/getLocations',
+    deleteLocation : '/deleteLocation',
 
     //Approvals
     approveEvent:  `/approval/approveEvent`,

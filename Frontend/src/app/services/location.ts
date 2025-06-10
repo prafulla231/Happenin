@@ -31,7 +31,7 @@ export class LocationService {
 
 
   bookLocation(data: any) {
-    return this.http.post(`${environment.apiBaseUrl}/${environment.apis.bookLocation}`, data); // not defined in environment — consider adding
+    return this.http.post(`${environment.apiBaseUrl}${environment.apis.bookLocation}`, data); // not defined in environment — consider adding
   }
 
   cancelBooking(data: any) {
@@ -39,4 +39,15 @@ export class LocationService {
   }
 
   // deleteLocation(data)
+
+  viewLocation(): Observable<Location[]> {
+    return this.http.get<{ data: Location[] }>(`http://localhost:5000/api/locations/getLocations`)
+      .pipe(map(res => res.data));
+  }
+
+  // DELETE: Delete a location using state, city, and placeName
+  deleteLocation(state: string, city: string, placeName: string): Observable<any> {
+    const payload = { state, city, placeName };
+    return this.http.request('delete', `http://localhost:5000/api/locations/deleteLocation`, { body: payload });
+  }
 }

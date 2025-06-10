@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -56,7 +56,7 @@ export interface PopupConfig {
   templateUrl: './organizer-dashboard.html',
   styleUrls: ['./organizer-dashboard.scss'],
 })
-export class OrganizerDashboardComponent {
+export class OrganizerDashboardComponent implements OnInit {
   showCreateForm = false;
   isEditMode = false;
   posterFile: File | null = null;
@@ -74,20 +74,25 @@ export class OrganizerDashboardComponent {
   filteredStates: string[] = [];
   filteredCities: string[] = [];
   filteredPlaceNames: string[] = [];
+  places: any[] = [];
 
   selectedState = '';
   selectedCity = '';
+  selectedVenue: any = null;
 
   showPopup = false;
   popupConfig: PopupConfig = { title: '', message: '', type: 'info' };
   popupResolve: ((value: boolean) => void) | null = null;
 
   selectedEventId: string | null = null;
-   selectedEvent: Event | null = null;
+  selectedEvent: Event | null = null;
   isEventDetailVisible: boolean = false;
 
-  constructor(private fb: FormBuilder, private http: HttpClient, private loadingService: LoadingService,
-     private authService: AuthService,
+  constructor(
+    private fb: FormBuilder,
+    private http: HttpClient,
+    private loadingService: LoadingService,
+    private authService: AuthService,
     private eventService: EventService,
     private locationService: LocationService,
     private ApprovalService: ApprovalService,
@@ -108,111 +113,217 @@ export class OrganizerDashboardComponent {
       state: ['', Validators.required],
       city: ['', Validators.required],
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 
+    // Set minimum date
+    const today = new Date();
+    today.setDate(today.getDate() + 1);
+    this.minDate = today.toISOString().split('T')[0];
 
-     this.eventForm.get('endTime')?.valueChanges.subscribe(() => {
-    this.calculateDuration();
-  });
-  const today = new Date();
-  today.setDate(today.getDate() + 1);
-  this.minDate = today.toISOString().split('T')[0];
-    this.decodeToken();
-    this.loadEvents();
-    this.fetchLocations();
-    this.loadRequests();
+    // Watch for end time changes to calculate duration
+    this.eventForm.get('endTime')?.valueChanges.subscribe(() => {
+      this.calculateDuration();
+    });
   }
-categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Technical', 'Comedy','Arts','Exhibition','other'];
+
+  categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Technical', 'Comedy','Arts','Exhibition','other'];
   minDate: string = '';
-  decodeToken() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
 
+  ngOnInit() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.initializeComponent();
+  }
+
+  async initializeComponent() {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      this.organizerId = payload.userId || null;
-    } catch {
-      this.organizerId = null;
+      this.isLoading = true;
+      this.loadingService.show();
+
+      // First decode token to get organizer ID
+      await this.decodeToken();
+
+      if (!this.organizerId) {
+        console.error('No organizer ID found');
+        await this.showAlert('Error', 'User authentication failed. Please login again.', 'error');
+        this.logout();
+        return;
+      }
+
+      // Load all data in parallel
+      await Promise.all([
+        this.fetchLocations(),
+        this.loadEvents(),
+        this.loadRequests()
+      ]);
+
+    } catch (error) {
+      console.error('Error initializing component:', error);
+      await this.showAlert('Error', 'Failed to initialize dashboard', 'error');
+    } finally {
+      this.isLoading = false;
+      this.loadingService.hide();
     }
   }
 
-  loadEvents() {
-  if (!this.organizerId) return;
-  this.loadingService.show();
+  async decodeToken(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
-  this.eventService.getEventById(this.organizerId).subscribe({
-    next: events => {
-      this.events = events;
-      this.loadingService.hide();
-    },
-    error: () => {
-      this.loadingService.hide();
-      this.showAlert('Error', 'Failed to load events', 'error');
-    }
-  });
-}
+        if (!token) {
+          console.error('No token found in storage');
+          reject('No token found');
+          return;
+        }
+
+        console.log('Token found:', !!token);
+
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        this.organizerId = payload.userId || payload.id || null;
+
+        console.log('Decoded organizer ID:', this.organizerId);
+
+        if (!this.organizerId) {
+          reject('No organizer ID in token');
+          return;
+        }
+
+        resolve();
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        this.organizerId = null;
+        reject(error);
+      }
+    });
+  }
+
+  async loadEvents(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.organizerId) {
+        console.error('No organizer ID available for loading events');
+        reject('No organizer ID');
+        return;
+      }
+
+      console.log('Loading events for organizer:', this.organizerId);
+
+      this.eventService.getEventById(this.organizerId).subscribe({
+        next: (events) => {
+          console.log('Events loaded successfully:', events);
+          this.events = Array.isArray(events) ? events : [];
+          resolve();
+        },
+        error: (error) => {
+          console.error('Error loading events:', error);
+          this.events = [];
+          // Don't reject here, just log the error and continue
+          resolve();
+        }
+      });
+    });
+  }
+
+  async loadRequests(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.organizerId) {
+        console.error('No organizer ID available for loading requests');
+        reject('No organizer ID');
+        return;
+      }
+
+      console.log('Loading approval requests for organizer:', this.organizerId);
+
+      this.ApprovalService.viewApprovalRequestById(this.organizerId).subscribe({
+        next: (events) => {
+          console.log('Approval requests loaded successfully:', events);
+          this.eventsone = Array.isArray(events) ? events : [];
+          resolve();
+        },
+        error: (error) => {
+          console.error('Error loading approval requests:', error);
+          this.eventsone = [];
+          // Don't reject here, just log the error and continue
+          resolve();
+        }
+      });
+    });
+  }
+
+  async fetchLocations(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.locationService.fetchLocations().subscribe({
+        next: (data) => {
+          console.log('Locations loaded successfully:', data.length);
+          this.locations = Array.isArray(data) ? data : [];
+          this.places = this.locations;
+          this.filteredStates = [...new Set(this.locations.map(loc => loc.state?.trim()).filter(Boolean))];
+          resolve();
+        },
+        error: (error) => {
+          console.error('Error loading locations:', error);
+          this.locations = [];
+          this.places = [];
+          resolve(); // Don't reject, allow component to continue
+        }
+      });
+    });
+  }
 
   calculateDuration() {
-  const start = this.eventForm.get('startTime')?.value;
-  const end = this.eventForm.get('endTime')?.value;
+    const start = this.eventForm.get('startTime')?.value;
+    const end = this.eventForm.get('endTime')?.value;
 
-  if (start && end) {
-    const [startHour, startMinute] = start.split(':').map(Number);
-    const [endHour, endMinute] = end.split(':').map(Number);
+    if (start && end) {
+      const [startHour, startMinute] = start.split(':').map(Number);
+      const [endHour, endMinute] = end.split(':').map(Number);
 
-    let startTotalMinutes = startHour * 60 + startMinute;
-    let endTotalMinutes = endHour * 60 + endMinute;
+      let startTotalMinutes = startHour * 60 + startMinute;
+      let endTotalMinutes = endHour * 60 + endMinute;
 
-    // Handle overnight duration (if endTime is next day)
-    if (endTotalMinutes < startTotalMinutes) {
-      endTotalMinutes += 24 * 60;
+      // Handle overnight duration (if endTime is next day)
+      if (endTotalMinutes < startTotalMinutes) {
+        endTotalMinutes += 24 * 60;
+      }
+
+      const durationMinutes = endTotalMinutes - startTotalMinutes;
+      const hours = Math.floor(durationMinutes / 60);
+      const minutes = durationMinutes % 60;
+
+      const durationStr = `${hours} hour${hours !== 1 ? 's' : ''}${minutes > 0 ? ` ${minutes} min${minutes !== 1 ? 's' : ''}` : ''}`;
+      this.eventForm.get('duration')?.setValue(durationStr);
     }
-
-    const durationMinutes = endTotalMinutes - startTotalMinutes;
-    const hours = Math.floor(durationMinutes / 60);
-    const minutes = durationMinutes % 60;
-
-    const durationStr = `${hours} hour${hours !== 1 ? 's' : ''}${minutes > 0 ? ` ${minutes} min${minutes !== 1 ? 's' : ''}` : ''}`;
-    this.eventForm.get('duration')?.setValue(durationStr);
   }
-}
 
+  // Updated venue change method
+  onVenueChange(): void {
+    const selectedPlace = this.eventForm.get('location')?.value;
+    this.selectedVenue = this.places.find((place: any) => place.placeName === selectedPlace) || null;
+    this.validateMaxRegistrations();
+  }
 
-  loadRequests() {
-  if (!this.organizerId) return;
-  this.loadingService.show();
+  // Added validation method
+  validateMaxRegistrations(): void {
+    const maxRegistrationsControl = this.eventForm.get('maxRegistrations');
+    const maxRegistrationsValue = maxRegistrationsControl?.value;
 
-  this.ApprovalService.viewApprovalRequestById(this.organizerId).subscribe({
-    next: events => {
-      this.eventsone = events; // No need for .data now
-      this.loadingService.hide();
-    },
-    error: () => {
-      this.loadingService.hide();
-      this.showAlert('Error', 'Failed to load events', 'error');
+    if (this.selectedVenue && maxRegistrationsValue) {
+      const venueCapacity = this.selectedVenue.maxSeatingCapacity;
+
+      if (maxRegistrationsValue > venueCapacity) {
+        maxRegistrationsControl?.setErrors({ 'overCapacity': true });
+      } else {
+        const errors = maxRegistrationsControl?.errors;
+        if (errors && errors['overCapacity']) {
+          delete errors['overCapacity'];
+          maxRegistrationsControl?.setErrors(Object.keys(errors).length ? errors : null);
+        }
+      }
     }
-  });
-}
+  }
 
-
-
-
-  fetchLocations() {
-  this.loadingService.show();
-  this.locationService.fetchLocations().subscribe({
-    next: data => {
-      this.locations = data;
-      this.filteredStates = [...new Set(data.map(loc => loc.state?.trim()).filter(Boolean))];
-      this.loadingService.hide();
-    },
-    error: () => {
-      this.loadingService.hide();
-      this.showAlert('Error', 'Failed to fetch locations', 'error');
-    }
-  });
-}
-
-
+  // Added method for max registrations change
+  onMaxRegistrationsChange(): void {
+    this.validateMaxRegistrations();
+  }
 
   // Event Submit/Create/Update
   async onSubmit() {
@@ -222,49 +333,65 @@ categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Tech
     }
 
     this.isLoading = true;
-    const form = this.eventForm.value;
-    const timeSlot = `${form.startTime} - ${form.endTime}`;
-    const eventData = {
-      ...form,
-      createdBy: this.organizerId,
-      timeSlot
-    };
+    this.loadingService.show();
 
-    const startDateTime = new Date(`${form.date}T${form.startTime}:00`).toISOString();
-    const endDateTime = new Date(`${form.date}T${form.endTime}:00`).toISOString();
+    try {
+      const form = this.eventForm.value;
+      const timeSlot = `${form.startTime} - ${form.endTime}`;
+      const eventData = {
+        ...form,
+        createdBy: this.organizerId,
+        timeSlot
+      };
 
-    const locationData = {
-      startTime_one: startDateTime,
-      endTime_one: endDateTime,
-      state: form.state,
-      city: form.city,
-      placeName: form.location,
-    };
+      const startDateTime = new Date(`${form.date}T${form.startTime}:00`).toISOString();
+      const endDateTime = new Date(`${form.date}T${form.endTime}:00`).toISOString();
 
-    this.locationService.bookLocation(locationData).subscribe({
-      next: () => {
-        const request = this.isEditMode && this.currentEditEventId
-          ? this.eventService.updateEvent(this.currentEditEventId,eventData)
-          : this.eventService.createEvent(eventData);
+      const locationData = {
+        startTime_one: startDateTime,
+        endTime_one: endDateTime,
+        state: form.state,
+        city: form.city,
+        placeName: form.location,
+      };
 
-        request.subscribe({
-          next: async () => {
-            await this.showAlert('Success', `Event ${this.isEditMode ? 'updated' : 'created'} successfully!`, 'success');
-            this.resetForm();
-            this.loadEvents();
-            this.isLoading = false;
-          },
-          error: async () => {
-            await this.showAlert('Error', 'Event creation/updation failed', 'error');
-            this.isLoading = false;
-          }
-        });
-      },
-      error: async () => {
-        await this.showAlert('Error', 'Failed to book location', 'error');
-        this.isLoading = false;
-      }
-    });
+      // First book the location
+      this.locationService.bookLocation(locationData).subscribe({
+        next: () => {
+          const request = this.isEditMode && this.currentEditEventId
+            ? this.eventService.updateEvent(this.currentEditEventId, eventData)
+            : this.eventService.createEvent(eventData);
+
+          request.subscribe({
+            next: async () => {
+              await this.showAlert('Success', `Event ${this.isEditMode ? 'updated' : 'created'} successfully!`, 'success');
+              this.resetForm();
+              await this.loadEvents();
+              await this.loadRequests();
+            },
+            error: async (error) => {
+              console.error('Event creation/update error:', error);
+              await this.showAlert('Error', 'Event creation/updation failed', 'error');
+            },
+            complete: () => {
+              this.isLoading = false;
+              this.loadingService.hide();
+            }
+          });
+        },
+        error: async (error) => {
+          console.error('Location booking error:', error);
+          await this.showAlert('Error', 'Failed to book location', 'error');
+          this.isLoading = false;
+          this.loadingService.hide();
+        }
+      });
+    } catch (error) {
+      console.error('Submit error:', error);
+      await this.showAlert('Error', 'An unexpected error occurred', 'error');
+      this.isLoading = false;
+      this.loadingService.hide();
+    }
   }
 
   onEdit(event: Event) {
@@ -278,6 +405,10 @@ categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Tech
       this.onStateChange();
       this.selectedCity = loc.city;
       this.onCityChange();
+      // Set selected venue after city change
+      setTimeout(() => {
+        this.selectedVenue = this.places.find((place: any) => place.placeName === event.location) || null;
+      }, 100);
     }
   }
 
@@ -286,15 +417,20 @@ categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Tech
     if (!confirm) return;
 
     this.isLoading = true;
-   this.eventService.deleteEvent(eventId).subscribe({
+    this.loadingService.show();
+
+    this.eventService.deleteEvent(eventId).subscribe({
       next: async () => {
         await this.showAlert('Success', 'Event deleted!', 'success');
-        this.loadEvents();
-        this.isLoading = false;
+        await this.loadEvents();
       },
-      error: async () => {
+      error: async (error) => {
+        console.error('Delete error:', error);
         await this.showAlert('Error', 'Failed to delete event', 'error');
+      },
+      complete: () => {
         this.isLoading = false;
+        this.loadingService.hide();
       }
     });
   }
@@ -305,7 +441,8 @@ categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Tech
         this.usersMap[eventId] = res.data;
         if (callback) callback();
       },
-      error: () => {
+      error: (error) => {
+        console.error('Error loading registered users:', error);
         this.showAlert('Error', 'Failed to load registered users', 'error');
       }
     });
@@ -318,6 +455,7 @@ categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Tech
     this.filteredCities = [...new Set(matches.map(loc => loc.city?.trim()).filter(Boolean))];
     this.filteredPlaceNames = [];
     this.selectedCity = '';
+    this.selectedVenue = null;
     this.eventForm.patchValue({ city: '', location: '' });
   }
 
@@ -326,6 +464,7 @@ categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Tech
     const city = this.selectedCity.trim();
     const matches = this.locations.filter(loc => loc.state?.trim() === state && loc.city?.trim() === city);
     this.filteredPlaceNames = [...new Set(matches.map(loc => loc.placeName?.trim()).filter(Boolean))];
+    this.selectedVenue = null;
     this.eventForm.patchValue({ location: '' });
   }
 
@@ -339,21 +478,21 @@ categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Tech
     this.eventForm.reset({ price: 0, maxRegistrations: 1, state: '', city: '' });
     this.selectedState = '';
     this.selectedCity = '';
+    this.selectedVenue = null;
     this.filteredCities = [];
     this.filteredPlaceNames = [];
     this.currentEditEventId = null;
   }
 
- async logout() {
-  const confirmed = window.confirm('Are you sure you want to logout?');
-  if (confirmed) {
-    localStorage.clear();
-    sessionStorage.clear();
-    alert('You have been logged out');
-    setTimeout(() => (window.location.href = '/'), 1000);
+  async logout() {
+    const confirmed = window.confirm('Are you sure you want to logout?');
+    if (confirmed) {
+      localStorage.clear();
+      sessionStorage.clear();
+      alert('You have been logged out');
+      setTimeout(() => (window.location.href = '/'), 1000);
+    }
   }
-}
-
 
   // Popup logic
   showAlert(title: string, message: string, type: PopupConfig['type']): Promise<boolean> {
@@ -392,15 +531,15 @@ categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Tech
     this.selectedEventId = null;
   }
 
-   showEventDetail(event: Event) {
-  this.selectedEvent = event;
-  this.isEventDetailVisible = true;
-  document.body.style.overflow = 'auto';
-}
+  showEventDetail(event: Event) {
+    this.selectedEvent = event;
+    this.isEventDetailVisible = true;
+    document.body.style.overflow = 'auto';
+  }
 
-closeEventDetails() {
-  this.isEventDetailVisible = false;
-  this.selectedEvent = null;
-  document.body.style.overflow = 'auto';
-}
+  closeEventDetails() {
+    this.isEventDetailVisible = false;
+    this.selectedEvent = null;
+    document.body.style.overflow = 'auto';
+  }
 }

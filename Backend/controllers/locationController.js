@@ -57,3 +57,38 @@ export const getAllLocations = asyncHandler(async (req, res) => {
   const locations = await Location.find({});
   res.status(200).json(locations);
 });
+
+// DELETE /locations/delete
+export const deleteLocation = async (req, res) => {
+  const { state, city, placeName } = req.body;
+
+  if (!state || !city || !placeName) {
+    return res.status(400).json({ message: "Missing required fields: state, city, or placeName" });
+  }
+
+  try {
+    const result = await Location.findOneAndDelete({ state, city, placeName });
+
+    if (!result) {
+      return res.status(404).json({ message: "Location not found" });
+    }
+
+    res.status(200).json({ message: "Location deleted successfully", deletedLocation: result });
+  } catch (err) {
+    console.error("Delete location error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// GET /locations
+export const viewLocations = async (req, res) => {
+  try {
+    const locations = await Location.find();
+    res.status(200).json({ data: locations });
+  } catch (err) {
+    console.error("Get all locations error:", err);
+    res.status(500).json({ message: "Failed to fetch locations" });
+  }
+};
+

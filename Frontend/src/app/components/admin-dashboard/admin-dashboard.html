@@ -23,6 +23,64 @@
       ✖ Close Location Form
     </button>
   </ng-container>
+
+  <!-- NEW: View All Locations Button -->
+  <button class="view-locations-btn" (click)="toggleViewLocations()">
+    👁️ View All Locations
+  </button>
+</div>
+
+<div class="locations-modal-overlay" *ngIf="showViewLocations" (click)="closeViewLocations()">
+  <div class="locations-modal" (click)="$event.stopPropagation()">
+    <div class="locations-modal-header">
+      <h2 class="locations-modal-title">All Locations</h2>
+      <button class="locations-modal-close-btn" (click)="closeViewLocations()" aria-label="Close locations view">
+        <span>✕</span>
+      </button>
+    </div>
+
+    <div class="locations-modal-content">
+      <div class="locations-count">
+        <span>Total Locations: {{ locations.length }}</span>
+      </div>
+
+      <div class="locations-grid" *ngIf="locations.length > 0; else noLocations">
+        <div *ngFor="let location of locations" class="location-card">
+          <div class="location-header">
+            <h3>{{ location.placeName }}</h3>
+            <span class="location-capacity">Capacity: {{ location.maxSeatingCapacity }}</span>
+          </div>
+
+          <div class="location-details">
+            <p><strong>State:</strong> {{ location.state }}</p>
+            <p><strong>City:</strong> {{ location.city }}</p>
+            <p><strong>Address:</strong> {{ location.address }}</p>
+            <div class="location-amenities" *ngIf="location.amenities && location.amenities.length > 0">
+              <strong>Amenities:</strong>
+              <div class="amenities-tags">
+                <span *ngFor="let amenity of location.amenities" class="amenity-tag">{{ amenity }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="location-actions">
+            <button
+              class="delete-location-btn"
+              (click)="confirmDeleteLocation(location.state, location.city, location.placeName)"
+              title="Delete Location">
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noLocations>
+        <div class="no-locations">
+          <p>No locations found. Add your first location!</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
 </div>
 
 <!-- Location Form -->

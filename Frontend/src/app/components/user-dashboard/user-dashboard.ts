@@ -172,35 +172,35 @@ showFilters: boolean = false;
   }
 
   registerForEvent(eventId: string) {
-  const event = this.events.find(e => e._id === eventId);
-  const eventTitle = event ? event.title : 'this event';
+    const event = this.events.find(e => e._id === eventId);
+    const eventTitle = event ? event.title : 'this event';
 
-  const userId = localStorage.getItem('userId');
-if (!userId) {
-  this.showAlert('error', 'Missing User ID', 'Please log in first.');
-  return;
-}
+    this.showConfirmation(
+      'Register for Event',
+      `Are you sure you want to register for "${eventTitle}"?`,
+      () => {
+        const url = `${environment.apiBaseUrl}/events/register`;
+        const payload = {
+          userId: this.userId,
+          eventId: eventId
+        };
 
-  this.showConfirmation(
-    'Register for Event',
-    `Are you sure you want to register for "${eventTitle}"?`,
-    () => {
-      this.loadingService.show();
-      this.eventService.registerForEvent(userId, eventId).subscribe({
-        next: () => {
-          this.loadRegisteredEvents();
-          this.loadingService.hide();
-          this.showAlert('success', 'Registration Successful', `You have successfully registered for "${eventTitle}"!`);
-        },
-        error: (err) => {
-          console.error('Registration failed', err);
-          this.loadingService.hide();
-          this.showAlert('error', 'Registration Failed', 'Failed to register for the event. Please try again.');
-        }
-      });
-    }
-  );
-}
+        this.loadingService.show();
+        this.http.post(url, payload).subscribe({
+          next: () => {
+            this.loadRegisteredEvents();
+            this.loadingService.hide();
+            this.showAlert('success', 'Registration Successful', `You have successfully registered for "${eventTitle}"!`);
+          },
+          error: (err) => {
+            console.error('Registration failed', err);
+            this.loadingService.hide();
+            this.showAlert('error', 'Registration Failed', 'Failed to register for the event. Please try again.');
+          }
+        });
+      }
+    );
+  }
 
 
   deregister(userId: string, eventId: string) {
@@ -255,7 +255,7 @@ if (!userId) {
 }
 
   decodeToken() {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (!token) return;
 
     try {
