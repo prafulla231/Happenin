@@ -86,6 +86,7 @@ export class UserDashboardComponent {
     private ApprovalService: ApprovalService,
 
   ) {
+    this.showFilters = false;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     this.decodeToken();
     this.loadAllEvents();
@@ -255,7 +256,7 @@ showFilters: boolean = false;
 }
 
   decodeToken() {
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
     if (!token) return;
 
     try {

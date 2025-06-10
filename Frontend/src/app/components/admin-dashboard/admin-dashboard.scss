@@ -698,16 +698,21 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
 
 // Location Section Styles
 .admin-location-section {
-  @include admin-glass-effect;
+   @include admin-glass-effect;
   @include admin-3d-shadow;
   padding: 32px;
-  margin-bottom: 32px;
+  margin: 32px auto; // centers horizontally
   border-radius: 20px;
+  width: 80%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  // justify-content: center; // vertical center (within available height)
+  // align-items: center;     // horizontal center
   transition: all 0.3s ease;
-
-  &:hover {
-    @include admin-hover-transform;
-  }
+  // &:hover {
+  //   @include admin-hover-transform;
+  // }
 
   h3 {
     color: $admin-text-dark;
@@ -721,82 +726,303 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
     background-clip: text;
   }
 
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+  .location-form {
+  position: relative;
+  transform-style: preserve-3d;
 
-    .admin-form-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 24px;
-    }
+  // Form Rows with 3D Effect
+  .admin-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    transform: translateZ(10px);
 
-    .admin-form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 1rem;
     }
+  }
+
+  // Enhanced Form Groups
+  .admin-form-group {
+    position: relative;
+    transform-style: preserve-3d;
 
     label {
-      color: $admin-text-dark;
-      font-weight: 600;
-      font-size: 16px;
-      margin: 0;
+      display: block;
+      font-weight: 800;
+      color: #374151;
+      margin-bottom: 0.5rem;
+      margin-top: 20px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transform: translateZ(5px);
+      transition: all 0.3s ease;
     }
 
-    input, select, textarea {
+    // 3D Input Fields
+    .form-select,
+    .form-input,
+    .form-textarea {
       width: 90%;
-      padding: 16px 20px;
-      border: 2px solid rgba(139, 95, 191, 0.2);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.9);
-      color: $admin-text-dark;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(139, 95, 191, 0.1);
+      padding: 1rem 1.25rem;
+      border: 2px solid rgba(203, 213, 225, 0.6);
+      border-radius: 16px;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      transform: translateZ(0);
+      box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
 
       &:focus {
         outline: none;
-        border-color: $admin-violet;
+        border-color: #6366f1;
+        background: rgba(255, 255, 255, 0.95);
+        transform: translateZ(8px) translateY(-2px);
         box-shadow:
-          0 0 0 4px rgba(139, 95, 191, 0.2),
-          0 8px 24px rgba(139, 95, 191, 0.2);
-        transform: translateY(-2px);
+          0 12px 24px rgba(99, 102, 241, 0.15),
+          0 6px 12px rgba(99, 102, 241, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8);
       }
 
-      &:hover:not(:focus) {
-        border-color: rgba(139, 95, 191, 0.4);
-        transform: translateY(-1px);
+      &:hover {
+        border-color: #a855f7;
+        transform: translateZ(4px) translateY(-1px);
+        box-shadow:
+          0 8px 16px rgba(0, 0, 0, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.7);
       }
     }
 
-    textarea {
-      resize: vertical;
+    .form-textarea {
       min-height: 100px;
+      resize: vertical;
     }
 
-    button[type="submit"] {
-      @include admin-button-3d;
-      align-self: center;
-      padding: 16px 48px;
-      font-size: 18px;
-      border-radius: 16px;
-      margin-top: 12px;
+    // Floating label effect
+    &:focus-within label {
+      color: #6366f1;
+      transform: translateZ(8px) scale(1.05);
+    }
+  }
 
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
+  // Enhanced Amenities Section
+  .amenities-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(248, 250, 252, 0.6);
+    border-radius: 16px;
+    border: 1px solid rgba(203, 213, 225, 0.3);
+    transform: translateZ(5px);
 
-        &:hover {
-          transform: none;
-          box-shadow: 0 4px 16px rgba(139, 95, 191, 0.3);
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(203, 213, 225, 0.3);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      transform-style: preserve-3d;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.9);
+        transform: translateZ(4px) translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        border-color: #a855f7;
+      }
+
+      .checkbox-input {
+        margin-right: 0.75rem;
+        width: 20px;
+        height: 20px;
+        accent-color: #6366f1;
+        transform: scale(1.2);
+        cursor: pointer;
+      }
+
+      .checkbox-text {
+        font-weight: 500;
+        color: #374151;
+        user-select: none;
+      }
+
+      // Checked state
+      &:has(.checkbox-input:checked) {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+        border-color: #6366f1;
+        transform: translateZ(6px) translateY(-3px);
+        box-shadow: 0 12px 24px rgba(99, 102, 241, 0.15);
+
+        .checkbox-text {
+          color: #6366f1;
+          font-weight: 600;
         }
       }
     }
   }
+
+  // Enhanced Form Actions
+  .form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    transform: translateZ(15px);
+
+    .submit-btn {
+      padding: 1rem 2.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow:
+        0 8px 16px rgba(102, 126, 234, 0.3),
+        0 4px 8px rgba(102, 126, 234, 0.2);
+      overflow: hidden;
+
+      // Shine effect
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        transition: left 0.6s ease;
+      }
+
+      &:hover {
+        transform: translateZ(8px) translateY(-4px);
+        box-shadow:
+          0 16px 32px rgba(102, 126, 234, 0.4),
+          0 8px 16px rgba(102, 126, 234, 0.3);
+
+        &::before {
+          left: 100%;
+        }
+      }
+
+      &:active {
+        transform: translateZ(4px) translateY(-2px);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: translateZ(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+        &:hover {
+          transform: translateZ(0);
+        }
+      }
+    }
+  }
+
+  // Error Messages
+  .error {
+    margin-top: 0.5rem;
+    transform: translateZ(5px);
+
+    span {
+      color: #ef4444;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &::before {
+        content: '⚠️';
+        font-size: 1rem;
+      }
+    }
+  }
 }
+
+// Keyframe Animations
+@keyframes shimmer {
+  0%, 100% {
+    transform: translateX(-100%) translateY(-100%);
+  }
+  50% {
+    transform: translateX(100%) translateY(100%);
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(-50%) scaleX(1.2);
+    opacity: 0.8;
+  }
+}
+
+// Mobile Responsive Adjustments
+@media (max-width: 768px) {
+  .admin-location-section {
+    padding: 1.5rem;
+    margin: 1rem 0;
+    transform: perspective(800px) rotateX(1deg);
+
+    h3 {
+      font-size: 1.5rem;
+    }
+  }
+
+  .location-form {
+    .amenities-checkboxes {
+      grid-template-columns: 1fr;
+      padding: 1rem;
+    }
+
+    .form-actions {
+      flex-direction: column;
+      align-items: center;
+
+      .submit-btn {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  }
+}}
+
 
 // Amenities Checkboxes
 .amenities-checkboxes {

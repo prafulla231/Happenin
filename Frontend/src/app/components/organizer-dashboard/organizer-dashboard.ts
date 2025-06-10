@@ -88,31 +88,32 @@ export class OrganizerDashboardComponent implements OnInit {
   selectedEvent: Event | null = null;
   isEventDetailVisible: boolean = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private http: HttpClient,
-    private loadingService: LoadingService,
-    private authService: AuthService,
-    private eventService: EventService,
-    private locationService: LocationService,
-    private ApprovalService: ApprovalService,
-  ) {
-    this.eventForm = this.fb.group({
-      title: ['', Validators.required],
-      description: [''],
-      date: ['', Validators.required],
-      startTime: ['', Validators.required],
-      endTime: ['', Validators.required],
-      duration: [''],
-      location: [''],
-      category: [''],
-      price: [0, Validators.min(0)],
-      maxRegistrations: [1, [Validators.required, Validators.min(1)]],
-      artist: [''],
-      organization: [''],
-      state: ['', Validators.required],
-      city: ['', Validators.required],
-    });
+ constructor(
+  private fb: FormBuilder,
+  private http: HttpClient,
+  private loadingService: LoadingService,
+  private authService: AuthService,
+  private eventService: EventService,
+  private locationService: LocationService,
+  private ApprovalService: ApprovalService,
+) {
+  this.eventForm = this.fb.group({
+    title: ['', Validators.required],
+    description: [''],
+    date: ['', Validators.required],
+    startTime: ['', Validators.required],
+    endTime: ['', Validators.required],
+    duration: [''],
+    location: [''],
+    category: [''],
+    price: [0, Validators.min(0)],
+    maxRegistrations: [1, [Validators.required, Validators.min(1)]],
+    artist: [''],
+    organization: [''],
+    state: ['', Validators.required],
+    city: ['', Validators.required],
+  });
+
 
     // Set minimum date
     const today = new Date();
@@ -123,6 +124,7 @@ export class OrganizerDashboardComponent implements OnInit {
     this.eventForm.get('endTime')?.valueChanges.subscribe(() => {
       this.calculateDuration();
     });
+
   }
 
   categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Technical', 'Comedy','Arts','Exhibition','other'];
@@ -134,119 +136,126 @@ export class OrganizerDashboardComponent implements OnInit {
   }
 
   async initializeComponent() {
-    try {
-      this.isLoading = true;
-      this.loadingService.show();
+  try {
+    // FIXED: Uncomment loading management
+    this.isLoading = true;
+    this.loadingService.show();
 
-      // First decode token to get organizer ID
-      await this.decodeToken();
+    // First decode token to get organizer ID
+    await this.decodeToken();
 
-      if (!this.organizerId) {
-        console.error('No organizer ID found');
-        await this.showAlert('Error', 'User authentication failed. Please login again.', 'error');
-        this.logout();
-        return;
-      }
-
-      // Load all data in parallel
-      await Promise.all([
-        this.fetchLocations(),
-        this.loadEvents(),
-        this.loadRequests()
-      ]);
-
-    } catch (error) {
-      console.error('Error initializing component:', error);
-      await this.showAlert('Error', 'Failed to initialize dashboard', 'error');
-    } finally {
-      this.isLoading = false;
-      this.loadingService.hide();
+    if (!this.organizerId) {
+      console.error('No organizer ID found');
+      await this.showAlert('Error', 'User authentication failed. Please login again.', 'error');
+      this.logout();
+      return;
     }
+
+    // Load all data in parallel
+    await Promise.all([
+      this.fetchLocations(),
+      this.loadEvents(),
+      this.loadRequests()
+    ]);
+
+  } catch (error) {
+    console.error('Error initializing component:', error);
+    await this.showAlert('Error', 'Failed to initialize dashboard', 'error');
+  } finally {
+    // FIXED: Always hide loading
+    this.isLoading = false;
+    this.loadingService.hide();
   }
+}
 
   async decodeToken(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  return new Promise((resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
-        if (!token) {
-          console.error('No token found in storage');
-          reject('No token found');
-          return;
-        }
-
-        console.log('Token found:', !!token);
-
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        this.organizerId = payload.userId || payload.id || null;
-
-        console.log('Decoded organizer ID:', this.organizerId);
-
-        if (!this.organizerId) {
-          reject('No organizer ID in token');
-          return;
-        }
-
-        resolve();
-      } catch (error) {
-        console.error('Error decoding token:', error);
-        this.organizerId = null;
-        reject(error);
-      }
-    });
-  }
-
-  async loadEvents(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.organizerId) {
-        console.error('No organizer ID available for loading events');
-        reject('No organizer ID');
+      if (!token) {
+        console.error('No token found in storage');
+        reject('No token found');
         return;
       }
 
-      console.log('Loading events for organizer:', this.organizerId);
+      console.log('Token found:', !!token);
 
-      this.eventService.getEventById(this.organizerId).subscribe({
-        next: (events) => {
-          console.log('Events loaded successfully:', events);
-          this.events = Array.isArray(events) ? events : [];
-          resolve();
-        },
-        error: (error) => {
-          console.error('Error loading events:', error);
-          this.events = [];
-          // Don't reject here, just log the error and continue
-          resolve();
-        }
-      });
+      // FIXED: Add better token validation
+      const tokenParts = token.split('.');
+      if (tokenParts.length !== 3) {
+        console.error('Invalid token format');
+        reject('Invalid token format');
+        return;
+      }
+
+      const payload = JSON.parse(atob(tokenParts[1]));
+      this.organizerId = payload.userId || payload.id || null;
+
+      console.log('Decoded organizer ID:', this.organizerId);
+
+      if (!this.organizerId) {
+        reject('No organizer ID in token');
+        return;
+      }
+
+      resolve();
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      this.organizerId = null;
+      reject(error);
+    }
+  });
+}
+  async loadEvents(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!this.organizerId) {
+      console.error('No organizer ID available for loading events');
+      resolve(); // Don't reject, just resolve to continue
+      return;
+    }
+
+    console.log('Loading events for organizer:', this.organizerId);
+
+    this.eventService.getEventById(this.organizerId).subscribe({
+      next: (events) => {
+        console.log('Events loaded successfully:', events);
+        this.events = Array.isArray(events) ? events : [];
+        resolve();
+      },
+      error: (error) => {
+        console.error('Error loading events:', error);
+        this.events = [];
+        resolve(); // Resolve instead of reject to prevent blocking
+      }
     });
-  }
+  });
+}
 
   async loadRequests(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.organizerId) {
-        console.error('No organizer ID available for loading requests');
-        reject('No organizer ID');
-        return;
+  return new Promise((resolve, reject) => {
+    if (!this.organizerId) {
+      console.error('No organizer ID available for loading requests');
+      resolve(); // Don't reject, just resolve to continue
+      return;
+    }
+
+    console.log('Loading approval requests for organizer:', this.organizerId);
+
+    this.ApprovalService.viewApprovalRequestById(this.organizerId).subscribe({
+      next: (events) => {
+        console.log('Approval requests loaded successfully:', events);
+        this.eventsone = Array.isArray(events) ? events : [];
+        resolve();
+      },
+      error: (error) => {
+        console.error('Error loading approval requests:', error);
+        this.eventsone = [];
+        resolve(); // Resolve instead of reject to prevent blocking
       }
-
-      console.log('Loading approval requests for organizer:', this.organizerId);
-
-      this.ApprovalService.viewApprovalRequestById(this.organizerId).subscribe({
-        next: (events) => {
-          console.log('Approval requests loaded successfully:', events);
-          this.eventsone = Array.isArray(events) ? events : [];
-          resolve();
-        },
-        error: (error) => {
-          console.error('Error loading approval requests:', error);
-          this.eventsone = [];
-          // Don't reject here, just log the error and continue
-          resolve();
-        }
-      });
     });
-  }
+  });
+}
 
   async fetchLocations(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -490,7 +499,7 @@ export class OrganizerDashboardComponent implements OnInit {
       localStorage.clear();
       sessionStorage.clear();
       alert('You have been logged out');
-      setTimeout(() => (window.location.href = '/'), 1000);
+      setTimeout(() => (window.location.href = '/login'), 1000);
     }
   }
 
