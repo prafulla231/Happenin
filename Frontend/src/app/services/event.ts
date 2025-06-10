@@ -55,8 +55,15 @@ export class EventService {
 
 registerForEvent(userId: string, eventId: string): Observable<any> {
   const payload = { userId, eventId };
-  const url = `${environment.apiBaseUrl}${environment.apis.registerEvent}`;
+  const url = `${environment.apiBaseUrl}${environment.apis.registerForEvent}`;
   return this.http.post(url, payload);
+}
+
+deregisterFromEvent(userId: string, eventId: string): Observable<any> {
+  const url = `${environment.apiBaseUrl}${environment.apis.deregisterForEvent}`;
+  const payload = { userId, eventId };
+
+  return this.http.request('delete', url, { body: payload });
 }
 
 
