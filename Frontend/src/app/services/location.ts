@@ -41,13 +41,13 @@ export class LocationService {
   // deleteLocation(data)
 
   viewLocation(): Observable<Location[]> {
-    return this.http.get<{ data: Location[] }>(`http://localhost:5000/api/locations/getLocations`)
+    return this.http.get<{ data: Location[] }>(`${environment.apiBaseUrl}${environment.apis.viewLocation}`)
       .pipe(map(res => res.data));
   }
 
   // DELETE: Delete a location using state, city, and placeName
   deleteLocation(state: string, city: string, placeName: string): Observable<any> {
     const payload = { state, city, placeName };
-    return this.http.request('delete', `http://localhost:5000/api/locations/deleteLocation`, { body: payload });
+    return this.http.request('delete', `${environment.apiBaseUrl}${environment.apis.deleteLocation}`, { body: payload });
   }
 }
