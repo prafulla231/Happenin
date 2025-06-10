@@ -90,7 +90,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
   selectedEvent: Event | null = null;
   isEventDetailVisible: boolean = false;
 
-  categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Technical', 'Comedy','Arts','Exhibition','other'];
+  categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Technical', 'Comedy', 'Arts', 'Exhibition', 'other'];
   minDate: string = '';
 
   constructor(
@@ -521,3 +521,5 @@ export class OrganizerDashboardComponent implements OnDestroy {
     document.body.style.overflow = 'auto';
   }
 }
+
+

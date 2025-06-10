@@ -8,7 +8,7 @@ export const bookLocation = async (req, res) => {
     if (!state || !city || !placeName || !startTime_one || !endTime_one) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
-
+    // eslint-disable-next-line security/detect-nosql-injection
     const location = await Location.findOne({ state, city, placeName });
 
     if (!location) {

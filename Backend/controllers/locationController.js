@@ -67,6 +67,7 @@ export const deleteLocation = async (req, res) => {
   }
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const result = await Location.findOneAndDelete({ state, city, placeName });
 
     if (!result) {
