@@ -10,22 +10,30 @@ export const environment = {
     updateEvent: (eventId: string) => `/events/${eventId}`,
     deleteEvent: (eventId: string) => `/events/${eventId}`,
 
+    // Missing endpoints that were in development but not production:
+    registeredEvents: (userId: string) => `/events/registered-events/${userId}`,
+    registerForEvent: '/events/register',
+    deregisterForEvent: '/events/deregister',
+
     // Registrations
     getRegisteredUsers: (eventId: string) => `/events/registered-users/${eventId}`,
     removeUserFromEvent: (eventId: string, userId: string) => `/events/removeuser/${eventId}/users/${userId}`,
 
     // Locations
     fetchLocations: '/locations',
-    addLocation: '/locations' ,
+    addLocation: '/locations',
+    bookLocation: '/locations/book',
+    cancelBooking: '/locations/cancel',
+    viewLocation: '/locations/getLocations',
+    deleteLocation: '/locations/deleteLocation',
 
-
-    //Approvals
-    approveEvent:  `/approval/approve`,
+    // Approvals
+    approveEvent: '/approval/approve',
     denyEvent: (eventId: string) => `/approval/deny/${eventId}`,
     viewApprovalRequests: '/approval/viewApproval',
     viewApprovalRequestById: (requestId: string) => `/approval/viewrequests/${requestId}`,
 
-    //users
+    // Users
     registerUser: '/users/register',
     loginUser: '/users/login',
   }

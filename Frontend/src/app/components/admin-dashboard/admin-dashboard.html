@@ -642,12 +642,12 @@
     <!-- Alert Actions -->
     <div class="custom-alert-actions">
       <button
-        *ngIf="customAlert.type !== 'confirm'"
-        class="alert-btn alert-ok-btn"
-        (click)="closeAlert()">
-        <span class="btn-text">OK</span>
-        <div class="btn-ripple"></div>
-      </button>
+  *ngIf="customAlert.type !== 'confirm' && !customAlert.autoClose"
+  class="alert-btn alert-ok-btn"
+  (click)="closeAlert()">
+  <!-- <span class="btn-text">OK</span> -->
+  <div class="btn-ripple"></div>
+</button>
 
       <div *ngIf="customAlert.type === 'confirm'" class="confirmation-buttons">
         <button

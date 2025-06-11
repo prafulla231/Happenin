@@ -58,6 +58,7 @@ export interface CustomAlert {
   confirmAction?: () => void;
   cancelAction?: () => void;
   showCancel?: boolean;
+  autoClose?: boolean;
 }
 
 @Component({
@@ -89,7 +90,8 @@ showViewLocations = false;
     type: 'info',
     title: '',
     message: '',
-    showCancel: false
+    showCancel: false,
+     autoClose: false
   };
 
   // Filters
@@ -134,8 +136,6 @@ showViewLocations = false;
   availablecitys: string[] = [];
   amenities: string[] = ['Wi-Fi', 'AC', 'Parking', 'Projector', 'Water Supply', 'Microphone', 'Speaker'];
   showUsersDropdown: Record<string, boolean> = {};
-
-  // New properties for user info from localStorage
   userEmail: string = '';
   isSuperAdmin: boolean = false;
 
@@ -179,28 +179,37 @@ showViewLocations = false;
     return count;
   }
 
+  private alertTimeout: any;
+
   // Custom Alert Methods
-  showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) {
-    this.customAlert = {
-      show: true,
-      type,
-      title,
-      message,
-      showCancel: false
-    };
-  }
+  showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string, duration: number = 2000) {
+  this.clearAlertTimeout();  // Clear any previous timeout
+
+  this.customAlert = {
+    show: true,
+    type,
+    title,
+    message,
+    showCancel: false
+  };
+
+  this.alertTimeout = setTimeout(() => {
+    this.closeAlert();
+  }, duration);
+}
 
   showConfirmation(title: string, message: string, confirmAction: () => void, cancelAction?: () => void) {
-    this.customAlert = {
-      show: true,
-      type: 'confirm',
-      title,
-      message,
-      confirmAction,
-      cancelAction,
-      showCancel: true
-    };
-  }
+  this.clearAlertTimeout();  // Prevent accidental closure
+  this.customAlert = {
+    show: true,
+    type: 'confirm',
+    title,
+    message,
+    confirmAction,
+    cancelAction,
+    showCancel: true
+  };
+}
 
   handleAlertConfirm() {
     if (this.customAlert.confirmAction) {
@@ -216,11 +225,19 @@ showViewLocations = false;
     this.closeAlert();
   }
 
-  closeAlert() {
-    this.customAlert.show = false;
-    this.customAlert.confirmAction = undefined;
-    this.customAlert.cancelAction = undefined;
+ closeAlert() {
+  this.customAlert.show = false;
+  this.customAlert.confirmAction = undefined;
+  this.customAlert.cancelAction = undefined;
+  this.clearAlertTimeout();
+}
+
+private clearAlertTimeout() {
+  if (this.alertTimeout) {
+    clearTimeout(this.alertTimeout);
+    this.alertTimeout = null;
   }
+}
 
 
   toggleViewLocations(): void {
@@ -297,14 +314,14 @@ deleteLocation(state: string, city: string, placeName: string): void {
   setUserFromLocalUser() {
   try {
     const userString = localStorage.getItem('user');
-    console.log('User string from sessionStorage:', userString);
+    // console.log('User string from sessionStorage:', userString);
 
     if (userString) {
       const user = JSON.parse(userString);
       this.userEmail = user.email || '';
       this.isSuperAdmin = this.userEmail === 'superadmin@gmail.com';
-      console.log('Parsed user:', user);
-      console.log('User email:', this.userEmail);
+      // console.log('Parsed user:', user);
+      // console.log('User email:', this.userEmail);
     } else {
       this.userEmail = '';
       this.isSuperAdmin = false;
@@ -324,7 +341,7 @@ deleteLocation(state: string, city: string, placeName: string): void {
   onRegisterSubmit(): void {
     if (this.registerForm.valid) {
       const data = this.registerForm.value;
-      console.log('Registering admin with data:', data);
+      // console.log('Registering admin with data:', data);
 
       this.authService.registerUser(data).subscribe({
         next: () => {
@@ -425,7 +442,7 @@ deleteLocation(state: string, city: string, placeName: string): void {
         this.loadApprovals();
         this.loadEvents();
         this.showAlert('success', 'Event Approved', `Event "${eventToApprove.title}" has been approved successfully!`);
-        console.log('Approved:', res);
+        // console.log('Approved:', res);
       },
       error: (err) => {
         console.error('Approval failed:', err);
@@ -440,7 +457,7 @@ deleteLocation(state: string, city: string, placeName: string): void {
 
     this.ApprovalService.denyEvent(eventId).subscribe({
       next: (res) => {
-        console.log('Delete successful:', res);
+        // console.log('Delete successful:', res);
         this.loadApprovals();
         this.showAlert('success', 'Event Denied', `Event "${eventTitle}" has been denied and removed.`);
       },

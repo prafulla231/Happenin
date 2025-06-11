@@ -5,18 +5,177 @@ import { bookLocation , cancelBooking } from '../controllers/bookingController.j
 
 const router = express.Router();
 
-// POST /api/locations - Create new location
-router.post('/',createLocation);
+/**
+ * @swagger
+ * /locations/:
+ *   post:
+ *     summary: Create a new location
+ *     tags:
+ *       - Locations
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - state
+ *               - city
+ *               - placeName
+ *               - address
+ *               - maxSeatingCapacity
+ *             properties:
+ *               state:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               placeName:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               maxSeatingCapacity:
+ *                 type: integer
+ *               amenities:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       201:
+ *         description: Location created successfully
+ *       400:
+ *         description: Missing required fields
+ *       500:
+ *         description: Server error
+ */
+router.post('/', createLocation);
 
-// GET /api/locations - Get all locations
+
+/**
+ * @swagger
+ * /locations/:
+ *   get:
+ *     summary: Get all locations
+ *     tags:
+ *       - Locations
+ *     responses:
+ *       200:
+ *         description: Successfully fetched all locations
+ *       500:
+ *         description: Server error
+ */
 router.get('/', getAllLocations);
 
+
+/**
+ * @swagger
+ * /locations/book:
+ *   post:
+ *     summary: Book a location
+ *     tags:
+ *       - Locations
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               locationId:
+ *                 type: string
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               timeSlot:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Location booked successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Server error
+ */
 router.post('/book', bookLocation);
 
-router.post('/cancel', cancelBooking);
-router.get('/getLocations', viewLocations);
-router.delete('/deleteLocation', deleteLocation);
 
+/**
+ * @swagger
+ * /locations/cancel:
+ *   post:
+ *     summary: Cancel booking
+ *     tags:
+ *       - Locations
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               bookingId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Booking cancelled successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Server error
+ */
+router.post('/cancel', cancelBooking);
+
+
+/**
+ * @swagger
+ * /locations/getLocations:
+ *   get:
+ *     summary: View locations (duplicate of GET /)
+ *     tags:
+ *       - Locations
+ *     responses:
+ *       200:
+ *         description: Locations fetched successfully
+ *       500:
+ *         description: Server error
+ */
+router.get('/getLocations', viewLocations);
+
+
+/**
+ * @swagger
+ * /locations/deleteLocation:
+ *   delete:
+ *     summary: Delete location by state, city, and placeName
+ *     tags:
+ *       - Locations
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - state
+ *               - city
+ *               - placeName
+ *             properties:
+ *               state:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               placeName:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Location deleted successfully
+ *       400:
+ *         description: Missing required fields
+ *       404:
+ *         description: Location not found
+ *       500:
+ *         description: Server error
+ */
+router.delete('/deleteLocation', deleteLocation);
 
 
 export default router;

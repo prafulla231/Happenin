@@ -12,7 +12,31 @@ import  { Location } from '../components/admin-dashboard/admin-dashboard';
 })
 export class AuthService {
 
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+   getUserRole(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.role;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken();
+  }
+
+
+
   constructor(private http: HttpClient) {}
+
+
 
   registerUser(data: any) {
     return this.http.post(`${environment.apiBaseUrl}${environment.apis.registerUser}`, data);

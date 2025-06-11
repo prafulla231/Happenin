@@ -6,6 +6,8 @@ import eventRoutes from './routes/eventRoutes.js';
 import locationRoutes from './routes/locationRoutes.js';
 import approveRoute from './routes/approveRoute.js';
 import cors from 'cors';
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
 dotenv.config();
 
@@ -15,10 +17,31 @@ const PORT = process.env.PORT || 5000;
 // Connect to DB
 connectDB();
 
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Happenin APIs',
+      version: '1.0.0',
+      description: 'API documentation for your MEAN project'
+    },
+    servers: [
+      { url: 'http://localhost:5000/api' },
+      { url: 'https://happenin-byma.onrender.com/api' }
+      
+    ]
+  },
+  apis: ['./routes/*.js'],  // path where your routes exist
+};
+
+const swaggerSpec = swaggerJSDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: '*', // Allow all origins, change as needed
+  origin: ['http://localhost:4200', 'https://happeninfrontend.onrender.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));

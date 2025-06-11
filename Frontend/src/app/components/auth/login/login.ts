@@ -17,6 +17,11 @@ export class LoginComponent {
   showSuccessPopup = false;
   successMessage = '';
 
+  // Alert popup properties
+  showAlertPopup = false;
+  alertMessage = '';
+  alertType: 'error' | 'warning' | 'info' = 'error';
+
   loginForm: FormGroup;
   registerForm: FormGroup;
 
@@ -86,6 +91,23 @@ export class LoginComponent {
     }, 2000);
   }
 
+  // New method to show alert popup
+  showAlert(message: string, type: 'error' | 'warning' | 'info' = 'error'): void {
+    this.alertMessage = message;
+    this.alertType = type;
+    this.showAlertPopup = true;
+
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+      this.hideAlert();
+    }, 4000);
+  }
+
+  // Method to manually hide alert popup
+  hideAlert(): void {
+    this.showAlertPopup = false;
+  }
+
   onLoginSubmit(): void {
     if (this.loginForm.valid) {
       const data = this.loginForm.value;
@@ -96,9 +118,11 @@ export class LoginComponent {
 
           if (response.data.token) {
             localStorage.setItem('token', response.data.token);
+            sessionStorage.setItem('token', response.data.token);
           }
           if (response.data.user) {
             localStorage.setItem('user', JSON.stringify(response.data.user));
+            sessionStorage.setItem('user', JSON.stringify(response.data.user));
           }
 
           // Show success message
@@ -128,12 +152,16 @@ export class LoginComponent {
             errorMessage = 'Network error. Please check your connection.';
           }
 
-          alert(errorMessage);
+          // Use custom alert instead of default alert
+          this.showAlert(errorMessage, 'error');
         }
       });
     } else {
       // Mark all fields as touched to show validation errors
       this.markFormGroupTouched(this.loginForm);
+
+      // Show validation error popup
+      this.showAlert('Please fill in all required fields correctly.', 'warning');
     }
   }
 
@@ -164,12 +192,16 @@ export class LoginComponent {
             errorMessage = 'Network error. Please check your connection.';
           }
 
-          alert(errorMessage);
+          // Use custom alert instead of default alert
+          this.showAlert(errorMessage, 'error');
         }
       });
     } else {
       // Mark all fields as touched to show validation errors
       this.markFormGroupTouched(this.registerForm);
+
+      // Show validation error popup
+      this.showAlert('Please fill in all required fields correctly.', 'warning');
     }
   }
 

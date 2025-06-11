@@ -1,0 +1,1266 @@
+[
+  {
+    "_id": "6843e65062c3dcd0d20729b6",
+    "state": "Maharashtra",
+    "city": "Mumbai",
+    "placeName": "Kala Mandir",
+    "address": "Station road ,Gateway of india",
+    "maxSeatingCapacity": 1571,
+    "amenities": [
+      "Wi-Fi",
+      "AC",
+      "Parking",
+      "Projector",
+      "Water Supply",
+      "Microphone",
+      "Speaker"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-07-01T02:58:00.000Z",
+        "endTime": "2025-07-01T11:31:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-24T11:20:00.000Z",
+        "endTime": "2025-06-24T13:20:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-18T10:21:00.000Z",
+        "endTime": "2025-06-18T14:21:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-13T08:22:00.000Z",
+        "endTime": "2025-06-13T12:22:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-19T10:25:00.000Z",
+        "endTime": "2025-06-19T12:25:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-07T07:12:16.865Z",
+    "updatedAt": "2025-06-07T08:25:34.431Z",
+    "__v": 6
+  },
+  {
+    "_id": "6843e69a62c3dcd0d20729bc",
+    "state": "Karnataka",
+    "city": "Bengaluru",
+    "placeName": "Ilink building",
+    "address": "Rcb Headquarters",
+    "maxSeatingCapacity": 6781,
+    "amenities": [
+      "Wi-Fi",
+      "Parking",
+      "Water Supply",
+      "Speaker"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-06-17T21:18:00.000Z",
+        "endTime": "2025-06-18T11:58:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-27T06:56:00.000Z",
+        "endTime": "2025-06-27T09:56:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-12T07:26:00.000Z",
+        "endTime": "2025-06-12T13:26:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-07T07:13:30.924Z",
+    "updatedAt": "2025-06-09T06:27:54.579Z",
+    "__v": 3
+  },
+  {
+    "_id": "6843e6b862c3dcd0d20729bf",
+    "state": "Karnataka",
+    "city": "Belagavi",
+    "placeName": "CSK Headquarters",
+    "address": "Victor road",
+    "maxSeatingCapacity": 5627,
+    "amenities": [
+      "Wi-Fi",
+      "Microphone",
+      "Speaker",
+      "Projector",
+      "Parking"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-07T07:14:00.771Z",
+    "updatedAt": "2025-06-07T07:14:00.771Z",
+    "__v": 0
+  },
+  {
+    "_id": "6843e6d962c3dcd0d20729c2",
+    "state": "Delhi",
+    "city": "New Delhi",
+    "placeName": "Rashtrapati Bhavan",
+    "address": "Victory parade",
+    "maxSeatingCapacity": 560,
+    "amenities": [
+      "Wi-Fi",
+      "Speaker",
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-06-13T10:28:00.000Z",
+        "endTime": "2025-06-13T14:29:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-27T07:12:00.000Z",
+        "endTime": "2025-06-27T08:12:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-07T07:14:33.065Z",
+    "updatedAt": "2025-06-09T07:12:23.525Z",
+    "__v": 2
+  },
+  {
+    "_id": "6843f274c7b952f605a0aaa9",
+    "state": "Tamil Nadu",
+    "city": "Coimbatore",
+    "placeName": "Amar Bussiness Zone",
+    "address": "fdjnfjkdfjkdsan",
+    "maxSeatingCapacity": 3783,
+    "amenities": [
+      "Projector",
+      "Speaker",
+      "Water Supply",
+      "Wi-Fi",
+      "AC"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-06-18T08:13:00.000Z",
+        "endTime": "2025-06-18T10:15:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-25T14:58:00.000Z",
+        "endTime": "2025-06-25T17:57:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-18T14:01:00.000Z",
+        "endTime": "2025-06-18T16:01:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-20T04:30:00.000Z",
+        "endTime": "2025-06-20T14:30:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-07T08:04:04.554Z",
+    "updatedAt": "2025-06-09T12:40:15.555Z",
+    "__v": 4
+  },
+  {
+    "_id": "684675d2c8b134c26dc50921",
+    "state": "Maharashtra",
+    "city": "Nashik",
+    "placeName": "sayaji Enterprise",
+    "address": "Indira Nagar",
+    "maxSeatingCapacity": 400,
+    "amenities": [
+      "Wi-Fi",
+      "AC",
+      "Parking",
+      "Microphone",
+      "Speaker"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-06-09T11:56:00.000Z",
+        "endTime": "2025-06-09T12:56:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-09T05:49:06.276Z",
+    "updatedAt": "2025-06-09T11:58:08.293Z",
+    "__v": 1
+  },
+  {
+    "_id": "68467641c8b134c26dc50934",
+    "state": "Gujarat",
+    "city": "Vadodara",
+    "placeName": "Silver Sky",
+    "address": "Harni",
+    "maxSeatingCapacity": 350,
+    "amenities": [
+      "Wi-Fi",
+      "AC",
+      "Microphone"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-07-02T08:00:00.000Z",
+        "endTime": "2025-07-02T13:00:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-09T05:50:57.701Z",
+    "updatedAt": "2025-06-09T17:28:37.950Z",
+    "__v": 1
+  },
+  {
+    "_id": "68467694c8b134c26dc50937",
+    "state": "Maharashtra",
+    "city": "Pune",
+    "placeName": "Jawaharlal Nehru",
+    "address": "Shivaji Nagar",
+    "maxSeatingCapacity": 1000,
+    "amenities": [
+      "AC",
+      "Speaker",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T05:52:20.419Z",
+    "updatedAt": "2025-06-09T05:52:20.419Z",
+    "__v": 0
+  },
+  {
+    "_id": "6846774fc8b134c26dc50969",
+    "state": "Maharashtra",
+    "city": "Mumbai",
+    "placeName": "Jio Gardens",
+    "address": "BKC",
+    "maxSeatingCapacity": 9999,
+    "amenities": [
+      "AC",
+      "Parking",
+      "Projector",
+      "Water Supply"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-06-11T06:59:00.000Z",
+        "endTime": "2025-06-11T09:59:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-18T10:09:00.000Z",
+        "endTime": "2025-06-18T13:09:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-07-30T04:30:00.000Z",
+        "endTime": "2025-07-30T10:30:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-09T05:55:27.974Z",
+    "updatedAt": "2025-06-09T17:23:43.488Z",
+    "__v": 3
+  },
+  {
+    "_id": "68467787c8b134c26dc5096c",
+    "state": "Maharashtra",
+    "city": "Mumbai",
+    "placeName": "Mahalakshmi Race Course",
+    "address": "Mahalakshmi Lawns",
+    "maxSeatingCapacity": 24998,
+    "amenities": [
+      "Water Supply"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T05:56:23.230Z",
+    "updatedAt": "2025-06-09T05:56:23.230Z",
+    "__v": 0
+  },
+  {
+    "_id": "6846c05e58a71505f92e34aa",
+    "state": "Delhi",
+    "city": "New Delhi",
+    "placeName": "Feroz Shah Kotla",
+    "address": "New Delhi",
+    "maxSeatingCapacity": 55000,
+    "amenities": [
+      "Parking"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-06-24T20:08:00.000Z",
+        "endTime": "2025-06-25T15:14:00.000Z",
+        "isBooked": true
+      },
+      {
+        "startTime": "2025-06-18T18:30:00.000Z",
+        "endTime": "2025-06-19T11:30:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-09T11:07:10.841Z",
+    "updatedAt": "2025-06-09T17:26:10.828Z",
+    "__v": 2
+  },
+  {
+    "_id": "6846cd3e4c68e4e2a67b46d4",
+    "state": "Rajasthan",
+    "city": "Udaipur",
+    "placeName": "SUNSET LAKE",
+    "address": "Plot No.42,Devendra Nagar,UDAIPUR",
+    "maxSeatingCapacity": 99,
+    "amenities": [
+      "Wi-Fi",
+      "AC",
+      "Parking",
+      "Microphone",
+      "Speaker"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T12:02:06.483Z",
+    "updatedAt": "2025-06-09T12:02:06.483Z",
+    "__v": 0
+  },
+  {
+    "_id": "6846d2e84c68e4e2a67b47a1",
+    "state": "Uttar Pradesh",
+    "city": "Varanasi",
+    "placeName": "Manikarnikar Ghat",
+    "address": "Manikarnikar Ghat, beside river",
+    "maxSeatingCapacity": 999,
+    "amenities": [
+      "Parking",
+      "Water Supply",
+      "Speaker",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T12:26:16.559Z",
+    "updatedAt": "2025-06-09T12:26:16.559Z",
+    "__v": 0
+  },
+  {
+    "_id": "68470ea50766e887a6687a0a",
+    "state": "Maharashtra",
+    "city": "Mumbai",
+    "placeName": "Balgandharva Rangmandir",
+    "address": "Bandra West, Mumbai, Maharashtra, India",
+    "maxSeatingCapacity": 687,
+    "amenities": [
+      "Wi-Fi",
+      "Speaker",
+      "AC",
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:41:09.695Z",
+    "updatedAt": "2025-06-09T16:41:09.695Z",
+    "__v": 0
+  },
+  {
+    "_id": "68470f8c0766e887a6687a0d",
+    "state": "Delhi",
+    "city": "New Delhi",
+    "placeName": "NDMC Convention Centre (Connaught Place)",
+    "address": "Sansad Marg / Hanuman Road, Connaught Place, New Delhi, Delhi 110001",
+    "maxSeatingCapacity": 900,
+    "amenities": [
+      "Wi-Fi",
+      "Speaker",
+      "Parking",
+      "Projector",
+      "Water Supply"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:45:00.481Z",
+    "updatedAt": "2025-06-09T16:45:00.481Z",
+    "__v": 0
+  },
+  {
+    "_id": "68470fa90766e887a6687a10",
+    "state": "Delhi",
+    "city": "New Delhi",
+    "placeName": "Pragati Maidan – Hamsadhwani Theatre (Open‑Air)",
+    "address": "Pragati Maidan complex, New Delhi",
+    "maxSeatingCapacity": 3500,
+    "amenities": [
+      "Parking",
+      "Projector",
+      "Water Supply",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:45:29.349Z",
+    "updatedAt": "2025-06-09T16:45:29.349Z",
+    "__v": 0
+  },
+  {
+    "_id": "68470fd30766e887a6687a13",
+    "state": "Delhi",
+    "city": "Central Delhi",
+    "placeName": "Kamani Auditorium (Mandi House, Connaught Place)",
+    "address": "Near Mandi House Metro, Connaught Place, New Delhi",
+    "maxSeatingCapacity": 632,
+    "amenities": [
+      "AC",
+      "Speaker",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:46:11.475Z",
+    "updatedAt": "2025-06-09T16:46:11.475Z",
+    "__v": 0
+  },
+  {
+    "_id": "68470ff00766e887a6687a16",
+    "state": "Delhi",
+    "city": "Central Delhi",
+    "placeName": "Triveni Auditorium (Triveni Kala Sangam)",
+    "address": "Copernicus Marg, Mandi House, New Delhi",
+    "maxSeatingCapacity": 159,
+    "amenities": [
+      "AC",
+      "Speaker",
+      "Parking",
+      "Water Supply"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:46:40.483Z",
+    "updatedAt": "2025-06-09T16:46:40.483Z",
+    "__v": 0
+  },
+  {
+    "_id": "684710110766e887a6687a19",
+    "state": "Delhi",
+    "city": "North Delhi",
+    "placeName": "Miranda House Auditorium (University of Delhi, Shalimar Bagh)",
+    "address": "Shalimar Bagh, North Delhi",
+    "maxSeatingCapacity": 450,
+    "amenities": [
+      "Microphone",
+      "Speaker"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:47:13.841Z",
+    "updatedAt": "2025-06-09T16:47:13.841Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847102d0766e887a6687a1c",
+    "state": "Delhi",
+    "city": "North Delhi",
+    "placeName": "Shah Auditorium (Civil Lines)",
+    "address": "Civil Lines, North Delhi",
+    "maxSeatingCapacity": 600,
+    "amenities": [
+      "Wi-Fi",
+      "Water Supply"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:47:41.235Z",
+    "updatedAt": "2025-06-09T16:47:41.235Z",
+    "__v": 0
+  },
+  {
+    "_id": "684710490766e887a6687a1f",
+    "state": "Delhi",
+    "city": "South Delhi",
+    "placeName": "NCUI Auditorium & Convention Centre (Patron Halls, Jai Singh Road)",
+    "address": "Jantar Mantar Marg, New Delhi",
+    "maxSeatingCapacity": 520,
+    "amenities": [
+      "Speaker",
+      "AC",
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:48:09.512Z",
+    "updatedAt": "2025-06-09T16:48:09.512Z",
+    "__v": 0
+  },
+  {
+    "_id": "684710620766e887a6687a22",
+    "state": "Delhi",
+    "city": "South Delhi",
+    "placeName": "Siri Fort Auditorium (Hauz Khas)",
+    "address": "Siri Fort Cultural Complex, Hauz Khas, South Delhi",
+    "maxSeatingCapacity": 700,
+    "amenities": [
+      "AC",
+      "Water Supply",
+      "Speaker"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:48:34.751Z",
+    "updatedAt": "2025-06-09T16:48:34.751Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847107b0766e887a6687a25",
+    "state": "Rajasthan",
+    "city": "Jodhpur",
+    "placeName": "Fairfield by Marriott – Sapphire Room",
+    "address": "Near Jodhpur Airport (Marriott property)",
+    "maxSeatingCapacity": 250,
+    "amenities": [
+      "Wi-Fi",
+      "Speaker",
+      "Projector",
+      "AC"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:48:59.089Z",
+    "updatedAt": "2025-06-09T16:48:59.089Z",
+    "__v": 0
+  },
+  {
+    "_id": "684710990766e887a6687a28",
+    "state": "Rajasthan",
+    "city": "Jodhpur",
+    "placeName": "The Utamber Club",
+    "address": "Central Jodhpur",
+    "maxSeatingCapacity": 890,
+    "amenities": [
+      "AC",
+      "Parking",
+      "Water Supply",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:49:29.443Z",
+    "updatedAt": "2025-06-09T16:49:29.443Z",
+    "__v": 0
+  },
+  {
+    "_id": "684710ba0766e887a6687a2b",
+    "state": "Rajasthan",
+    "city": "Ajmer",
+    "placeName": "Ajmer Bagh",
+    "address": "331, Hathi Khera, Foy Sagar Rd, Ajmer, Rajasthan 305001",
+    "maxSeatingCapacity": 1500,
+    "amenities": [
+      "Speaker",
+      "Microphone",
+      "Parking"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:50:02.075Z",
+    "updatedAt": "2025-06-09T16:50:02.075Z",
+    "__v": 0
+  },
+  {
+    "_id": "684710de0766e887a6687a2e",
+    "state": "Rajasthan",
+    "city": "Ajmer",
+    "placeName": "Citi Pride Garden",
+    "address": "Pushkar Road near Daharsen Smarak Gate, Ajmer 305001",
+    "maxSeatingCapacity": 451,
+    "amenities": [
+      "Wi-Fi",
+      "Speaker",
+      "Parking",
+      "Microphone",
+      "Water Supply"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:50:38.039Z",
+    "updatedAt": "2025-06-09T16:50:38.039Z",
+    "__v": 0
+  },
+  {
+    "_id": "684711100766e887a6687a31",
+    "state": "Rajasthan",
+    "city": "Kota",
+    "placeName": "Lotus Ananta Elite – Ballroom",
+    "address": "Kota",
+    "maxSeatingCapacity": 842,
+    "amenities": [
+      "Wi-Fi",
+      "Speaker",
+      "Parking"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:51:28.808Z",
+    "updatedAt": "2025-06-09T16:51:28.808Z",
+    "__v": 0
+  },
+  {
+    "_id": "684711280766e887a6687a34",
+    "state": "Rajasthan",
+    "city": "Kota",
+    "placeName": "Rotary Binani Sabhagar",
+    "address": "Rotary Binani Sabhagar",
+    "maxSeatingCapacity": 1000,
+    "amenities": [
+      "Parking",
+      "Projector",
+      "Water Supply"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:51:52.190Z",
+    "updatedAt": "2025-06-09T16:51:52.190Z",
+    "__v": 0
+  },
+  {
+    "_id": "684711420766e887a6687a37",
+    "state": "Uttar Pradesh",
+    "city": "Noida",
+    "placeName": "Max Towers, Noida",
+    "address": "Sector 16, Noida",
+    "maxSeatingCapacity": 130,
+    "amenities": [
+      "Wi-Fi",
+      "AC",
+      "Parking"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:52:18.885Z",
+    "updatedAt": "2025-06-09T16:52:18.885Z",
+    "__v": 0
+  },
+  {
+    "_id": "684711590766e887a6687a3a",
+    "state": "Uttar Pradesh",
+    "city": "Noida",
+    "placeName": "Casa Meera, Sector‑70",
+    "address": "Block BS, Sector 70, Noida",
+    "maxSeatingCapacity": 250,
+    "amenities": [
+      "Water Supply",
+      "Projector",
+      "Parking"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-07-05T10:45:00.000Z",
+        "endTime": "2025-07-05T13:45:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-09T16:52:41.384Z",
+    "updatedAt": "2025-06-09T17:33:23.738Z",
+    "__v": 1
+  },
+  {
+    "_id": "684711cb0766e887a6687a3d",
+    "state": "Karnataka",
+    "city": "Bengaluru",
+    "placeName": "Wings Baldwin Auditorium",
+    "address": "Richmond Town, Bengaluru",
+    "maxSeatingCapacity": 700,
+    "amenities": [
+      "Speaker",
+      "AC",
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:54:35.260Z",
+    "updatedAt": "2025-06-09T16:54:35.260Z",
+    "__v": 0
+  },
+  {
+    "_id": "684711e60766e887a6687a40",
+    "state": "Karnataka",
+    "city": "Bengaluru",
+    "placeName": "JSS Auditorium",
+    "address": "JSS Educational Complex, 1st Main Rd, 8th Block, Jayanagar, Bengaluru 560070",
+    "maxSeatingCapacity": 550,
+    "amenities": [
+      "AC",
+      "Wi-Fi",
+      "Speaker"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:55:02.248Z",
+    "updatedAt": "2025-06-09T16:55:02.248Z",
+    "__v": 0
+  },
+  {
+    "_id": "684712000766e887a6687a43",
+    "state": "Karnataka",
+    "city": "Bengaluru",
+    "placeName": "J N Tata Auditorium (Malleshwaram)",
+    "address": "National Science Seminar Complex, CV Raman Rd, Kodandarampura, Bengaluru 560012",
+    "maxSeatingCapacity": 750,
+    "amenities": [
+      "AC",
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:55:28.015Z",
+    "updatedAt": "2025-06-09T16:55:28.015Z",
+    "__v": 0
+  },
+  {
+    "_id": "684712200766e887a6687a46",
+    "state": "Karnataka",
+    "city": "Bengaluru",
+    "placeName": "Prestige Centre for Performing Arts (PCPA Grand Auditorium)",
+    "address": "MG Road area, Bengaluru",
+    "maxSeatingCapacity": 1059,
+    "amenities": [
+      "AC",
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:56:00.142Z",
+    "updatedAt": "2025-06-09T16:56:00.142Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847123b0766e887a6687a49",
+    "state": "Karnataka",
+    "city": "Bengaluru",
+    "placeName": "Ranga Shankara",
+    "address": "JP Nagar, Bengaluru",
+    "maxSeatingCapacity": 320,
+    "amenities": [
+      "Projector",
+      "Water Supply",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:56:27.779Z",
+    "updatedAt": "2025-06-09T16:56:27.779Z",
+    "__v": 0
+  },
+  {
+    "_id": "684712550766e887a6687a4c",
+    "state": "Karnataka",
+    "city": "Bengaluru",
+    "placeName": "Gymkhana Ground (Central Bengaluru)",
+    "address": "Central Bengaluru",
+    "maxSeatingCapacity": 5000,
+    "amenities": [
+      "AC",
+      "Speaker",
+      "Wi-Fi"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-06-18T07:30:00.000Z",
+        "endTime": "2025-06-18T13:30:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-09T16:56:53.383Z",
+    "updatedAt": "2025-06-09T17:30:50.532Z",
+    "__v": 1
+  },
+  {
+    "_id": "684712730766e887a6687a4f",
+    "state": "Karnataka",
+    "city": "Mysuru",
+    "placeName": "SMT. Saraswathi Convention Hall",
+    "address": "Mysuru",
+    "maxSeatingCapacity": 2500,
+    "amenities": [
+      "Speaker",
+      "Parking",
+      "Projector",
+      "Water Supply",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:57:23.619Z",
+    "updatedAt": "2025-06-09T16:57:23.619Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847128d0766e887a6687a52",
+    "state": "Karnataka",
+    "city": "Mysuru",
+    "placeName": "Radisson Blu Mysore – Ballroom",
+    "address": "Radisson Blu Hotel, Mysuru",
+    "maxSeatingCapacity": 1300,
+    "amenities": [
+      "AC",
+      "Wi-Fi",
+      "Parking"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:57:49.578Z",
+    "updatedAt": "2025-06-09T16:57:49.578Z",
+    "__v": 0
+  },
+  {
+    "_id": "684712b20766e887a6687a55",
+    "state": "Karnataka",
+    "city": "Mysuru",
+    "placeName": "Srikantadatta Narasimha Raja Wadiyar Ground",
+    "address": "University of Mysore campus, Mysuru",
+    "maxSeatingCapacity": 15000,
+    "amenities": [
+      "Speaker",
+      "Parking",
+      "Water Supply",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:58:26.400Z",
+    "updatedAt": "2025-06-09T16:58:26.400Z",
+    "__v": 0
+  },
+  {
+    "_id": "684712e10766e887a6687a58",
+    "state": "Karnataka",
+    "city": "Hubli",
+    "placeName": "Hotel Metropolis Banquet Hall** (Hubli)",
+    "address": "Hubli",
+    "maxSeatingCapacity": 750,
+    "amenities": [
+      "Parking"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:59:13.658Z",
+    "updatedAt": "2025-06-09T16:59:13.658Z",
+    "__v": 0
+  },
+  {
+    "_id": "684712fb0766e887a6687a5b",
+    "state": "Karnataka",
+    "city": "Hubli",
+    "placeName": "Raashi Farms Club & Resort",
+    "address": "Hubli",
+    "maxSeatingCapacity": 450,
+    "amenities": [
+      "Speaker",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T16:59:39.247Z",
+    "updatedAt": "2025-06-09T16:59:39.247Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847131c0766e887a6687a5e",
+    "state": "Karnataka",
+    "city": "Hubli",
+    "placeName": "Small Party Halls (e.g., Milan Function Hall)",
+    "address": "Hubli",
+    "maxSeatingCapacity": 298,
+    "amenities": [
+      "Wi-Fi",
+      "AC"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T17:00:12.982Z",
+    "updatedAt": "2025-06-09T17:00:12.982Z",
+    "__v": 0
+  },
+  {
+    "_id": "684713350766e887a6687a61",
+    "state": "Karnataka",
+    "city": "Mangaluru",
+    "placeName": "Dr TMA Pai International Convention Centre** (MG Road)",
+    "address": "MG Road, Mangaluru",
+    "maxSeatingCapacity": 5000,
+    "amenities": [
+      "AC",
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T17:00:37.014Z",
+    "updatedAt": "2025-06-09T17:00:37.014Z",
+    "__v": 0
+  },
+  {
+    "_id": "684714180766e887a6687a64",
+    "state": "Karnataka",
+    "city": "Mangaluru",
+    "placeName": "Kootakkala Auditorium (Kudroli Temple)",
+    "address": "Kudroli, Mangaluru",
+    "maxSeatingCapacity": 2000,
+    "amenities": [
+      "AC",
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T17:04:24.815Z",
+    "updatedAt": "2025-06-09T17:04:24.815Z",
+    "__v": 0
+  },
+  {
+    "_id": "684714300766e887a6687a67",
+    "state": "Karnataka",
+    "city": "Mangaluru",
+    "placeName": "Rayyan Auditorium (Bajpe)",
+    "address": "Bajpe, Mangaluru",
+    "maxSeatingCapacity": 1125,
+    "amenities": [
+      "AC",
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T17:04:48.259Z",
+    "updatedAt": "2025-06-09T17:04:48.259Z",
+    "__v": 0
+  },
+  {
+    "_id": "684714510766e887a6687a6a",
+    "state": "Karnataka",
+    "city": "Mangaluru",
+    "placeName": "Town Hall  (Hampankatta)",
+    "address": "Hampankatta, Mangaluru",
+    "maxSeatingCapacity": 900,
+    "amenities": [
+      "Wi-Fi",
+      "Water Supply"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-06-30T06:15:00.000Z",
+        "endTime": "2025-06-30T13:15:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-09T17:05:21.335Z",
+    "updatedAt": "2025-06-09T17:17:32.420Z",
+    "__v": 1
+  },
+  {
+    "_id": "684714680766e887a6687a6d",
+    "state": "Karnataka",
+    "city": "Belagavi",
+    "placeName": "Fairfield by Marriott Belagavi – Lawn 2",
+    "address": "Gogte Plaza, Belagavi 591113",
+    "maxSeatingCapacity": 650,
+    "amenities": [
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T17:05:44.740Z",
+    "updatedAt": "2025-06-09T17:05:44.740Z",
+    "__v": 0
+  },
+  {
+    "_id": "684714810766e887a6687a70",
+    "state": "Karnataka",
+    "city": "Belagavi",
+    "placeName": "UK 27 The Fern Belagavi",
+    "address": "Belagavi city",
+    "maxSeatingCapacity": 160,
+    "amenities": [
+      "Wi-Fi",
+      "Water Supply",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T17:06:09.261Z",
+    "updatedAt": "2025-06-09T17:06:09.261Z",
+    "__v": 0
+  },
+  {
+    "_id": "684714960766e887a6687a73",
+    "state": "Karnataka",
+    "city": "Belagavi",
+    "placeName": "Regenta Resort Belagavi – Meadows lawn",
+    "address": "Belagavi",
+    "maxSeatingCapacity": 600,
+    "amenities": [
+      "AC",
+      "Water Supply",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T17:06:30.535Z",
+    "updatedAt": "2025-06-09T17:06:30.535Z",
+    "__v": 0
+  },
+  {
+    "_id": "684714ab0766e887a6687a76",
+    "state": "Karnataka",
+    "city": "Belagavi",
+    "placeName": "Pai Resorts Belagavi",
+    "address": "Belagavi",
+    "maxSeatingCapacity": 1000,
+    "amenities": [
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-09T17:06:51.672Z",
+    "updatedAt": "2025-06-09T17:06:51.672Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847cd4a01821711f37e6c50",
+    "state": "Tamil Nadu",
+    "city": "Madurai",
+    "placeName": "MGR Race Course Stadium",
+    "address": "ace Course Rd, Madurai, Tamil Nadu",
+    "maxSeatingCapacity": 50000,
+    "amenities": [
+      "Speaker",
+      "Parking",
+      "Projector",
+      "Water Supply"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:14:34.451Z",
+    "updatedAt": "2025-06-10T06:14:34.451Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847cdb901821711f37e6c5d",
+    "state": "Tamil Nadu",
+    "city": "Madurai",
+    "placeName": "Vishaal de Mall (INOX multiplex)",
+    "address": "Gokhale Rd, Chockikulam, Madurai",
+    "maxSeatingCapacity": 600,
+    "amenities": [
+      "Parking",
+      "AC"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:16:25.103Z",
+    "updatedAt": "2025-06-10T06:16:25.103Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847cddd01821711f37e6c65",
+    "state": "Tamil Nadu",
+    "city": "Tiruchirappalli",
+    "placeName": "Lalitha Mahal (Hotel)",
+    "address": "Chennai Bypass Road, Thiruvanaikovil, Trichy",
+    "maxSeatingCapacity": 800,
+    "amenities": [
+      "Speaker",
+      "Parking",
+      "AC",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:17:01.015Z",
+    "updatedAt": "2025-06-10T06:17:01.015Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847cdfd01821711f37e6c68",
+    "state": "Tamil Nadu",
+    "city": "Tiruchirappalli",
+    "placeName": "Sangamam (Hotel Shaans)",
+    "address": "Tennur High Road, Trichy",
+    "maxSeatingCapacity": 600,
+    "amenities": [
+      "Wi-Fi",
+      "Speaker"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:17:33.815Z",
+    "updatedAt": "2025-06-10T06:17:33.815Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847ced301821711f37e6c7d",
+    "state": "Tamil Nadu",
+    "city": "Chennai",
+    "placeName": "24 Convention ",
+    "address": "Chennai",
+    "maxSeatingCapacity": 100,
+    "amenities": [
+      "Wi-Fi"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:21:07.102Z",
+    "updatedAt": "2025-06-10T06:21:07.102Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847ceed01821711f37e6c80",
+    "state": "Gujarat",
+    "city": "Rajkot",
+    "placeName": "Regency Lagoon Resort",
+    "address": "Rajkot ",
+    "maxSeatingCapacity": 550,
+    "amenities": [
+      "Parking",
+      "Projector",
+      "Water Supply"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:21:33.849Z",
+    "updatedAt": "2025-06-10T06:21:33.849Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847cf0b01821711f37e6c83",
+    "state": "Gujarat",
+    "city": "Rajkot",
+    "placeName": "Phoenix Hospitality",
+    "address": "Rajkot ",
+    "maxSeatingCapacity": 650,
+    "amenities": [
+      "AC",
+      "Wi-Fi",
+      "Speaker"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:22:03.586Z",
+    "updatedAt": "2025-06-10T06:22:03.586Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847cf3601821711f37e6c86",
+    "state": "Gujarat",
+    "city": "Vadodara",
+    "placeName": "Prakruti Resort – Prasang",
+    "address": "Vadodara ",
+    "maxSeatingCapacity": 1000,
+    "amenities": [
+      "AC",
+      "Parking",
+      "Projector"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:22:46.374Z",
+    "updatedAt": "2025-06-10T06:22:46.374Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847cf4e01821711f37e6c89",
+    "state": "Gujarat",
+    "city": "Vadodara",
+    "placeName": "Waves Club – Ocean Hall",
+    "address": "Vadodara ",
+    "maxSeatingCapacity": 800,
+    "amenities": [
+      "Projector",
+      "Parking"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:23:10.760Z",
+    "updatedAt": "2025-06-10T06:23:10.760Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847d18901821711f37e6c94",
+    "state": "Gujarat",
+    "city": "Surat",
+    "placeName": "Pandit Deendayal Upadhyay Indoor Stadium",
+    "address": "Ghod Dod Rd, Athwalines, Surat",
+    "maxSeatingCapacity": 7000,
+    "amenities": [
+      "Speaker",
+      "Parking",
+      "Water Supply",
+      "Microphone"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:32:41.739Z",
+    "updatedAt": "2025-06-10T06:32:41.739Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847d1c601821711f37e6c9f",
+    "state": "Gujarat",
+    "city": "Surat",
+    "placeName": "The Gateway Hotel Athwalines – Banquet Hall (Diamond Hall)",
+    "address": "Ambika Niketan, Surat",
+    "maxSeatingCapacity": 300,
+    "amenities": [
+      "Wi-Fi",
+      "Speaker",
+      "AC",
+      "Parking"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:33:42.643Z",
+    "updatedAt": "2025-06-10T06:33:42.643Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847d1f001821711f37e6caa",
+    "state": "Gujarat",
+    "city": "Ahmedabad",
+    "placeName": "Mithakhali Multi Sports Complex",
+    "address": "Mithakali, Ahmedabad",
+    "maxSeatingCapacity": 7000,
+    "amenities": [
+      "Parking",
+      "Water Supply"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:34:24.022Z",
+    "updatedAt": "2025-06-10T06:34:24.022Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847d20e01821711f37e6cad",
+    "state": "Gujarat",
+    "city": "Ahmedabad",
+    "placeName": "Patang Hotel (Revolving Restaurant)",
+    "address": "Nehru Bridge corner, Ashram Road, Ahmedabad",
+    "maxSeatingCapacity": 110,
+    "amenities": [
+      "Wi-Fi",
+      "Speaker",
+      "AC"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T06:34:54.921Z",
+    "updatedAt": "2025-06-10T06:34:54.921Z",
+    "__v": 0
+  },
+  {
+    "_id": "6848075b1ef738475600cc8a",
+    "state": "Maharashtra",
+    "city": "Nagpur",
+    "placeName": "Green Meadows Lawns",
+    "address": "Nashik Road, Nashik",
+    "maxSeatingCapacity": 200,
+    "amenities": [
+      "Parking",
+      "Projector",
+      "Microphone",
+      "Speaker",
+      "Water Supply"
+    ],
+    "bookings": [],
+    "createdAt": "2025-06-10T10:22:19.073Z",
+    "updatedAt": "2025-06-10T10:22:19.073Z",
+    "__v": 0
+  },
+  {
+    "_id": "68480b8d1ef738475600cd24",
+    "state": "TamilNadu",
+    "city": "Chennai",
+    "placeName": "iLink Office",
+    "address": "Phase 2, Campus-5, RMZ MILLENIA BUSINESS PARK-II",
+    "maxSeatingCapacity": 250,
+    "amenities": [
+      "Wi-Fi",
+      "Microphone",
+      "Speaker",
+      "Projector",
+      "AC",
+      "Parking",
+      "Water Supply"
+    ],
+    "bookings": [
+      {
+        "startTime": "2025-06-28T13:32:00.000Z",
+        "endTime": "2025-06-28T14:32:00.000Z",
+        "isBooked": true
+      }
+    ],
+    "createdAt": "2025-06-10T10:40:13.586Z",
+    "updatedAt": "2025-06-10T11:33:15.196Z",
+    "__v": 1
+  }
+]

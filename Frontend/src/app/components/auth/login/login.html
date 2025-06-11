@@ -7,6 +7,24 @@
     </div>
   </div>
 
+  <!-- Custom Alert Popup -->
+  <div class="alert-popup" [class.show]="showAlertPopup" [class.error]="alertType === 'error'" [class.warning]="alertType === 'warning'" [class.info]="alertType === 'info'">
+    <div class="alert-content">
+      <div class="alert-header">
+        <div class="alert-icon">
+          <span *ngIf="alertType === 'error'">❌</span>
+          <span *ngIf="alertType === 'warning'">⚠️</span>
+          <span *ngIf="alertType === 'info'">ℹ️</span>
+        </div>
+        <button class="alert-close" (click)="hideAlert()">×</button>
+      </div>
+      <div class="alert-message">{{ alertMessage }}</div>
+      <div class="alert-actions">
+        <button class="alert-btn" (click)="hideAlert()">OK</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Animated Background Elements -->
   <div class="bg-animation">
     <div class="floating-shape shape-1"></div>

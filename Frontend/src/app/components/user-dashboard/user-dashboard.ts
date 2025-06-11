@@ -1,3 +1,4 @@
+// user-dashboard.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +10,7 @@ import { LocationService } from '../../services/location';
 import { ApprovalService } from '../../services/approval';
 import { AuthService } from '../../services/auth';
 import { EventService } from '../../services/event';
+import { environment } from '../../../environment';
 
 export interface Event {
   _id: string;
@@ -34,9 +36,8 @@ export interface CustomAlert {
   confirmAction?: () => void;
   cancelAction?: () => void;
   showCancel?: boolean;
+  autoClose?: boolean;
 }
-
-
 
 
 @Component({
@@ -46,6 +47,8 @@ export interface CustomAlert {
   templateUrl: './user-dashboard.html',
   styleUrls: ['./user-dashboard.scss']
 })
+
+
 export class UserDashboardComponent {
   events: Event[] = [];
   filteredEvents: Event[] = [];
@@ -93,15 +96,25 @@ export class UserDashboardComponent {
   }
   showFilters: boolean = false;
   // Custom Alert Methods
-  showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) {
-    this.customAlert = {
-      show: true,
-      type,
-      title,
-      message,
-      showCancel: false
-    };
+  showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string, autoClose: boolean = true, duration: number = 1000) {
+  this.customAlert = {
+    show: true,
+    type,
+    title,
+    message,
+    showCancel: false,
+     autoClose: autoClose
+
+  };
+
+  // Auto-close after specified duration
+  if (autoClose) {
+    setTimeout(() => {
+      this.closeAlert();
+    }, duration);
   }
+}
+
 
   showConfirmation(title: string, message: string, confirmAction: () => void, cancelAction?: () => void) {
     this.customAlert = {
@@ -112,6 +125,7 @@ export class UserDashboardComponent {
       confirmAction,
       cancelAction,
       showCancel: true
+
     };
   }
 
@@ -173,26 +187,91 @@ export class UserDashboardComponent {
 
   // Updated component function
   registerForEvent(eventId: string) {
+    // console.log('=== FRONTEND REGISTRATION START ===');
+    // console.log('Event ID:', eventId);
+    // console.log('Current User ID:', this.userId);
+    // console.log('User ID Type:', typeof this.userId);
+    // console.log('Token exists in localStorage:', !!localStorage.getItem('token'));
+    // console.log('Token exists in sessionStorage:', !!sessionStorage.getItem('token'));
+    //  const url = `${environment.apiBaseUrl}/events/register`;//Add commentMore actions
+    //         const payload = {
+    //           userId: this.userId,
+    //           eventId: eventId
+    //         };
+    // Validate that we have a user ID
+    if (!this.userId) {
+      console.error('No user ID available');
+      this.showAlert('error', 'Authentication Error', 'Please log in again to register for events.');
+      return;
+    }
+
+    // Validate event ID
+    if (!eventId) {
+      console.error('No event ID provided');
+      this.showAlert('error', 'Invalid Event', 'Invalid event selected.');
+      return;
+    }
+
     const event = this.events.find(e => e._id === eventId);
     const eventTitle = event ? event.title : 'this event';
+    // console.log('Event found:', !!event);
+    if (event) {
+      // console.log('Event title:', event.title);
+    }
 
     this.showConfirmation(
       'Register for Event',
       `Are you sure you want to register for "${eventTitle}"?`,
       () => {
+        // console.log('User confirmed registration');
         this.loadingService.show();
 
-        // Use the service method instead of direct HTTP call
+        // console.log('Making API call with:', {
+        //   userId: this.userId,
+        //   eventId: eventId,
+        //   // apiUrl: `${environment.apiBaseUrl}${environment.apis.registerForEvent}`
+        // });
+
+        // Use the service method
         this.eventService.registerForEvent(this.userId!, eventId).subscribe({
-          next: () => {
+          next: (response) => {
+            // console.log('Registration API success:', response);
             this.loadRegisteredEvents();
             this.loadingService.hide();
             this.showAlert('success', 'Registration Successful', `You have successfully registered for "${eventTitle}"!`);
           },
           error: (err) => {
-            console.error('Registration failed', err);
+            // console.error('=== FRONTEND REGISTRATION ERROR ===');
+            // console.error('Full error object:', err);
+            // console.error('Error status:', err.status);
+            console.error('Error message:', err.message);
+            console.error('Error details:', err.error);
+
             this.loadingService.hide();
-            this.showAlert('error', 'Registration Failed', 'Failed to register for the event. Please try again.');
+
+            let errorMessage = 'Failed to register for the event. Please try again.';
+
+            // Handle specific error cases
+            if (err.status === 404) {
+              if (err.error?.message === 'User not found') {
+                errorMessage = 'Your account was not found. Please log in again.';
+                this.logout(); // Force logout if user not found
+              } else if (err.error?.message === 'Event not found or deleted') {
+                errorMessage = 'This event is no longer available.';
+              }
+            } else if (err.status === 400) {
+              if (err.error?.message === 'User already registered for this event') {
+                errorMessage = 'You are already registered for this event.';
+              } else if (err.error?.message === 'Event registration full') {
+                errorMessage = 'Sorry, this event is full.';
+              } else if (err.error?.message) {
+                errorMessage = err.error.message;
+              }
+            } else if (err.status === 0) {
+              errorMessage = 'Network error. Please check your connection and try again.';
+            }
+
+            this.showAlert('error', 'Registration Failed', errorMessage);
           }
         });
       }
@@ -252,22 +331,46 @@ export class UserDashboardComponent {
   }
 
   decodeToken() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    // console.log('=== TOKEN DECODE START ===');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    // console.log('Token found:', !!token);
+
+    if (!token) {
+      console.log('No token found');
+      return;
+    }
 
     try {
-      const payloadBase64 = token.split('.')[1];
+      // console.log('Token length:', token.length);
+      // console.log('Token starts with:', token.substring(0, 20) + '...');
+
+      const parts = token.split('.');
+      // console.log('Token parts count:', parts.length);
+
+      if (parts.length !== 3) {
+        throw new Error('Invalid token format');
+      }
+
+      const payloadBase64 = parts[1];
+      // console.log('Payload base64 length:', payloadBase64.length);
+
       const decoded = JSON.parse(atob(payloadBase64));
-      this.userId = decoded.userId || null;
-      this.userName = decoded.userName || null;
+      // console.log('Decoded token payload:', decoded);
+
+      this.userId = decoded.userId || decoded.id || null;
+      this.userName = decoded.userName || decoded.name || null;
+
+      // console.log('Extracted userId:', this.userId);
+      // console.log('Extracted userName:', this.userName);
+      // console.log('=== TOKEN DECODE SUCCESS ===');
     } catch (err) {
+      console.error('=== TOKEN DECODE ERROR ===');
       console.error('Token decode error:', err);
       this.userId = null;
       this.userName = null;
       this.showAlert('warning', 'Session Warning', 'There was an issue with your session. Please log in again if needed.');
     }
   }
-
   isRegistered(eventId: string): boolean {
     return this.registeredEvents.some(e => e._id === eventId);
   }

@@ -45,13 +45,7 @@
           <!-- Date and Time -->
           <div class="form-group">
             <label class="form-label">Event Date</label>
-            <input
-              type="date"
-              formControlName="date"
-              class="form-input"
-              [min]="minDate"
-              required
-            />
+            <input type="date" formControlName="date" class="form-input" [min]="minDate" required />
           </div>
 
           <div class="form-group">
@@ -94,7 +88,8 @@
 
           <div class="form-group">
             <label class="form-label">Venue</label>
-            <select formControlName="location" (change)="onVenueChange()" [disabled]="!eventForm.get('city')?.value" class="form-select" required>
+            <select formControlName="location" (change)="onVenueChange()" [disabled]="!eventForm.get('city')?.value"
+              class="form-select" required>
               <option value="" disabled>Select Venue</option>
               <option *ngFor="let place of filteredPlaceNames" [value]="place">
                 {{ place }}
@@ -105,24 +100,15 @@
           <!-- Venue Details (shown only when venue is selected) -->
           <div *ngIf="selectedVenue" class="form-group">
             <label class="form-label">Max Seating Capacity</label>
-            <input
-              type="number"
-              class="form-input"
-              [value]="selectedVenue?.maxSeatingCapacity || ''"
-              readonly
-              placeholder="Capacity will appear here"
-            />
+            <input type="number" class="form-input" [value]="selectedVenue?.maxSeatingCapacity || ''" readonly
+              placeholder="Capacity will appear here" />
           </div>
 
           <div *ngIf="selectedVenue" class="form-group">
             <label class="form-label">Amenities</label>
-            <input
-              type="text"
-              class="form-input"
-              [value]="selectedVenue?.amenities?.join(', ') || 'No amenities listed'"
-              readonly
-              placeholder="Amenities will appear here"
-            />
+            <input type="text" class="form-input"
+              [value]="selectedVenue?.amenities?.join(', ') || 'No amenities listed'" readonly
+              placeholder="Amenities will appear here" />
           </div>
 
           <!-- Event Details -->
@@ -141,20 +127,14 @@
 
           <div class="form-group">
             <label class="form-label">Max Registrations</label>
-            <input
-              type="number"
-              formControlName="maxRegistrations"
-              class="form-input"
-              placeholder="Enter max registrations"
-              [max]="selectedVenue?.maxSeatingCapacity || 999999"
-              min="1"
-              required
-              (input)="onMaxRegistrationsChange()"
-            />
+            <input type="number" formControlName="maxRegistrations" class="form-input"
+              placeholder="Enter max registrations" [max]="selectedVenue?.maxSeatingCapacity || 999999" min="1" required
+              (input)="onMaxRegistrationsChange()" />
             <small class="form-helper-text" *ngIf="selectedVenue?.maxSeatingCapacity">
               Maximum venue capacity: {{ selectedVenue.maxSeatingCapacity }}
             </small>
-            <small class="form-helper-text" *ngIf="eventForm.get('maxRegistrations')?.errors?.['overCapacity']" style="color: #ff6b6b;">
+            <small class="form-helper-text" *ngIf="eventForm.get('maxRegistrations')?.errors?.['overCapacity']"
+              style="color: #ff6b6b;">
               Registrations exceed venue capacity!
             </small>
           </div>
@@ -328,4 +308,3 @@
     <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin&#64;gmail.com</span>
     </p>
   </footer>
-

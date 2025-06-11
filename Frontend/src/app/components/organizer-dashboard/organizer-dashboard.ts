@@ -149,7 +149,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
 
     if (!this.organizerId) {
       console.error('No organizer ID found');
-      this.showAlert('Error', 'User authentication failed. Please login again.', 'error');
+      alert('User authentication failed. Please login again.');
       this.logout();
       return;
     }
@@ -299,12 +299,12 @@ export class OrganizerDashboardComponent implements OnDestroy {
   // Event Submit/Create/Update
   async onSubmit() {
     if (this.eventForm.invalid) {
-      await this.showAlert('Validation Error', 'Please fill required fields', 'warning');
+      await alert('Please fill required fields');
       return;
     }
 
-    this.isLoading = true;
-    this.loadingService.show();
+    // this.isLoading = true;
+    // this.loadingService.show();
 
     try {
       const form = this.eventForm.value;
@@ -339,13 +339,13 @@ export class OrganizerDashboardComponent implements OnDestroy {
             takeUntil(this.destroy$)
           ).subscribe({
             next: async () => {
-              await this.showAlert('Success', `Event ${this.isEditMode ? 'updated' : 'created'} successfully!`, 'success');
-              this.resetForm();
-              this.loadAllData(); // Reload data after successful operation
+              await alert(`Event ${this.isEditMode ? 'updated' : 'created'} successfully!`);
+              // this.resetForm();
+              // this.loadAllData(); // Reload data after successful operation
             },
             error: async (error) => {
               console.error('Event creation/update error:', error);
-              await this.showAlert('Error', 'Event creation/updation failed', 'error');
+              await alert('Event creation/updation failed');
             },
             complete: () => {
               this.isLoading = false;
@@ -355,14 +355,14 @@ export class OrganizerDashboardComponent implements OnDestroy {
         },
         error: async (error) => {
           console.error('Location booking error:', error);
-          await this.showAlert('Error', 'Failed to book location', 'error');
+          await alert('Failed to book location');
           this.isLoading = false;
           this.loadingService.hide();
         }
       });
     } catch (error) {
       console.error('Submit error:', error);
-      await this.showAlert('Error', 'An unexpected error occurred', 'error');
+      await alert('An unexpected error occurred');
       this.isLoading = false;
       this.loadingService.hide();
     }
@@ -387,7 +387,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
   }
 
   async onDelete(eventId: string) {
-    const confirm = await this.showConfirm('Delete Event', 'Are you sure?', 'Delete', 'Cancel');
+    const confirm = await window.confirm('Are you sure you want to delete this event? This action cannot be undone.');
     if (!confirm) return;
 
     this.isLoading = true;
@@ -397,12 +397,12 @@ export class OrganizerDashboardComponent implements OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: async () => {
-        await this.showAlert('Success', 'Event deleted!', 'success');
-        this.loadAllData(); // Reload data after deletion
+        await alert('Event deleted!');
+        this.loadAllData();
       },
       error: async (error) => {
         console.error('Delete error:', error);
-        await this.showAlert('Error', 'Failed to delete event', 'error');
+        await alert( 'Failed to delete event');
       },
       complete: () => {
         this.isLoading = false;
@@ -421,7 +421,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
       },
       error: (error) => {
         console.error('Error loading registered users:', error);
-        this.showAlert('Error', 'Failed to load registered users', 'error');
+        alert('Failed to load registered users');
       }
     });
   }
@@ -468,7 +468,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
       localStorage.clear();
       sessionStorage.clear();
       alert('You have been logged out');
-      setTimeout(() => (window.location.href = '/login'), 1000);
+      setTimeout(() => (window.location.href = '/login'), 500);
     }
   }
 

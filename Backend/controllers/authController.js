@@ -1,3 +1,5 @@
+// authController.js 
+
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/Users.js';
@@ -20,7 +22,7 @@ export const registerUser = async (req, res) => {
       return apiError(res, 400, 'Invalid email format.');
     }
 
-    // Validate phone - digits only and length 10 (adjust length as per your rules)
+    // Validate phone - digits only and length 10 
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(phone)) {
       return apiError(res, 400, 'Phone number must be exactly 10 digits.');
@@ -32,21 +34,21 @@ export const registerUser = async (req, res) => {
     }
 
     // Check if email already exists
-    // eslint-disable-next-line security/detect-nosql-injection
+    
     const emailExists = await User.findOne({ email });
     if (emailExists) {
       return apiError(res, 409, 'Email already in use.');
     }
 
     // Check if phone already exists
-    // eslint-disable-next-line security/detect-nosql-injection
+    
     const phoneExists = await User.findOne({ phone });
     if (phoneExists) {
       return apiError(res, 409, 'Phone number already in use.');
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10); //salt rounds set to 10
 
     // Create new user
     const newUser = new User({
@@ -61,7 +63,7 @@ export const registerUser = async (req, res) => {
 
     // Respond success
     return apiResponse(res, 201, 'User registered successfully', {
-      id: newUser._id,
+      userId: newUser._id,
       name: newUser.name,
       email: newUser.email,
       phone: newUser.phone,
@@ -77,7 +79,7 @@ export const registerUser = async (req, res) => {
 export const checkLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    // eslint-disable-next-line security/detect-nosql-injection
+   
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -91,7 +93,7 @@ export const checkLogin = async (req, res) => {
     }
 
     const payload = {
-      userId: user._id,
+      userId: user._id.toString(),
       userName : user.name,
       role: user.role,
       email: user.email,
@@ -104,7 +106,7 @@ export const checkLogin = async (req, res) => {
     return apiResponse(res, 200, 'Login successful', {
       token,
       user: {
-        id: user._id,
+        userId: user._id,
         name: user.name,
         email: user.email,
         role: user.role,

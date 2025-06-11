@@ -1,0 +1,222 @@
+[
+  {
+    "_id": "684012b39b1787531d63cb67",
+    "name": "Prafulla",
+    "phone": "1234567890",
+    "email": "praful@example.com",
+    "password": "$2b$10$XlIDEx/wRscaOQAdLeAWHeb4opMFNwtbX3uRld9YqanSn2krrYqIG",
+    "role": "user",
+    "createdAt": "2025-06-04T09:32:35.616Z",
+    "updatedAt": "2025-06-04T09:32:35.616Z",
+    "__v": 0
+  },
+  {
+    "_id": "68401a90db38610f03632b5e",
+    "name": "Rajat",
+    "phone": "123456790",
+    "email": "rajat@example.com",
+    "password": "$2b$10$mztUI/qQLpNo5vwp3ryzGu.yw5z8jlX5mzfvl4JU5jlQmgFRF4Ivq",
+    "role": "user",
+    "createdAt": "2025-06-04T10:06:08.723Z",
+    "updatedAt": "2025-06-04T10:06:08.723Z",
+    "__v": 0
+  },
+  {
+    "_id": "684020c0f14bb1a49246e96c",
+    "name": "Sanket Dhakane",
+    "phone": "1234567888",
+    "email": "sanket@mail.com",
+    "password": "$2b$10$LJy/pebn9tD7c3B1F/Mwf.s20gjSHdER.fjUVjQWmR/s6mfWRocma",
+    "role": "user",
+    "createdAt": "2025-06-04T10:32:32.203Z",
+    "updatedAt": "2025-06-04T10:32:32.203Z",
+    "__v": 0
+  },
+  {
+    "_id": "68402ae4f14bb1a49246e973",
+    "name": "Prafulla Sudam Badgujar",
+    "phone": "8976543278",
+    "email": "prafull@gmail.com",
+    "password": "$2b$10$Xz5PUTWOePJF18ibLs0G4ubMA58dhfkN7lbON.pbBzhHreYfHW8iG",
+    "role": "organizer",
+    "createdAt": "2025-06-04T11:15:48.130Z",
+    "updatedAt": "2025-06-04T11:15:48.130Z",
+    "__v": 0
+  },
+  {
+    "_id": "68411ddaf1754c1752f3898d",
+    "name": "rahul",
+    "phone": "1234344557",
+    "email": "rahula@mail.com",
+    "password": "$2b$10$nwAU8b2875b6gKS7o4LRp.EzwF.08Flz3acxwVdKjlsjCbWzqXLUG",
+    "role": "organizer",
+    "createdAt": "2025-06-05T04:32:26.873Z",
+    "updatedAt": "2025-06-05T04:32:26.873Z",
+    "__v": 0
+  },
+  {
+    "_id": "684131d383e29e57a44efb21",
+    "name": "Lalit",
+    "phone": "1234567777",
+    "email": "lalit1@mail.com",
+    "password": "$2b$10$uer6TFGXIOk3aM3qzGibA.0CRn9U.TNZG4WjsrhxCAcV6uXBATwxe",
+    "role": "organizer",
+    "createdAt": "2025-06-05T05:57:39.031Z",
+    "updatedAt": "2025-06-05T05:57:39.031Z",
+    "__v": 0
+  },
+  {
+    "_id": "684133c783e29e57a44efb3b",
+    "name": "lalit",
+    "phone": "1234566666",
+    "email": "lalittest@mail.com",
+    "password": "$2b$10$nmcJp.hiVZ5WW8IbNK9O1.y2s7GGfbXXMnKBMYBuFdFM.rcBUZccS",
+    "role": "admin",
+    "createdAt": "2025-06-05T06:05:59.861Z",
+    "updatedAt": "2025-06-05T06:05:59.861Z",
+    "__v": 0
+  },
+  {
+    "_id": "6842776401036a4b9cf8b3ab",
+    "name": "akash",
+    "phone": "1234555378",
+    "email": "akash@mail.com",
+    "password": "$2b$10$QvfJbOe2K.7U6fU.7kYn6eIGwNiirhdyqPgL/gVsr3K9irbf/m1pq",
+    "role": "user",
+    "createdAt": "2025-06-06T05:06:44.464Z",
+    "updatedAt": "2025-06-06T05:06:44.464Z",
+    "__v": 0
+  },
+  {
+    "_id": "68440f370bb8cc14a56d1927",
+    "name": "SuperAdmin",
+    "phone": "1234566778",
+    "email": "superadmin@gmail.com",
+    "password": "$2b$10$CL2eeiyUQeoTzwNE5/KW0u/P3ue4cWgR9lW4mQZroTJ772gMZltCK",
+    "role": "admin",
+    "createdAt": "2025-06-07T10:06:47.444Z",
+    "updatedAt": "2025-06-07T10:06:47.444Z",
+    "__v": 0
+  },
+  {
+    "_id": "68466fc2c8b134c26dc5083e",
+    "name": "swarop",
+    "phone": "1234567124",
+    "email": "swaroop@mail.com",
+    "password": "$2b$10$I6WZdE0JTd0mYQ9P364si.ZKxWnnS2T6ULjPumWxCypqRa1VHPOE6",
+    "role": "admin",
+    "createdAt": "2025-06-09T05:23:14.527Z",
+    "updatedAt": "2025-06-09T05:23:14.527Z",
+    "__v": 0
+  },
+  {
+    "_id": "6846706bc8b134c26dc50869",
+    "name": "swaroop",
+    "phone": "1234324578",
+    "email": "swarup@mail.com",
+    "password": "$2b$10$pGmkmz1m.tCW64gBnJEsE.QJ9p07M.50EaPxh9jZ8AQgwlKxAaB32",
+    "role": "admin",
+    "createdAt": "2025-06-09T05:26:03.383Z",
+    "updatedAt": "2025-06-09T05:26:03.383Z",
+    "__v": 0
+  },
+  {
+    "_id": "68469d51c8b134c26dc50cda",
+    "name": "Rajat",
+    "phone": "1234345678",
+    "email": "rajat@mail.com",
+    "password": "$2b$10$2jtYX1.FvBXQYLYaTtDUq.ygSFhqUInaAKsKhtoNVjh7otnIVnKLa",
+    "role": "admin",
+    "createdAt": "2025-06-09T08:37:37.549Z",
+    "updatedAt": "2025-06-09T08:37:37.549Z",
+    "__v": 0
+  },
+  {
+    "_id": "6846b64358a71505f92e33e2",
+    "name": "Rajat Mahajan",
+    "phone": "9822964723",
+    "email": "rajatmahajan.tech@gmail.com",
+    "password": "$2b$10$/HXT2.JrViHbgRVo0Z6FKONFoaQ4LzcrizBmrGVnXJ4KATLvYu2jK",
+    "role": "user",
+    "createdAt": "2025-06-09T10:24:03.280Z",
+    "updatedAt": "2025-06-09T10:24:03.280Z",
+    "__v": 0
+  },
+  {
+    "_id": "6846b6d658a71505f92e33fc",
+    "name": "Mayur",
+    "phone": "9307282527",
+    "email": "codexm7@gmail.com",
+    "password": "$2b$10$i6VTVMi7NJ1PRxdQtObnXOm0BX1cV5kPzYf/Q3CUCs8X1Om7rvZJO",
+    "role": "organizer",
+    "createdAt": "2025-06-09T10:26:30.278Z",
+    "updatedAt": "2025-06-09T10:26:30.278Z",
+    "__v": 0
+  },
+  {
+    "_id": "6846ca4f4c68e4e2a67b467b",
+    "name": "shravani",
+    "phone": "9307642262",
+    "email": "shravani@gmail.com",
+    "password": "$2b$10$FSmLkQUG3jUIN6RRfgGcre2hkkSPUULLmsQrloxGt6QU25FuDnBhy",
+    "role": "user",
+    "createdAt": "2025-06-09T11:49:35.533Z",
+    "updatedAt": "2025-06-09T11:49:35.533Z",
+    "__v": 0
+  },
+  {
+    "_id": "6846eb0f052b3396b8ba2763",
+    "name": "Tejal Sanjay Kucheriya",
+    "phone": "9405239834",
+    "email": "kucheriyatejal5803@gmail.com",
+    "password": "$2b$10$6Bf3PB6cxsPs7Yw18OhcnOjJib...LF4By1t2IkBGxJdsuH8Ebc3O",
+    "role": "user",
+    "createdAt": "2025-06-09T14:09:19.489Z",
+    "updatedAt": "2025-06-09T14:09:19.489Z",
+    "__v": 0
+  },
+  {
+    "_id": "68470da60766e887a66879ee",
+    "name": "Rajat Mahajan",
+    "phone": "8247332596",
+    "email": "rajat@gmail.com",
+    "password": "$2b$10$im.1vCNJVHhYC0AIBGX0nuYmVYhQEZRJHSB06zTuLg15wVP4VBAFK",
+    "role": "organizer",
+    "createdAt": "2025-06-09T16:36:54.407Z",
+    "updatedAt": "2025-06-09T16:36:54.407Z",
+    "__v": 0
+  },
+  {
+    "_id": "684718160766e887a6687a8d",
+    "name": "rajat-organizer@gmail.com",
+    "phone": "8974512658",
+    "email": "rajat-organizer@gmail.com",
+    "password": "$2b$10$J.h0GOCiMxM5PXatPJhaZeRHQm0ilWJualMfSd32TG8JsAiqB2gBa",
+    "role": "organizer",
+    "createdAt": "2025-06-09T17:21:26.002Z",
+    "updatedAt": "2025-06-09T17:21:26.002Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847bc0c01821711f37e6a86",
+    "name": "kushal",
+    "phone": "9637852098",
+    "email": "kushal@mail.com",
+    "password": "$2b$10$lJncUm8b3Tvrw9oFDotVQOvngKYNBO6sbkRa2tmLOxI8jwiifWUPS",
+    "role": "user",
+    "createdAt": "2025-06-10T05:01:00.639Z",
+    "updatedAt": "2025-06-10T05:01:00.639Z",
+    "__v": 0
+  },
+  {
+    "_id": "6847c02f01821711f37e6ad2",
+    "name": "Unmesh Narendra Mathakari",
+    "phone": "9881701119",
+    "email": "unmesh.unm@gmail.com",
+    "password": "$2b$10$51uP5dHOsw9KcqssDs9tzu/R8KaM17mxPA2GIIqtRaIb9Cyb8TR.y",
+    "role": "user",
+    "createdAt": "2025-06-10T05:18:39.725Z",
+    "updatedAt": "2025-06-10T05:18:39.725Z",
+    "__v": 0
+  }
+]

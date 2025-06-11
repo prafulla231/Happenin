@@ -1,5 +1,4 @@
-// main.ts
-import './polyfills';  // Must be first
+import './polyfills';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { importProvidersFrom } from '@angular/core';
@@ -7,6 +6,18 @@ import { AppComponent } from './app/app';
 import { appConfig } from './app/app.config';
 import { LoadingInterceptor } from './app/components/loading.interceptor';
 import { LoadingService } from './app/components/loading';
+import { AuthService } from './app/services/auth';
+
+
+function initializeAuth(authService: AuthService) {
+  return () => {
+    // Just touch the service to initialize from localStorage
+    const token = authService.getToken();
+    // You can even decode and verify token here if needed
+    console.log('Auth initialized. Token found:', !!token);
+  };
+}
+
 
 bootstrapApplication(AppComponent, {
   providers: [
