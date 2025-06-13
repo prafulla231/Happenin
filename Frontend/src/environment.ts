@@ -2,8 +2,8 @@
 // environment.ts
 export const environment = {
   production: false,
-  // apiBaseUrl: 'https://happenin-byma.onrender.com/api',
-  apiBaseUrl: 'http://localhost:5000/api', // Use your local development URL here
+  apiBaseUrl: 'https://happenin-byma.onrender.com/api',
+  // apiBaseUrl: 'http://localhost:5000/api', // Use your local development URL here
 
   apis: {
     // Events
