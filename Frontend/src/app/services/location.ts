@@ -31,7 +31,7 @@ export class LocationService {
   }
 
   cancelBooking(data: any) {
-    return this.http.post(`${environment.apiBaseUrl}/${environment.apis.cancelBooking}`, data); // not defined in environment
+    return this.http.post(`${environment.apiBaseUrl}${environment.apis.cancelBooking}`, data); // not defined in environment
   }
 
   // deleteLocation(data)

@@ -100,8 +100,8 @@ export class Contact implements OnInit {
   }
 
   private sendEmailViaEmailJS(formData: any): void {
-    // Prepare template parameters for EmailJS
-    const storedUser = localStorage.getItem('user');
+  // Prepare template parameters for EmailJS
+  const storedUser = localStorage.getItem('user');
   if (storedUser) {
     const parsedUser = JSON.parse(storedUser);
     this.userData = {
@@ -110,41 +110,41 @@ export class Contact implements OnInit {
       email: parsedUser.email
     };
   }
-    const templateParams = {
-      to_email: 'happenin.events.app@gmail.com',
-      from_name: this.userData.name,
-      from_email: this.userData.email ,
-      phone: formData.phone || 'Not provided',
-      category: formData.category,
-      priority: formData.priority,
-      subject: formData.subject,
-      message: formData.message,
-      timestamp: new Date(formData.timestamp).toLocaleString(),
-      user_id: formData.userId,
 
-      // Additional fields for a more detailed email
-      inquiry_type: formData.category,
-      contact_subject: `Contact Form: ${formData.category} - ${formData.subject}`,
-    };
+  const templateParams = {
+    to_email: 'happenin.events.app@gmail.com',
+    userName: this.userData.name,        // Changed from 'from_name'
+    userEmail: this.userData.email,      // Changed from 'from_email'
+    phone: formData.phone || 'Not provided',
+    category: formData.category,
+    priority: formData.priority,
+    subject: formData.subject,
+    message: formData.message,
+    timestamp: new Date(formData.timestamp).toLocaleString(),
+    user_id: formData.userId,
 
-    emailjs.send(
-  this.EMAIL_JS_SERVICE_ID,
-  this.EMAIL_JS_TEMPLATE_ID,
-  templateParams,
-  this.EMAIL_JS_PUBLIC_KEY
-)
-.then(
-  (response) => {
-    console.log('Email sent successfully!', response.status, response.text);
-    this.handleSubmissionSuccess();
-  },
-  (error) => {
-    console.error('Failed to send email:', error);
-    this.handleSubmissionError();
-  }
-);
-  }
+    // Additional fields for a more detailed email
+    inquiry_type: formData.category,
+    contact_subject: `Contact Form: ${formData.category} - ${formData.subject}`,
+  };
 
+  emailjs.send(
+    this.EMAIL_JS_SERVICE_ID,
+    this.EMAIL_JS_TEMPLATE_ID,
+    templateParams,
+    this.EMAIL_JS_PUBLIC_KEY
+  )
+  .then(
+    (response) => {
+      console.log('Email sent successfully!', response.status, response.text);
+      this.handleSubmissionSuccess();
+    },
+    (error) => {
+      console.error('Failed to send email:', error);
+      this.handleSubmissionError();
+    }
+  );
+}
   private handleSubmissionSuccess(): void {
     this.isSubmitting = false;
     this.showSuccessMessage = true;

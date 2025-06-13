@@ -53,7 +53,7 @@ export const createLocation = asyncHandler(async (req, res) => {
 // @route   GET /api/locations
 // @access  Private/Admin
 export const getAllLocations = asyncHandler(async (req, res) => {
-  console.log('📥 Fetching all locations');
+  // console.log('📥 Fetching all locations');
   const locations = await Location.find({});
   res.status(200).json(locations);
 });

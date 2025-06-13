@@ -57,17 +57,15 @@ export const bookLocation = async (req, res) => {
 };
 
 
-
-// ❌ Cancel a slot
 export const cancelBooking = async (req, res) => {
   try {
-    const { state, city, placeName, startTime, endTime } = req.body;
+    const { endTime,eventLocation ,startTime } = req.body;
 
-    if (!state || !city || !placeName || !startTime || !endTime) {
+    if ( !endTime || !eventLocation || !startTime) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const location = await Location.findOne({ state, city, placeName });
+    const location = await Location.findOne({ placeName:eventLocation });
 
     if (!location) {
       return res.status(404).json({ message: 'Location not found' });

@@ -316,11 +316,11 @@ deleteLocation(state: string, city: string, placeName: string): void {
     );
   }
 
-  confirmDenyEvent(eventId: string, eventTitle: string) {
+  confirmDenyEvent(eventId: string, eventTitle: string,eventDate:string,eventTimeSlot:string,eventLocation:string) {
     this.showConfirmation(
       'Deny Event',
       `Are you sure you want to deny "${eventTitle}"? This action cannot be undone.`,
-      () => this.denyEvent(eventId)
+      () => this.denyEvent(eventId,eventDate,eventTimeSlot,eventLocation)
     );
   }
 
@@ -398,9 +398,9 @@ deleteLocation(state: string, city: string, placeName: string): void {
     next: (events) => {
       this.events = events;
       this.filteredEvents = [...events];
+      console.log(this.filteredEvents);
       this.extractFilterOptions();
       this.applySorting();
-      console.log(events);
         this.events.forEach(event => {
         this.loadRegisteredUsers(event._id);  // keep your existing method call
       });
@@ -486,21 +486,44 @@ deleteLocation(state: string, city: string, placeName: string): void {
     });
   }
 
-  denyEvent(eventId: string) {
+
+
+  denyEvent(eventId: string,eventDate: string,eventTimeSlot:string,eventLocation:string) {
     const eventToDeny = this.eventsone.find(e => e._id === eventId);
     const eventTitle = eventToDeny ? eventToDeny.title : 'Unknown Event';
 
-    this.ApprovalService.denyEvent(eventId).subscribe({
-      next: (res) => {
-        // console.log('Delete successful:', res);
-        this.loadApprovals();
-        this.showAlert('success', 'Event Denied', `Event "${eventTitle}" has been denied and removed.`);
-      },
-      error: (err) => {
-        console.error('Delete failed:', err);
-        this.showAlert('error', 'Deny Failed', 'Failed to deny the event. Please try again.');
-      }
-    });
+    console.log(eventDate , eventTimeSlot , eventLocation);
+
+    const { startTime, endTime } = this.extractStartEndTime(eventTimeSlot, eventDate);
+
+    console.log(startTime, endTime);
+
+
+
+    let cancelData = { eventLocation , startTime , endTime};
+
+
+  this.locationService.cancelBooking(cancelData).subscribe({
+    next: (cancelRes) => {
+      // Proceed only if cancelBooking is successful
+      this.ApprovalService.denyEvent(eventId).subscribe({
+        next: (res) => {
+          this.loadApprovals();
+          this.loadExpiredEvents();
+          this.loadEvents();
+          this.showAlert('success', 'Event Denied', `Event "${eventTitle}" has been denied and removed.`);
+        },
+        error: (err) => {
+          console.error('Deny failed:', err);
+          this.showAlert('error', 'Deny Failed', 'Failed to deny the event. Please try again.');
+        }
+      });
+    },
+    error: (cancelErr) => {
+      console.error('Cancel booking failed:', cancelErr);
+      this.showAlert('error', 'Cancellation Failed', 'Could not cancel booking. Event denial aborted.');
+    }
+  });
   }
 
   extractFilterOptions() {
@@ -754,6 +777,38 @@ loadLocations(): void {
     }
   });
 }
+
+ extractStartEndTime(timeSlot: string, eventDate: string | Date) {
+  try {
+    if (!eventDate || !timeSlot) {
+      throw new Error("Missing eventDate or timeSlot");
+    }
+
+    const dateString = typeof eventDate === 'string'
+      ? eventDate.substring(0, 10)
+      : eventDate.toISOString().substring(0, 10);
+
+    const timeParts: string[] = timeSlot.split(" - ").map(t => t.trim());
+    if (timeParts.length !== 2) {
+      throw new Error("Invalid timeSlot format");
+    }
+
+    const [startTimeStr, endTimeStr]: [string, string] = [timeParts[0], timeParts[1]];
+
+    const startIST: Date = new Date(`${dateString}T${startTimeStr}:00+05:30`);
+    const endIST: Date = new Date(`${dateString}T${endTimeStr}:00+05:30`);
+
+    const startTime: string = startIST.toISOString();
+    const endTime: string = endIST.toISOString();
+
+    return { startTime, endTime };
+
+  } catch (err: any) {
+    console.error("Extraction failed:", err.message);
+    return { startTime: null, endTime: null };
+  }
+}
+
 
 
   resetForm() {

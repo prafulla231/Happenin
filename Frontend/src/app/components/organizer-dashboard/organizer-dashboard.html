@@ -6,6 +6,10 @@
         <h1 class="dashboard-title">Organizer Dashboard</h1>
         <p class="dashboard-subtitle">Manage your events with ease</p>
       </div>
+      <!-- <button class="logout-btn" (click)="openContact()">
+        <span class="btn-text">Contact</span>
+      <div class="btn-glow"></div>
+      </button> -->
       <button class="logout-btn" (click)="logout()">
         Logout
       </button>
@@ -286,7 +290,35 @@
         </div>
       </div>
     </div>
+
+
+    <!-- Custom Popup
+<div class="custom-popup-overlay" *ngIf="showPopup" (click)="onPopupOverlayClick($event)">
+  <div class="custom-popup" [ngClass]="'popup-' + popupConfig.type">
+    <div class="popup-header">
+      <div class="popup-icon">
+        <span *ngIf="popupConfig.type === 'success'">✅</span>
+        <span *ngIf="popupConfig.type === 'error'">❌</span>
+        <span *ngIf="popupConfig.type === 'warning'">⚠️</span>
+        <span *ngIf="popupConfig.type === 'info'">ℹ️</span>
+      </div>
+      <h3 class="popup-title">{{ popupConfig.title }}</h3>
+    </div>
+
+    <div class="popup-body">
+      <p class="popup-message">{{ popupConfig.message }}</p>
+    </div>
+
+    <div class="popup-actions" *ngIf="popupConfig.showConfirm">
+      <button class="popup-btn popup-cancel-btn" (click)="onPopupCancel()">
+        {{ popupConfig.cancelText || 'Cancel' }}
+      </button>
+      <button class="popup-btn popup-confirm-btn" (click)="onPopupConfirm()">
+        {{ popupConfig.confirmText || 'Confirm' }}
+      </button>
+    </div>
   </div>
+</div> -->
 
   <!-- Empty State -->
   <div class="empty-state" *ngIf="events.length === 0 && eventsone.length === 0 && !isLoading">
@@ -307,3 +339,31 @@
     <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin.events.app&#64;gmail.com</span>
     </p>
   </footer>
+</div>
+  <div class="custom-popup-overlay" *ngIf="showPopup" (click)="onPopupOverlayClick($event)">
+  <div class="custom-popup" [ngClass]="'popup-' + popupConfig.type">
+    <div class="popup-header">
+      <div class="popup-icon">
+        <span *ngIf="popupConfig.type === 'success'">✅</span>
+        <span *ngIf="popupConfig.type === 'error'">❌</span>
+        <span *ngIf="popupConfig.type === 'warning'">⚠️</span>
+        <span *ngIf="popupConfig.type === 'info'">ℹ️</span>
+      </div>
+      <h3 class="popup-title">{{ popupConfig.title }}</h3>
+    </div>
+
+    <div class="popup-body">
+      <p class="popup-message">{{ popupConfig.message }}</p>
+    </div>
+
+    <div class="popup-actions" *ngIf="popupConfig.showConfirm">
+      <button class="popup-btn popup-cancel-btn" (click)="onPopupCancel()">
+        {{ popupConfig.cancelText || 'Cancel' }}
+      </button>
+      <button class="popup-btn popup-confirm-btn" (click)="onPopupConfirm()">
+        {{ popupConfig.confirmText || 'Confirm' }}
+      </button>
+    </div>
+  </div>
+</div>
+

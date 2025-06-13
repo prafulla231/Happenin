@@ -190,7 +190,6 @@ export class UserDashboardComponent {
   }
 
   openContact() {
- console.log("Button cicked contact");
   this.router.navigate(['/contact']);
 }
 
@@ -253,7 +252,7 @@ export class UserDashboardComponent {
     'Register for Event',
     `Are you sure you want to register for "${eventTitle}"?`,
     () => {
-      this.loadingService.show();
+      // this.loadingService.show();
 
       // Use the service method
       this.eventService.registerForEvent(this.userId!, eventId).subscribe({
@@ -264,7 +263,7 @@ export class UserDashboardComponent {
           // Send confirmation email after successful registration
           this.sendRegistrationEmail(event!);
 
-          this.loadingService.hide();
+          // this.loadingService.hide();
           this.showAlert('success', 'Registration Successful', `You have successfully registered for "${eventTitle}"!`);
           this.showAlert('info', 'Email Sent', 'A confirmation email with your ticket has been sent to your email address.');
         },

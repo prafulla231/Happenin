@@ -2,7 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router  } from '@angular/router';
 import { LoadingService } from '../loading';
 import { forkJoin, Subject } from 'rxjs';
 import { LocationService } from '../../services/location';
@@ -81,7 +81,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
   selectedState = '';
   selectedCity = '';
   selectedVenue: any = null;
-
+private alertTimeout?: any;
   showPopup = false;
   popupConfig: PopupConfig = { title: '', message: '', type: 'info' };
   popupResolve: ((value: boolean) => void) | null = null;
@@ -101,6 +101,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
     private eventService: EventService,
     private locationService: LocationService,
     private ApprovalService: ApprovalService,
+    private router: Router
   ) {
     // Initialize form
     this.eventForm = this.fb.group({
@@ -122,7 +123,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
 
     // Set minimum date
     const today = new Date();
-    today.setDate(today.getDate() - 1);
+    today.setDate(today.getDate() + 1);
     this.minDate = today.toISOString().split('T')[0];
 
     // Watch for end time changes to calculate duration
@@ -137,19 +138,23 @@ export class OrganizerDashboardComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.isLoading = false;
-    this.loadingService.hide();
-  }
+  this.destroy$.next();
+  this.destroy$.complete();
+  this.isLoading = false;
+  this.loadingService.hide();
 
-  private initializeData() {
+  // Clear alert timeout if exists
+  if (this.alertTimeout) {
+    clearTimeout(this.alertTimeout);
+  }
+}
+  private async initializeData() {
     // Decode token and get organizer ID
     this.decodeToken();
 
     if (!this.organizerId) {
       console.error('No organizer ID found');
-      alert('User authentication failed. Please login again.');
+      await this.showAlert('Alert', 'message', 'info')
       this.logout();
       return;
     }
@@ -299,7 +304,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
   // Event Submit/Create/Update
   async onSubmit() {
     if (this.eventForm.invalid) {
-      await alert('Please fill required fields');
+      await this.showAlert('Validation Error', 'Please fill required fields', 'error')
       return;
     }
 
@@ -339,13 +344,14 @@ export class OrganizerDashboardComponent implements OnDestroy {
             takeUntil(this.destroy$)
           ).subscribe({
             next: async () => {
-              await alert(`Event ${this.isEditMode ? 'updated' : 'created'} successfully!`);
+              // await alert(`Event ${this.isEditMode ? 'updated' : 'created'} successfully!`);
+              await this.showAlert('Success', `Event ${this.isEditMode ? 'updated' : 'created'} successfully!`, 'success');
               // this.resetForm();
               // this.loadAllData(); // Reload data after successful operation
             },
             error: async (error) => {
               console.error('Event creation/update error:', error);
-              await alert('Event creation/updation failed');
+              await this.showAlert('Error', 'Event creation/updation failed', 'error')
             },
             complete: () => {
               this.isLoading = false;
@@ -355,7 +361,8 @@ export class OrganizerDashboardComponent implements OnDestroy {
         },
         error: async (error) => {
           console.error('Location booking error:', error);
-          await alert('Failed to book location');
+          // await alert('Failed to book location');
+          await this.showAlert('Error', 'Failed to book location', 'error')
           this.isLoading = false;
           this.loadingService.hide();
         }
@@ -388,8 +395,13 @@ export class OrganizerDashboardComponent implements OnDestroy {
   }
 
   async onDelete(eventId: string) {
-    const confirm = await window.confirm('Are you sure you want to delete this event? This action cannot be undone.');
-    if (!confirm) return;
+    const confirm = await this.showConfirm('Confirm', 'Are you sure you want to delete this event? This action cannot be undone.');
+
+//     if (!confirm){
+// console.log("Not deleted")
+//       return;
+//     }
+
 
     this.isLoading = true;
     this.loadingService.show();
@@ -398,13 +410,15 @@ export class OrganizerDashboardComponent implements OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: async () => {
-        await alert('Event deleted!');
+        // await alert('Event deleted!');
+        await this.showAlert('Success', 'Event deleted!', 'success')
         this.loadAllData();
 
       },
       error: async (error) => {
         console.error('Delete error:', error);
-        await alert( 'Failed to delete event');
+        // await alert( 'Failed to delete event');
+await this.showAlert('Error', 'Failed to delete event', 'error')
       },
       complete: () => {
         this.isLoading = false;
@@ -423,7 +437,8 @@ export class OrganizerDashboardComponent implements OnDestroy {
       },
       error: (error) => {
         console.error('Error loading registered users:', error);
-        alert('Failed to load registered users');
+        // alert('Failed to load registered users');
+         this.showAlert('Alert', 'Failed to load registered users', 'info')
       }
     });
   }
@@ -464,44 +479,77 @@ export class OrganizerDashboardComponent implements OnDestroy {
     this.currentEditEventId = null;
   }
 
+    openContact() {
+  this.router.navigate(['/contact']);
+}
+
   async logout() {
-    const confirmed = window.confirm('Are you sure you want to logout?');
+    const confirmed = await this.showConfirm('Confirm', 'Are you sure you want to logout?')
     if (confirmed) {
       localStorage.clear();
       sessionStorage.clear();
-      alert('You have been logged out');
+      // alert('You have been logged out');
+      await this.showAlert('Success', 'You have been logged out', 'success')
       setTimeout(() => (window.location.href = '/login'), 500);
     }
   }
 
   // Popup logic
   showAlert(title: string, message: string, type: PopupConfig['type']): Promise<boolean> {
-    return new Promise(resolve => {
-      this.popupConfig = { title, message, type };
-      this.showPopup = true;
-      this.popupResolve = resolve;
-    });
-  }
+  return new Promise(resolve => {
+    this.popupConfig = { title, message, type, showConfirm: false };
+    this.showPopup = true;
+
+    // Auto-close alert after 2 seconds
+    this.alertTimeout = setTimeout(() => {
+      this.showPopup = false;
+      resolve(true);
+    }, 2000);
+
+    this.popupResolve = resolve;
+  });
+}
 
   showConfirm(title: string, message: string, confirmText = 'Yes', cancelText = 'No'): Promise<boolean> {
-    return new Promise(resolve => {
-      this.popupConfig = { title, message, type: 'warning', showConfirm: true, confirmText, cancelText };
-      this.showPopup = true;
-      this.popupResolve = resolve;
-    });
-  }
+  return new Promise(resolve => {
+    this.popupConfig = {
+      title,
+      message,
+      type: 'warning',
+      showConfirm: true,
+      confirmText,
+      cancelText
+    };
+    this.showPopup = true;
+    this.popupResolve = resolve;
+  });
+}
 
   onPopupConfirm() {
-    this.showPopup = false;
-    this.popupResolve?.(true);
-    this.popupResolve = null;
+  if (this.alertTimeout) {
+    clearTimeout(this.alertTimeout);
+    this.alertTimeout = undefined;
   }
+  this.showPopup = false;
+  this.popupResolve?.(true);
+  this.popupResolve = null;
+}
 
   onPopupCancel() {
-    this.showPopup = false;
-    this.popupResolve?.(false);
-    this.popupResolve = null;
+  if (this.alertTimeout) {
+    clearTimeout(this.alertTimeout);
+    this.alertTimeout = undefined;
   }
+  this.showPopup = false;
+  this.popupResolve?.(false);
+  this.popupResolve = null;
+}
+
+onPopupOverlayClick(event: MouseEvent) {
+  if (event.target === event.currentTarget && !this.popupConfig.showConfirm) {
+    this.onPopupCancel();
+  }
+}
 
   openUserModal(eventId: string) {
     this.loadRegisteredUsers(eventId, () => (this.selectedEventId = eventId));

@@ -183,14 +183,20 @@ export const removeUserFromEvent = async (req, res) => {
 
 export const getExpiredEvents = async (req, res) => {
   try {
-    const events = await Event.find({ date: { $lt: new Date() }}).sort({ date: -1 }).populate('createdBy', 'name email role');;
-    // res.status(200).json(events);
-    
-    apiResponse(res,200,"Events found" , events);
-    console.log(events);
+    const events = await Event.find(
+      { 
+        date: { $lt: new Date() },
+        isDeleted: false 
+      }
+    )
+    .sort({ date: -1 })
+    .populate('createdBy', 'name email role');
+
+    apiResponse(res, 200, "Events found", events);
+    // console.log(events);
   } catch (err) {
     console.error('Error fetching expired events:', err);
-    // res.status(500).json({ message: 'Server Error' });
-    apiError(res,500,"Server Error",[]);
+    apiError(res, 500, "Server Error", []);
   }
 };
+
