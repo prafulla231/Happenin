@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { Approval } from './approval';
+import { ApprovalService } from './approval';
 
 describe('Approval', () => {
-  let service: Approval;
+  let service: ApprovalService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Approval);
+    service = TestBed.inject(ApprovalService);
   });
 
   it('should be created', () => {

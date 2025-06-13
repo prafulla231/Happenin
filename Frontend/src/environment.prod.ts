@@ -1,6 +1,7 @@
 export const environment = {
   production: true,
   apiBaseUrl: 'https://happenin-byma.onrender.com/api',
+  //  apiBaseUrl: 'http://localhost:5000/api',
 
   apis: {
     // Events
@@ -9,6 +10,8 @@ export const environment = {
     getEventsByOrganizer: (organizerId: string) => `/events/${organizerId}`,
     updateEvent: (eventId: string) => `/events/${eventId}`,
     deleteEvent: (eventId: string) => `/events/${eventId}`,
+    getUpcomingEvent : '/events/getupcomingevent',
+    getExpiredEvent : '/events/getexpiredevent',
 
     // Missing endpoints that were in development but not production:
     registeredEvents: (userId: string) => `/events/registered-events/${userId}`,

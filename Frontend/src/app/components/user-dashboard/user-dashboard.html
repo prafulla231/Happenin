@@ -3,12 +3,24 @@
   <header class="dashboard-header">
     <div class="header-content">
   <h1 class="main-title">
-    <span class="title-gradient">Welcome, {{userName}} to Your</span>
-    <span class="title-highlight">Dashboard</span>
+    <span class="title-gradient">Welcome, {{userName}}</span>
+    <!-- <span class="title-highlight">Dashboard</span> -->
   </h1>
   <div class="header-buttons">
-    <button class="my-events-btn" (click)="scrollToRegisteredEvents()">
+    <button class="logout-btn" (click)="scrollToAvailableEvents()">
+      <span class="btn-text">Available Events</span>
+      <div class="btn-glow"></div>
+    </button>
+    <button class="logout-btn" (click)="scrollToRegisteredEvents()">
       <span class="btn-text">My Events</span>
+      <div class="btn-glow"></div>
+    </button>
+     <!-- <button class="contact-btn" (click)="openContact()">
+      <i class="fas fa-envelope"></i>
+     <span>Contact</span>
+    </button> -->
+    <button class="logout-btn" (click)="openContact()">
+      <span class="btn-text">Contact</span>
       <div class="btn-glow"></div>
     </button>
     <button class="logout-btn" (click)="logout()">
@@ -19,8 +31,7 @@
 </div>
   </header>
 
-  <!-- Filters and Search Section -->
-  <!-- UPDATE: Replace the entire filters-section with this updated version -->
+
 
 <section class="filters-section">
   <div class="filters-container">
@@ -39,11 +50,7 @@
           <span class="btn-icon">✕</span>
           <span class="btn-text">Clear All</span>
         </button>
-      </div>
-    </div>
-
-    <!-- Search Bar - Always Visible -->
-    <div class="search-container">
+        <div class="search-container">
       <div class="search-input-wrapper">
         <span class="search-icon">🔍</span>
         <input
@@ -58,6 +65,25 @@
         </button>
       </div>
     </div>
+      </div>
+    </div>
+
+    <!-- Search Bar - Always Visible -->
+    <!-- <div class="search-container">
+      <div class="search-input-wrapper">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search events by title, location, artist, category..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()"
+        />
+        <button class="search-clear-btn" (click)="clearSearch()" *ngIf="searchQuery">
+          <span>✕</span>
+        </button>
+      </div>
+    </div> -->
 
     <!-- Collapsible Filter Controls -->
     <div class="filter-dropdown" [class.show]="showFilters">
@@ -217,9 +243,11 @@
         <div class="card-gradient-bg"></div>
         <div class="card-content">
           <div class="card-header">
-            <h3 class="event-title">{{ event.title }}</h3>
-            <div class="event-category">{{ event.category || 'Event' }}</div>
-          </div>
+  <h3 class="event-title">{{ event.title }}</h3>
+
+
+</div>
+<div class="event-category">{{ event.category || 'Event' }}</div>
 
           <p class="event-description">{{ event.description }}</p>
 
@@ -354,10 +382,12 @@
       </div>
 
       <div class="modal-content" *ngIf="selectedEvent">
+
+
         <div class="modal-category">
           <span class="category-badge">{{ selectedEvent.category || 'Event' }}</span>
         </div>
-
+        <button class="share-btn" (click)="copyEventToClipboard()">📋 Share</button>
         <div class="modal-description">
           <h3>About This Event</h3>
           <p>{{ selectedEvent.description }}</p>
@@ -444,7 +474,7 @@
 
   <footer class="dashboard-footer">
     <h2 class="footer-title"><span class="brand-highlight">Happenin'</span></h2>
-    <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin&#64;gmail.com</span></p>
+    <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin.events.app&#64;gmail.com</span></p>
     <!-- <div class="footer-socials">
       <a href="https://www.instagram.com" target="_blank" aria-label="Instagram" class="social-icon">
         <img class="insta-logo" src="/images/instagram.png" alt="Instagram" />

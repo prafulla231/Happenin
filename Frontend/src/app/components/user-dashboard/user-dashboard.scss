@@ -20,6 +20,7 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
   position: relative;
   overflow: hidden;
+  height: 120px;
 
   &::before {
     content: '';
@@ -67,58 +68,6 @@
   }
 }
 
-.my-events-btn {
-  position: relative;
-  background: rgba(176, 145, 243, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 50px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
-  overflow: hidden;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-
-    .btn-glow {
-      opacity: 1;
-    }
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  .btn-icon {
-    font-size: 1rem;
-  }
-
-  .btn-text {
-    position: relative;
-    z-index: 2;
-  }
-
-  .btn-glow {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  @media (max-width: 768px) {
-    width: 100%;
-    justify-content: center;
-    padding: 1rem;
-  }
-}
 
 .main-title {
   font-weight: 800;
@@ -240,6 +189,38 @@
   }
 
 }
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.event-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+  color: #333;
+}
+
+.share-btn {
+  background-color: #0ad3a4;
+  color: rgb(0, 0, 0);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.share-btn:hover {
+  background-color: #ebf0c1;
+}
+
   .header-actions {
   display: flex;
   gap: 1rem;
@@ -361,11 +342,11 @@
 
 /* Search Container */
 .search-container {
-  margin-bottom: 1rem;
+  // margin-bottom: 1rem;
 
   .search-input-wrapper {
     position: relative;
-    max-width: 600px;
+    max-width: 800px;
     margin: 0 auto;
 
     .search-icon {
@@ -379,7 +360,7 @@
     }
 
     .search-input {
-      width: 100%;
+      width: 150%;
       padding: 1rem 1rem 1rem 3rem;
       border: 2px solid #e2e8f0;
       border-radius: 16px;
@@ -859,7 +840,7 @@
 
   &.registered-section {
     background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(139, 195, 74, 0.05) 100%);
-    margin-top: 2rem;
+    margin-top: 20px;
     border-radius: 16px;
   }
 }
@@ -877,7 +858,8 @@
   align-items: center;
   gap: 0.5rem;
   position: relative;
-  margin-bottom: 1rem;
+  margin-bottom: 10px;
+  margin-top: 0;
 
   .title-icon {
     font-size: 2rem;

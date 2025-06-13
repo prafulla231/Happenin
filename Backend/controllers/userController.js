@@ -2,7 +2,7 @@ import { Registration } from '../models/Registration.js';
 import { Event } from '../models/Event.js';
 import { apiError, apiResponse } from '../utils/apiResponse.js';
 
-// Assumes authenticateToken middleware has already set req.user
+
 export const getUserRegisteredEvents = async (req, res) => {
   try {
     const userId = req.user.userId;

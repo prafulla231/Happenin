@@ -122,7 +122,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
 
     // Set minimum date
     const today = new Date();
-    today.setDate(today.getDate() + 1);
+    today.setDate(today.getDate() - 1);
     this.minDate = today.toISOString().split('T')[0];
 
     // Watch for end time changes to calculate duration
@@ -369,6 +369,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
   }
 
   onEdit(event: Event) {
+    window.scrollTo(0, 0);
     const loc = this.locations.find(l => l.placeName === event.location);
     this.eventForm.patchValue({ ...event, state: loc?.state || '', city: loc?.city || '' });
     this.currentEditEventId = event._id;
@@ -399,6 +400,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
       next: async () => {
         await alert('Event deleted!');
         this.loadAllData();
+
       },
       error: async (error) => {
         console.error('Delete error:', error);

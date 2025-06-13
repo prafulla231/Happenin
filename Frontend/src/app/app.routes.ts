@@ -2,11 +2,13 @@ import { Routes } from '@angular/router';
 import { OrganizerDashboardComponent } from './components/organizer-dashboard/organizer-dashboard';
 import { UserDashboardComponent } from './components/user-dashboard/user-dashboard';
 import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard';
-import { AuthGuard } from './components/auth.guard'; // Create this file as above
+import { AuthGuard } from './components/auth.guard';
+import {Contact} from './components/contact/contact'
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./components/home/home').then(m => m.HomeComponent) },
   { path: 'login', loadComponent: () => import('./components/auth/login/login').then(m => m.LoginComponent) },
+  { path: 'contact', component: Contact },
 
   {
     path: 'organizer-dashboard',

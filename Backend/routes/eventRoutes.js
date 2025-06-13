@@ -4,7 +4,7 @@ import {
   getEvents,
   getEventById,
   updateEvent,
-  deleteEvent, removeUserFromEvent
+  deleteEvent, removeUserFromEvent , getUpcomingEvents , getExpiredEvents
 } from '../controllers/eventController.js';
 
 import { registerForEvent , getRegisteredEvents , deregisterEvent , getEventDetails } from '../controllers/userActivityController.js';
@@ -12,6 +12,10 @@ import { registerForEvent , getRegisteredEvents , deregisterEvent , getEventDeta
 
 
 const router = express.Router();
+
+router.get('/upcoming' , getUpcomingEvents);
+router.get('/expired' , getExpiredEvents);
+
 
 // Create new event
 /**
@@ -308,5 +312,6 @@ router.put('/:id', updateEvent);
  *         description: Server error
  */
 router.delete('/:id', deleteEvent);
+
 
 export default router;

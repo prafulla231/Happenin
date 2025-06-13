@@ -590,9 +590,62 @@
   </div>
 </div>
 
+<!-- <div class="expired-events-section" *ngIf="expiredEvents.length > 0">
+  <h2 class="expired-title">📅 Expired Events</h2>
+
+  <div class="expired-events-grid">
+    <div *ngFor="let event of expiredEvents" class="admin-event-card expired">
+      <div class="event-header">
+        <h3>{{ event.title }}</h3>
+        <span class="event-category" *ngIf="event.category">{{ event.category }}</span>
+      </div>
+
+      <div class="event-details">
+        <p><strong>Date:</strong> {{ event.date | date: 'MMM d, y' }}</p>
+        <p><strong>Time:</strong> {{ event.timeSlot }}</p>
+        <p><strong>Location:</strong> {{ event.location }}</p>
+        <p><strong>Price:</strong> ₹{{ event.price }}</p>
+        <p *ngIf="event.artist"><strong>Artist:</strong> {{ event.artist }}</p>
+        <p *ngIf="event.organization"><strong>Organization:</strong> {{ event.organization }}</p>
+      </div>
+
+      <div class="expired-label">
+        This event has expired.
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<h2 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; color: #4A90E2; font-weight: 600; font-size: 28px; text-shadow: 1px 1px 2px #ccc;">Expired Events</h2>
+<div class="admin-events-grid">
+    <div *ngFor="let event of expiredEvents" class="admin-event-card">
+      <div class="event-header">
+        <h3>{{ event.title }}</h3>
+        <span class="event-category" *ngIf="event.category">{{ event.category }}</span>
+      </div>
+
+      <div class="event-details">
+        <p><strong>Date:</strong> {{ event.date | date: 'MMM d, y' }}</p>
+        <p><strong>Time:</strong> {{ event.timeSlot }}</p>
+        <p><strong>Location:</strong> {{ event.location }}</p>
+        <p><strong>Price:</strong> ₹{{ event.price }}</p>
+        <p *ngIf="event.artist"><strong>Artist:</strong> {{ event.artist }}</p>
+        <p *ngIf="event.organization"><strong>Organization:</strong> {{ event.organization }}</p>
+      </div>
+
+      <div class="event-actions">
+        <!-- <button class="delete-btn" (click)="confirmDeleteEvent(event._id, event.title)">Delete Event</button> -->
+        <button class="view-details-btn" (click)="showEventDetail(event)">
+          <span class="btn-icon">👁️</span>
+          <span class="btn-text">Details</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
 <footer class="dashboard-footer">
     <h2 class="footer-title"><span class="brand-highlight">Happenin'</span></h2>
-    <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin&#64;gmail.com</span></p>
+    <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin.events.app&#64;gmail.com</span></p>
     <!-- <div class="footer-socials">
       <a href="https://www.instagram.com" target="_blank" aria-label="Instagram" class="social-icon">
         <img class="insta-logo" src="/images/instagram.png" alt="Instagram" />
@@ -645,7 +698,7 @@
   *ngIf="customAlert.type !== 'confirm' && !customAlert.autoClose"
   class="alert-btn alert-ok-btn"
   (click)="closeAlert()">
-  <!-- <span class="btn-text">OK</span> -->
+  <span class="btn-text">OK</span>
   <div class="btn-ripple"></div>
 </button>
 

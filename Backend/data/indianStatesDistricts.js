@@ -6,5 +6,4 @@ export const indianStatesAndDistricts = {
   "Rajasthan": ["Jaipur", "Udaipur", "Jodhpur", "Ajmer", "Kota"],
   "Delhi": ["New Delhi", "Central Delhi", "North Delhi", "South Delhi"],
   "Uttar Pradesh": ["Lucknow", "Kanpur", "Varanasi", "Agra", "Noida"],
-  // Add more as needed
 };

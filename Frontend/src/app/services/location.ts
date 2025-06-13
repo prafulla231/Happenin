@@ -21,10 +21,6 @@ export class LocationService {
 }
 
 
-
-
-
-
   addLocation(location: Location): Observable<{ data: Location }> {
   return this.http.post<{ data: Location }>(`${environment.apiBaseUrl}${environment.apis.addLocation}`, location);
 }

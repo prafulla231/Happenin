@@ -2,13 +2,16 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+// import { FormsModule } from '@angular/forms';
 import { LoadingService } from '../loading';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LocationService } from '../../services/location';
 import { ApprovalService } from '../../services/approval';
 import { AuthService } from '../../services/auth';
 import { EventService } from '../../services/event';
+import { HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { environment } from '../../../environment';
 
 
 export interface Event {
@@ -65,22 +68,29 @@ export interface CustomAlert {
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
+  // providers: [FormBuilder],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss']
 })
 export class AdminDashboardComponent {
+
+ private fb = inject(FormBuilder);
+
   events: Event[] = [];
   eventsone: Event[] = [];
   filteredEvents: Event[] = [];
   filteredEventsone: Event[] = [];
+  filteredExpiredEvents: Event[] = [];
   usersMap: { [eventId: string]: RegisteredUsersResponse } = {};
 
   // Event details modal properties
   selectedEvent: Event | null = null;
   showEventDetails: boolean = false;
+   expiredEvents: any[] = [];
 
    showFilters: boolean = false;
 showViewLocations = false;
+
 
 
 
@@ -142,7 +152,7 @@ showViewLocations = false;
   constructor(
     private http: HttpClient,
     private loadingService: LoadingService,
-    private fb: FormBuilder,
+    // private fb: FormBuilder,
     private authService: AuthService,
     private eventService: EventService,
     private locationService: LocationService,
@@ -150,10 +160,13 @@ showViewLocations = false;
 
   ) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // this.loadExpiredEvents();
     this.loadEvents();
     this.loadLocations();
     this.loadApprovals();
+    this.loadExpiredEvents();
     this.setUserFromLocalUser();
+
 
     this.registerForm = this.fb.group({
       name: ['', Validators.required],
@@ -197,6 +210,7 @@ showViewLocations = false;
     this.closeAlert();
   }, duration);
 }
+
 
   showConfirmation(title: string, message: string, confirmAction: () => void, cancelAction?: () => void) {
   this.clearAlertTimeout();  // Prevent accidental closure
@@ -386,6 +400,7 @@ deleteLocation(state: string, city: string, placeName: string): void {
       this.filteredEvents = [...events];
       this.extractFilterOptions();
       this.applySorting();
+      console.log(events);
         this.events.forEach(event => {
         this.loadRegisteredUsers(event._id);  // keep your existing method call
       });
@@ -400,9 +415,29 @@ deleteLocation(state: string, city: string, placeName: string): void {
   });
 }
 
+ loadExpiredEvents(): void {
+  this.loadingService.show();
+
+  this.eventService.getExpiredEvents().subscribe({
+    next: (events) => {
+      this.expiredEvents = events;
+      this.filteredExpiredEvents = [...events];
+      this.extractFilterOptions();
+      this.loadingService.hide();
+      this.showAlert('success', 'Events Loaded', 'Successfully loaded all available events!');
+    },
+    error: (err) => {
+      console.error('Error loading events', err);
+      this.loadingService.hide();
+      this.showAlert('error', 'Loading Failed', 'Failed to load events. Please try again later.');
+    }
+  });
+}
+
 
   loadApprovals(): void {
   this.loadingService.show();
+
 
   this.ApprovalService.viewApprovalRequests().subscribe({
     next: (res: { data: Event[] }) => {
@@ -697,7 +732,18 @@ deleteLocation(state: string, city: string, placeName: string): void {
 }
 
 
-  loadLocations(): void {
+//   loadLocations(): void {
+//   this.locationService.viewLocation().subscribe({
+//     next: (locations) => {
+//       this.locations = locations;
+//     },
+//     error: (err) => {
+//       console.error('Error loading locations', err);
+//       this.showAlert('error', 'Loading Failed', 'Failed to load locations.');
+//     }
+//   });
+// }
+loadLocations(): void {
   this.locationService.viewLocation().subscribe({
     next: (locations) => {
       this.locations = locations;
@@ -708,6 +754,7 @@ deleteLocation(state: string, city: string, placeName: string): void {
     }
   });
 }
+
 
   resetForm() {
     this.newLocation = {

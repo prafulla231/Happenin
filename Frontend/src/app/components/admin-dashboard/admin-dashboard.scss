@@ -322,7 +322,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
     font-size: 22px;
     font-weight: 700;
     margin: 0 0 16px 0;
-    background: linear-gradient(135deg, $admin-text-dark 0%, $admin-violet 100%);
+    background: linear-gradient(135deg, $admin-text-dark 0%, $admin-text-dark 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1550,6 +1550,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
 // Enhanced Event Category and Header
 .event-header {
   display: flex;
+  color: $admin-text-dark;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 16px;

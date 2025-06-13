@@ -3,6 +3,7 @@
 export const environment = {
   production: false,
   apiBaseUrl: 'https://happenin-byma.onrender.com/api',
+  // apiBaseUrl: 'http://localhost:5000/api', // Use your local development URL here
 
   apis: {
     // Events
@@ -14,6 +15,8 @@ export const environment = {
     registeredEvents : (userId : string) => `/events/registered-events/${userId}`,
     registerForEvent: '/events/register',
     deregisterForEvent: '/events/deregister',
+    getUpcomingEvent : '/events/upcoming',
+    getExpiredEvent : '/events/expired',
 
     // Registrations
     getRegisteredUsers: (eventId: string) => `/events/registered-users/${eventId}`,

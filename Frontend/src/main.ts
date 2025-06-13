@@ -11,9 +11,7 @@ import { AuthService } from './app/services/auth';
 
 function initializeAuth(authService: AuthService) {
   return () => {
-    // Just touch the service to initialize from localStorage
     const token = authService.getToken();
-    // You can even decode and verify token here if needed
     console.log('Auth initialized. Token found:', !!token);
   };
 }

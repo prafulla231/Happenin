@@ -166,44 +166,71 @@ export class LoginComponent {
   }
 
   onRegisterSubmit(): void {
-    if (this.registerForm.valid) {
-      const data = this.registerForm.value;
+  if (this.registerForm.valid) {
+    const data = this.registerForm.value;
 
-      this.authService.registerUser(data).subscribe({
-        next: () => {
-          // Show success message
-          this.showSuccessMessage('Registration successful! 🌟');
+    this.authService.registerUser(data).subscribe({
+      next: () => {
+        // Automatically log the user in with the same credentials
+        const loginData = {
+          email: data.email,
+          password: data.password
+        };
 
-          // Switch to login form after showing success message
-          setTimeout(() => {
-            this.toggleForm(true);
-          }, 2000);
-        },
-        error: (error) => {
-          console.error('Registration failed', error);
+        this.authService.loginUser(loginData).subscribe({
+          next: (response: any) => {
+            const userRole = response.data.user?.role;
 
-          // Handle specific error messages
-          let errorMessage = 'Registration failed. Please try again.';
-          if (error.error?.message) {
-            errorMessage = error.error.message;
-          } else if (error.status === 409) {
-            errorMessage = 'Email already exists. Please use a different email.';
-          } else if (error.status === 0) {
-            errorMessage = 'Network error. Please check your connection.';
+            if (response.data.token) {
+              localStorage.setItem('token', response.data.token);
+              sessionStorage.setItem('token', response.data.token);
+            }
+            if (response.data.user) {
+              localStorage.setItem('user', JSON.stringify(response.data.user));
+              sessionStorage.setItem('user', JSON.stringify(response.data.user));
+            }
+
+            // Show success message
+            this.showSuccessMessage('Registered and logged in successfully! 🎉');
+
+            // Navigate after showing success message
+            setTimeout(() => {
+              if (userRole === 'organizer') {
+                this.router.navigate(['/organizer-dashboard']);
+              } else if (userRole === 'admin') {
+                this.router.navigate(['/admin-dashboard']);
+              } else {
+                this.router.navigate(['/user-dashboard']);
+              }
+            }, 2000);
+          },
+          error: (loginError) => {
+            console.error('Auto-login failed after registration', loginError);
+            this.showAlert('Registration succeeded but auto-login failed. Please try logging in.', 'warning');
+            this.toggleForm(true); // fallback to login form
           }
+        });
+      },
+      error: (error) => {
+        console.error('Registration failed', error);
 
-          // Use custom alert instead of default alert
-          this.showAlert(errorMessage, 'error');
+        let errorMessage = 'Registration failed. Please try again.';
+        if (error.error?.message) {
+          errorMessage = error.error.message;
+        } else if (error.status === 409) {
+          errorMessage = 'Email already exists. Please use a different email.';
+        } else if (error.status === 0) {
+          errorMessage = 'Network error. Please check your connection.';
         }
-      });
-    } else {
-      // Mark all fields as touched to show validation errors
-      this.markFormGroupTouched(this.registerForm);
 
-      // Show validation error popup
-      this.showAlert('Please fill in all required fields correctly.', 'warning');
-    }
+        this.showAlert(errorMessage, 'error');
+      }
+    });
+  } else {
+    this.markFormGroupTouched(this.registerForm);
+    this.showAlert('Please fill in all required fields correctly.', 'warning');
   }
+}
 
   // Utility method to mark all form controls as touched
   private markFormGroupTouched(formGroup: FormGroup): void {

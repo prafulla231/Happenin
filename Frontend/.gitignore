@@ -10,7 +10,8 @@
 /node_modules
 npm-debug.log
 yarn-error.log
-
+/Frontend/documentation
+/documentation
 # IDEs and editors
 .idea/
 .project
@@ -40,3 +41,8 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+
+
+
+// apiBaseUrl: 'https://happenin-byma.onrender.com/api',

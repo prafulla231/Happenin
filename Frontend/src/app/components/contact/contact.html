@@ -1,0 +1,163 @@
+<div class="contact-container">
+  <div class="main-heading">
+    <h1>Happenin'</h1>
+  </div>
+  <div class="contact-header">
+
+    <h2>Contact Us</h2>
+  </div>
+
+  <div class="contact-content">
+
+    <div class="parent-contact-form">
+    <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
+      <!-- User Details Section -->
+      <div class="form-section">
+        <h4>Your Details</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Name <span class="required">*</span></label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              class="form-control"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="email">Email <span class="required">*</span></label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="form-control"
+              readonly
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Details Section -->
+      <div class="form-section">
+        <h4>Additional Information</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input
+              type="tel"
+              id="phone"
+              formControlName="phone"
+              class="form-control"
+              placeholder="Enter your phone number"
+            />
+          </div>
+          <div class="form-group">
+            <label for="category">Category <span class="required">*</span></label>
+            <select id="category" formControlName="category" class="form-control">
+              <option value="">Select category</option>
+              <option value="general">General Inquiry</option>
+              <option value="technical">Technical Issue</option>
+              <!-- <option value="billing">Billing Support</option> -->
+              <option value="feature">Feature Request</option>
+              <option value="complaint">Complaint</option>
+            </select>
+            <div class="error-message" *ngIf="contactForm.get('category')?.touched && contactForm.get('category')?.errors?.['required']">
+              Please select a category
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Section -->
+      <div class="form-section">
+        <div class="form-group">
+          <label for="subject">Subject <span class="required">*</span></label>
+          <input
+            type="text"
+            id="subject"
+            formControlName="subject"
+            class="form-control"
+            placeholder="Brief description of your inquiry"
+          />
+          <div class="error-message" *ngIf="contactForm.get('subject')?.touched && contactForm.get('subject')?.errors?.['required']">
+            Subject is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="message">Message <span class="required">*</span></label>
+          <textarea
+            id="message"
+            formControlName="message"
+            class="form-control"
+            rows="6"
+            placeholder="Please provide detailed information about your inquiry, issue, or feedback..."
+          ></textarea>
+          <div class="error-message" *ngIf="contactForm.get('message')?.touched && contactForm.get('message')?.errors?.['required']">
+            Message is required
+          </div>
+          <div class="error-message" *ngIf="contactForm.get('message')?.touched && contactForm.get('message')?.errors?.['minlength']">
+            Message must be at least 10 characters long
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="priority">Priority Level</label>
+          <select id="priority" formControlName="priority" class="form-control">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-cancel" (click)="goBack()">
+      <!-- <i class="fas fa-arrow-left"></i> -->
+      Back
+    </button>
+        <button
+          type="button"
+          class="btn btn-cancel"
+          (click)="resetForm()"
+        >
+          Reset
+        </button>
+        <button
+          type="submit"
+          class="btn btn-submit"
+          [disabled]="contactForm.invalid || isSubmitting"
+        >
+          <span *ngIf="isSubmitting" class="spinner"></span>
+          {{ isSubmitting ? 'Sending...' : 'Send Message' }}
+        </button>
+      </div>
+    </form>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div class="success-message" *ngIf="showSuccessMessage">
+    <div class="success-content">
+      <button class="close-btn" (click)="dismissMessage()">&times;</button>
+      <i class="fas fa-check-circle"></i>
+      <h3>Message Sent Successfully!</h3>
+      <p>Thank you for contacting us. We'll get back to you within 24 hours.</p>
+      <button class="btn btn-primary" (click)="goBack()">Back to Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message-popup" *ngIf="showErrorMessage">
+    <div class="error-content">
+      <button class="close-btn" (click)="dismissMessage()">&times;</button>
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Failed to Send Message</h3>
+      <p>There was an error sending your message. Please check your internet connection and try again.</p>
+      <button class="btn btn-secondary" (click)="dismissMessage()">Try Again</button>
+    </div>
+  </div>
+</div>

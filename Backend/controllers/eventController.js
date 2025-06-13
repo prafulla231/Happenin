@@ -14,7 +14,7 @@ export const createApproval = async (req, res) => {
       artist, organization
     } = req.body;
 
-    console.log('Authenticated user:', req.user);
+    // console.log('Authenticated user:', req.user);
 
     if (!title || !date || !maxRegistrations || !createdBy) {
       return apiError(res, 400, 'Title, Date, MaxRegistrations and CreatedBy are required fields.');
@@ -66,6 +66,19 @@ export const getEvents = async (req, res) => {
   } catch (error) {
     console.error('❌ Get Events error:', error.message);
     return apiError(res, 500, 'Server error while fetching events', error);
+  }
+};
+export const getUpcomingEvents = async (req, res) => {
+  try {
+    const events = await Event.find({ 
+      date: { $gte: new Date() }, 
+      isDeleted: false 
+    }).sort({ date: 1 }).populate('createdBy', 'name email role');
+    
+    return apiResponse(res, 200, "Upcoming events fetched successfully", events);
+  } catch (error) {
+    console.error('❌ Get Upcoming Events error:', error.message);
+    return apiError(res, 500, 'Server error while fetching upcoming events', error);
   }
 };
 
@@ -163,5 +176,21 @@ export const removeUserFromEvent = async (req, res) => {
   } catch (error) {
     console.error('Error removing user from event:', error);
     return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
+export const getExpiredEvents = async (req, res) => {
+  try {
+    const events = await Event.find({ date: { $lt: new Date() }}).sort({ date: -1 }).populate('createdBy', 'name email role');;
+    // res.status(200).json(events);
+    
+    apiResponse(res,200,"Events found" , events);
+    console.log(events);
+  } catch (err) {
+    console.error('Error fetching expired events:', err);
+    // res.status(500).json({ message: 'Server Error' });
+    apiError(res,500,"Server Error",[]);
   }
 };

@@ -39,6 +39,28 @@ export class EventService {
     );
   }
 
+  getUpcomingEvents(): Observable<Event[]> {
+    const url = `${environment.apiBaseUrl}${environment.apis.getUpcomingEvent}`;
+    console.log("Url fetched: ",url);
+    return this.http.get<{ data: Event[] }>(url, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      map(res => res.data)
+    );
+  }
+
+
+  getExpiredEvents(): Observable<Event[]> {
+    const url = `${environment.apiBaseUrl}${environment.apis.getExpiredEvent}`;
+    console.log("Url fetched: ",url);
+    return this.http.get<{ data: Event[] }>(url, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      map(res => res.data)
+    );
+  }
+
+
   getEventById(organizerId: string): Observable<Event[]> {
     return this.http.get<{ data: Event[] }>(`${environment.apiBaseUrl}${environment.apis.getEventsByOrganizer(organizerId)}`, {
       headers: this.getAuthHeaders()
@@ -100,4 +122,71 @@ export class EventService {
       headers: this.getAuthHeaders()
     });
   }
+
+
+//   getUpcomingEvents(): Observable<Event[]> {
+//   return this.http.get<{ data: Event[] }>(`${environment.apiBaseUrl}${environment.apis.getUpcomingEvent}`,
+//     {headers: this.getAuthHeaders()}
+//   )
+//     .pipe(map(res => res.data));
+// }
+
+// getExpiredEvents(): Observable<Event[]> {
+//   return this.http.get<{ data: Event[] }>(`${environment.apiBaseUrl}${environment.apis.getExpiredEvent}`,
+//     {headers: this.getAuthHeaders()}
+//   )
+//     .pipe(map(res => res.data));
+// }
+  // getUpcomingEvents(): Observable<Event[]> {
+  //   const url = `${environment.apiBaseUrl}${environment.apis.getUpcomingEvent}`;
+  //   return this.http.get<data: Event[]>(url).pipe(
+  //     map(res => res.data)
+  //   );
+  // }
+
+  // getExpiredEvents(): Observable<Event[]> {
+  //   const url = `${environment.apiBaseUrl}${environment.apis.getExpiredEvent}`;
+  //   return this.http.get<ApiResponse>(url).pipe(
+  //     map(res => res.data)
+  //   );
+  // }
 }
+
+
+// Error loading events
+// HttpErrorResponse
+// error
+// :
+// message
+// :
+// "Invalid user ID."
+// success
+// :
+// false
+// [[Prototype]]
+// :
+// Object
+// headers
+// :
+// _HttpHeaders {headers: undefined, normalizedNames: Map(0), lazyUpdate: null, lazyInit: ƒ}
+// message
+// :
+// "Http failure response for http://localhost:5000/api/events/getexpiredevent: 400 Bad Request"
+// name
+// :
+// "HttpErrorResponse"
+// ok
+// :
+// false
+// status
+// :
+// 400
+// statusText
+// :
+// "Bad Request"
+// type
+// :
+// undefined
+// url
+// :
+// "http://localhost:5000/api/events/getexpiredevent"

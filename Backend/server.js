@@ -8,11 +8,21 @@ import approveRoute from './routes/approveRoute.js';
 import cors from 'cors';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import expressListEndpoints from 'express-list-endpoints';
+
 
 dotenv.config();
 
+import emailRoutes  from './routes/email.routes.js';
+
+
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Connect to DB
 connectDB();
@@ -51,6 +61,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/approval' , approveRoute);
+app.use('/api/email', emailRoutes);
 // app.use('/api/approval',approveRoute);
 app.get('/', (req, res) => {
   res.send('API is running...');
@@ -59,3 +70,15 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+// const frontendPath = path.join(__dirname, 'Frontend', 'dist', 'Frontend', 'browser');
+// app.use(express.static(frontendPath));
+
+// // Catch-all route to serve index.html for Angular routes
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(frontendPath, 'index.html'));
+// });
+
+const endpoints = expressListEndpoints(app);
+console.log(endpoints);

@@ -1,7 +1,7 @@
 // user-dashboard.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule,  } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import jsPDF from 'jspdf';
@@ -11,6 +11,9 @@ import { ApprovalService } from '../../services/approval';
 import { AuthService } from '../../services/auth';
 import { EventService } from '../../services/event';
 import { environment } from '../../../environment';
+import { EmailService } from '../../services/email.service';
+import { Router } from '@angular/router';
+import { Contact } from '../contact/contact';
 
 export interface Event {
   _id: string;
@@ -43,7 +46,7 @@ export interface CustomAlert {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule,ReactiveFormsModule],
   templateUrl: './user-dashboard.html',
   styleUrls: ['./user-dashboard.scss']
 })
@@ -57,6 +60,7 @@ export class UserDashboardComponent {
   registeredEvents: Event[] = [];
   selectedEvent: Event | null = null;
   showEventDetails: boolean = false;
+  userEmail: string | null = null;
 
   // Custom Alert System
   customAlert: CustomAlert = {
@@ -81,11 +85,13 @@ export class UserDashboardComponent {
 
   constructor(
     private http: HttpClient,
+    private router: Router,
     private loadingService: LoadingService,
     private authService: AuthService,
     private eventService: EventService,
     private locationService: LocationService,
     private ApprovalService: ApprovalService,
+    private emailService: EmailService,
 
   ) {
     this.showFilters = false;
@@ -96,24 +102,24 @@ export class UserDashboardComponent {
   }
   showFilters: boolean = false;
   // Custom Alert Methods
-  showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string, autoClose: boolean = true, duration: number = 1000) {
-  this.customAlert = {
-    show: true,
-    type,
-    title,
-    message,
-    showCancel: false,
-     autoClose: autoClose
+  showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string, autoClose: boolean = true, duration: number = 2000) {
+    this.customAlert = {
+      show: true,
+      type,
+      title,
+      message,
+      showCancel: false,
+      autoClose: autoClose
 
-  };
+    };
 
-  // Auto-close after specified duration
-  if (autoClose) {
-    setTimeout(() => {
-      this.closeAlert();
-    }, duration);
+    // Auto-close after specified duration
+    if (autoClose) {
+      setTimeout(() => {
+        this.closeAlert();
+      }, duration);
+    }
   }
-}
 
 
   showConfirmation(title: string, message: string, confirmAction: () => void, cancelAction?: () => void) {
@@ -128,6 +134,36 @@ export class UserDashboardComponent {
 
     };
   }
+
+  copyEventToClipboard() {
+    if (!this.selectedEvent) return;
+
+    const event = this.selectedEvent;
+    const details =
+                        `🎉 YOU'RE INVITED! 🎉
+          📌 ${event.title.toUpperCase()} (${event.category || 'Event'})
+          📝 ${event.description}
+
+          📅 DATE: ${new Date(event.date).toDateString()}
+          ⏰ TIME: ${event.timeSlot}
+          🕒 DURATION: ${event.duration}
+          📍 LOCATION: ${event.location}
+          💰 ENTRY FEE: ₹${event.price}
+          👥 MAX ATTENDEES: ${event.maxRegistrations}
+          ${event.artist ? '🎭 ARTIST: ' + event.artist : ''}
+          ${event.organization ? '🏢 ORGANIZED BY: ' + event.organization : ''}
+
+          ✨ DON'T MISS OUT ON THIS AMAZING EVENT!
+          👉 JOIN ME FOR AN UNFORGETTABLE EXPERIENCE!`;
+
+
+    navigator.clipboard.writeText(details).then(() => {
+      alert('Event details copied to clipboard and ready to share!');
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+    });
+  }
+
 
   handleAlertConfirm() {
     if (this.customAlert.confirmAction) {
@@ -153,9 +189,15 @@ export class UserDashboardComponent {
     this.showFilters = !this.showFilters;
   }
 
+  openContact() {
+ console.log("Button cicked contact");
+  this.router.navigate(['/contact']);
+}
+
   loadAllEvents() {
     this.loadingService.show();
-    this.eventService.getAllEvents().subscribe({
+    this.eventService.getAllEvents
+    ().subscribe({
       next: (res) => {
         this.events = res;
         this.filteredEvents = [...this.events];
@@ -185,98 +227,144 @@ export class UserDashboardComponent {
     });
   }
 
-  // Updated component function
-  registerForEvent(eventId: string) {
-    // console.log('=== FRONTEND REGISTRATION START ===');
-    // console.log('Event ID:', eventId);
-    // console.log('Current User ID:', this.userId);
-    // console.log('User ID Type:', typeof this.userId);
-    // console.log('Token exists in localStorage:', !!localStorage.getItem('token'));
-    // console.log('Token exists in sessionStorage:', !!sessionStorage.getItem('token'));
-    //  const url = `${environment.apiBaseUrl}/events/register`;//Add commentMore actions
-    //         const payload = {
-    //           userId: this.userId,
-    //           eventId: eventId
-    //         };
-    // Validate that we have a user ID
-    if (!this.userId) {
-      console.error('No user ID available');
-      this.showAlert('error', 'Authentication Error', 'Please log in again to register for events.');
-      return;
-    }
-
-    // Validate event ID
-    if (!eventId) {
-      console.error('No event ID provided');
-      this.showAlert('error', 'Invalid Event', 'Invalid event selected.');
-      return;
-    }
-
-    const event = this.events.find(e => e._id === eventId);
-    const eventTitle = event ? event.title : 'this event';
-    // console.log('Event found:', !!event);
-    if (event) {
-      // console.log('Event title:', event.title);
-    }
-
-    this.showConfirmation(
-      'Register for Event',
-      `Are you sure you want to register for "${eventTitle}"?`,
-      () => {
-        // console.log('User confirmed registration');
-        this.loadingService.show();
-
-        // console.log('Making API call with:', {
-        //   userId: this.userId,
-        //   eventId: eventId,
-        //   // apiUrl: `${environment.apiBaseUrl}${environment.apis.registerForEvent}`
-        // });
-
-        // Use the service method
-        this.eventService.registerForEvent(this.userId!, eventId).subscribe({
-          next: (response) => {
-            // console.log('Registration API success:', response);
-            this.loadRegisteredEvents();
-            this.loadingService.hide();
-            this.showAlert('success', 'Registration Successful', `You have successfully registered for "${eventTitle}"!`);
-          },
-          error: (err) => {
-            // console.error('=== FRONTEND REGISTRATION ERROR ===');
-            // console.error('Full error object:', err);
-            // console.error('Error status:', err.status);
-            console.error('Error message:', err.message);
-            console.error('Error details:', err.error);
-
-            this.loadingService.hide();
-
-            let errorMessage = 'Failed to register for the event. Please try again.';
-
-            // Handle specific error cases
-            if (err.status === 404) {
-              if (err.error?.message === 'User not found') {
-                errorMessage = 'Your account was not found. Please log in again.';
-                this.logout(); // Force logout if user not found
-              } else if (err.error?.message === 'Event not found or deleted') {
-                errorMessage = 'This event is no longer available.';
-              }
-            } else if (err.status === 400) {
-              if (err.error?.message === 'User already registered for this event') {
-                errorMessage = 'You are already registered for this event.';
-              } else if (err.error?.message === 'Event registration full') {
-                errorMessage = 'Sorry, this event is full.';
-              } else if (err.error?.message) {
-                errorMessage = err.error.message;
-              }
-            } else if (err.status === 0) {
-              errorMessage = 'Network error. Please check your connection and try again.';
-            }
-
-            this.showAlert('error', 'Registration Failed', errorMessage);
-          }
-        });
-      }
-    );
+ registerForEvent(eventId: string) {
+  // Validate that we have a user ID
+  if (!this.userId) {
+    console.error('No user ID available');
+    this.showAlert('error', 'Authentication Error', 'Please log in again to register for events.');
+    return;
   }
+
+  // Validate event ID
+  if (!eventId) {
+    console.error('No event ID provided');
+    this.showAlert('error', 'Invalid Event', 'Invalid event selected.');
+    return;
+  }
+
+  const event = this.events.find(e => e._id === eventId);
+  const eventTitle = event ? event.title : 'this event';
+
+  if (event) {
+    // console.log('Event found:', event);
+  }
+
+  this.showConfirmation(
+    'Register for Event',
+    `Are you sure you want to register for "${eventTitle}"?`,
+    () => {
+      this.loadingService.show();
+
+      // Use the service method
+      this.eventService.registerForEvent(this.userId!, eventId).subscribe({
+        next: (response) => {
+          console.log('Registration successful:', response);
+          this.loadRegisteredEvents();
+
+          // Send confirmation email after successful registration
+          this.sendRegistrationEmail(event!);
+
+          this.loadingService.hide();
+          this.showAlert('success', 'Registration Successful', `You have successfully registered for "${eventTitle}"!`);
+          this.showAlert('info', 'Email Sent', 'A confirmation email with your ticket has been sent to your email address.');
+        },
+        error: (err) => {
+          console.error('Registration failed:', err);
+          this.loadingService.hide();
+
+          let errorMessage = 'Failed to register for the event. Please try again.';
+
+          // Handle specific error cases
+          if (err.status === 404) {
+            if (err.error?.message === 'User not found') {
+              errorMessage = 'Your account was not found. Please log in again.';
+              this.logout(); // Force logout if user not found
+            } else if (err.error?.message === 'Event not found or deleted') {
+              errorMessage = 'This event is no longer available.';
+            }
+          } else if (err.status === 400) {
+            if (err.error?.message === 'User already registered for this event') {
+              errorMessage = 'You are already registered for this event.';
+            } else if (err.error?.message === 'Event registration full') {
+              errorMessage = 'Sorry, this event is full.';
+            } else if (err.error?.message) {
+              errorMessage = err.error.message;
+            }
+          } else if (err.status === 0) {
+            errorMessage = 'Network error. Please check your connection and try again.';
+          }
+
+          this.showAlert('error', 'Registration Failed', errorMessage);
+        }
+      });
+    }
+  );
+}
+
+private sendRegistrationEmail(event: Event) {
+  // Check if we have user email
+  if (!this.userEmail) {
+    console.warn('No user email available for sending confirmation');
+    return;
+  }
+
+  const emailRequest = {
+    userId: this.userId || 'anonymous',
+    eventId: event._id,
+    userEmail: this.userEmail,
+    userName: this.userName || 'Guest',
+    sendPDF: true,      // Send PDF ticket attachment
+    sendDetails: true   // Send event details in email body
+  };
+
+  this.emailService.sendTicketEmail(emailRequest).subscribe({
+    next: (response) => {
+      console.log('Confirmation email sent successfully:', response);
+      // Email sent successfully - already showing success message in registerForEvent
+    },
+    error: (err) => {
+      console.error('Failed to send confirmation email:', err);
+
+    }
+  });
+}
+
+// Optional: Add method to manually resend confirmation email
+// resendConfirmationEmail(event: Event) {
+//   if (!this.userEmail) {
+//     this.showAlert('error', 'Email Not Available', 'Your email address is not available. Please contact support.');
+//     return;
+//   }
+
+//   this.showConfirmation(
+//     'Resend Confirmation',
+//     `Resend confirmation email for "${event.title}" to ${this.userEmail}?`,
+//     () => {
+//       this.loadingService.show();
+
+//       const emailRequest = {
+//         userId: this.userId!,
+//         eventId: event._id,
+//         userEmail: this.userEmail!,
+//         userName: this.userName || 'Guest',
+//         sendPDF: true,
+//         sendDetails: true
+//       };
+
+//       this.emailService.sendTicketEmail(emailRequest).subscribe({
+//         next: (response) => {
+//           this.loadingService.hide();
+//           this.showAlert('success', 'Email Sent', 'Confirmation email has been resent successfully!');
+//         },
+//         error: (err) => {
+//           this.loadingService.hide();
+//           console.error('Failed to resend confirmation email:', err);
+//           this.showAlert('error', 'Failed to Send Email', 'Could not send confirmation email. Please try again later.');
+//         }
+//       });
+//     }
+//   );
+// }
 
 
 
@@ -331,46 +419,50 @@ export class UserDashboardComponent {
   }
 
   decodeToken() {
-    // console.log('=== TOKEN DECODE START ===');
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    // console.log('Token found:', !!token);
+  // console.log('=== TOKEN DECODE START ===');
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  // console.log('Token found:', !!token);
 
-    if (!token) {
-      console.log('No token found');
-      return;
-    }
-
-    try {
-      // console.log('Token length:', token.length);
-      // console.log('Token starts with:', token.substring(0, 20) + '...');
-
-      const parts = token.split('.');
-      // console.log('Token parts count:', parts.length);
-
-      if (parts.length !== 3) {
-        throw new Error('Invalid token format');
-      }
-
-      const payloadBase64 = parts[1];
-      // console.log('Payload base64 length:', payloadBase64.length);
-
-      const decoded = JSON.parse(atob(payloadBase64));
-      // console.log('Decoded token payload:', decoded);
-
-      this.userId = decoded.userId || decoded.id || null;
-      this.userName = decoded.userName || decoded.name || null;
-
-      // console.log('Extracted userId:', this.userId);
-      // console.log('Extracted userName:', this.userName);
-      // console.log('=== TOKEN DECODE SUCCESS ===');
-    } catch (err) {
-      console.error('=== TOKEN DECODE ERROR ===');
-      console.error('Token decode error:', err);
-      this.userId = null;
-      this.userName = null;
-      this.showAlert('warning', 'Session Warning', 'There was an issue with your session. Please log in again if needed.');
-    }
+  if (!token) {
+    console.log('No token found');
+    return;
   }
+
+  try {
+    // console.log('Token length:', token.length);
+    // console.log('Token starts with:', token.substring(0, 20) + '...');
+
+    const parts = token.split('.');
+    // console.log('Token parts count:', parts.length);
+
+    if (parts.length !== 3) {
+      throw new Error('Invalid token format');
+    }
+
+    const payloadBase64 = parts[1];
+    // console.log('Payload base64 length:', payloadBase64.length);
+
+    const decoded = JSON.parse(atob(payloadBase64));
+    // console.log('Decoded token payload:', decoded);
+
+    this.userId = decoded.userId || decoded.id || null;
+    this.userName = decoded.userName || decoded.name || null;
+    this.userEmail = decoded.userEmail || decoded.email || null; // Add this line
+
+    // console.log('Extracted userId:', this.userId);
+    // console.log('Extracted userName:', this.userName);
+    // console.log('Extracted userEmail:', this.userEmail); // Add this line
+    // console.log('=== TOKEN DECODE SUCCESS ===');
+  } catch (err) {
+    console.error('=== TOKEN DECODE ERROR ===');
+    console.error('Token decode error:', err);
+    this.userId = null;
+    this.userName = null;
+    this.userEmail = null; // Add this line
+    this.showAlert('warning', 'Session Warning', 'There was an issue with your session. Please log in again if needed.');
+  }
+}
+
   isRegistered(eventId: string): boolean {
     return this.registeredEvents.some(e => e._id === eventId);
   }
@@ -644,6 +736,15 @@ export class UserDashboardComponent {
       });
     }
   }
+  scrollToAvailableEvents() {
+    const availableSection = document.querySelector('.events-section');
+    if (availableSection) {
+      availableSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }
 
   logout() {
     this.showConfirmation(
@@ -657,4 +758,5 @@ export class UserDashboardComponent {
       }
     );
   }
+
 }
