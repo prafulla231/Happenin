@@ -5,8 +5,22 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/Users.js';
 import { apiResponse } from '../utils/apiResponse.js';
 import { apiError } from '../utils/apiError.js';
-
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
 import validator from 'validator'; // npm i validator
+
+dotenv.config(); // make sure you load your .env
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
 
 export const registerUser = async (req, res) => {
   try {
@@ -73,6 +87,74 @@ export const registerUser = async (req, res) => {
     console.error('❌ Registration error:', error.message);
     return apiError(res, 500, 'Server error', error);
   }
+};
+
+
+// authController.js
+
+export const sendOtpToEmail = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) return res.status(400).json({ message: 'Email is required' });
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+
+  let user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({ message: 'User does not exist. Try valid email.' }); // or block if only registered users allowed
+  }
+
+  user.otp = { code: otp, expiresAt: expiry };
+  await user.save();
+
+  const html = `<h2>Your OTP is: ${otp}</h2><p>Valid for 5 minutes.</p>`;
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Your Login OTP',
+    html
+  });
+
+  res.json({ success: true, message: 'OTP sent to email' });
+};
+
+
+export const verifyOtpAndLogin = async (req, res) => {
+  const { email, otp } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user || !user.otp) return res.status(400).json({ message: 'OTP not found' });
+
+  if (user.otp.code !== otp || new Date(user.otp.expiresAt) < new Date()) {
+    return res.status(400).json({ message: 'Invalid or expired OTP' });
+  }
+
+  const payload = {
+      userId: user._id.toString(),
+      userName : user.name,
+      role: user.role,
+      email: user.email,
+    };
+
+  // OTP matched — issue token
+  const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: '1h'
+  });
+
+  // Optional: Clear OTP after login
+  user.otp = undefined;
+  await user.save();
+
+  return apiResponse(res, 200, 'Login successful', {
+      token,
+      user: {
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
 };
 
 

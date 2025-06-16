@@ -61,6 +61,7 @@ export class UserDashboardComponent {
   selectedEvent: Event | null = null;
   showEventDetails: boolean = false;
   userEmail: string | null = null;
+  //  Math = Math;
 
   // Custom Alert System
   customAlert: CustomAlert = {
@@ -82,6 +83,13 @@ export class UserDashboardComponent {
 
   availableCategories: string[] = [];
   availableCities: string[] = [];
+   isMobileMenuOpen = false;
+
+   // Pagination properties
+currentPage: number = 1;
+eventsPerPage: number = 6;
+totalPages: number = 0;
+paginatedEvents: Event[] = [];
 
   constructor(
     private http: HttpClient,
@@ -135,6 +143,8 @@ export class UserDashboardComponent {
     };
   }
 
+
+
   copyEventToClipboard() {
     if (!this.selectedEvent) return;
 
@@ -185,6 +195,85 @@ export class UserDashboardComponent {
     this.customAlert.cancelAction = undefined;
   }
 
+   getMaxValue(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
+  // Calculate pagination
+calculatePagination() {
+  this.totalPages = Math.ceil(this.filteredEvents.length / this.eventsPerPage);
+  this.updatePaginatedEvents();
+}
+
+// Update paginated events based on current page
+updatePaginatedEvents() {
+  const startIndex = (this.currentPage - 1) * this.eventsPerPage;
+  const endIndex = startIndex + this.eventsPerPage;
+  this.paginatedEvents = this.filteredEvents.slice(startIndex, endIndex);
+}
+
+// Go to next page
+nextPage() {
+  if (this.currentPage < this.totalPages) {
+    this.currentPage++;
+    this.updatePaginatedEvents();
+    this.scrollToEventsSection();
+  }
+}
+
+// Go to previous page
+previousPage() {
+  if (this.currentPage > 1) {
+    this.currentPage--;
+    this.updatePaginatedEvents();
+    this.scrollToEventsSection();
+  }
+}
+
+// Go to specific page
+goToPage(page: number) {
+  if (page >= 1 && page <= this.totalPages) {
+    this.currentPage = page;
+    this.updatePaginatedEvents();
+    this.scrollToEventsSection();
+  }
+}
+
+scrollToEventsSection() {
+  const eventsSection = document.querySelector('.events-section');
+  if (eventsSection) {
+    eventsSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+}
+
+// Get page numbers for pagination display
+getPageNumbers(): number[] {
+  const pages: number[] = [];
+  const maxPagesToShow = 5;
+
+  if (this.totalPages <= maxPagesToShow) {
+    for (let i = 1; i <= this.totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    let startPage = Math.max(1, this.currentPage - 2);
+    let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+  }
+
+  return pages;
+}
+
   toggleFilters(): void {
     this.showFilters = !this.showFilters;
   }
@@ -194,24 +283,24 @@ export class UserDashboardComponent {
 }
 
   loadAllEvents() {
-    this.loadingService.show();
-    this.eventService.getAllEvents
-    ().subscribe({
-      next: (res) => {
-        this.events = res;
-        this.filteredEvents = [...this.events];
-        this.extractFilterOptions();
-        this.applySorting();
-        this.loadingService.hide();
-        this.showAlert('success', 'Events Loaded', 'Successfully loaded all available events!');
-      },
-      error: (err) => {
-        console.error('Error loading events', err);
-        this.loadingService.hide();
-        this.showAlert('error', 'Loading Failed', 'Failed to load events. Please try again later.');
-      }
-    });
-  }
+  this.loadingService.show();
+  this.eventService.getUpcomingEvents().subscribe({
+    next: (res) => {
+      this.events = res;
+      this.filteredEvents = [...this.events];
+      this.extractFilterOptions();
+      this.applySorting();
+      this.calculatePagination(); // Add this line
+      this.loadingService.hide();
+      this.showAlert('success', 'Events Loaded', 'Successfully loaded all available events!');
+    },
+    error: (err) => {
+      console.error('Error loading events', err);
+      this.loadingService.hide();
+      this.showAlert('error', 'Loading Failed', 'Failed to load events. Please try again later.');
+    }
+  });
+}
 
   loadRegisteredEvents() {
     if (!this.userId) return;
@@ -417,6 +506,8 @@ private sendRegistrationEmail(event: Event) {
     }
   }
 
+
+
   decodeToken() {
   // console.log('=== TOKEN DECODE START ===');
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -462,6 +553,7 @@ private sendRegistrationEmail(event: Event) {
   }
 }
 
+
   isRegistered(eventId: string): boolean {
     return this.registeredEvents.some(e => e._id === eventId);
   }
@@ -472,45 +564,49 @@ private sendRegistrationEmail(event: Event) {
   }
 
   applyFilters() {
-    let filtered = [...this.events];
+  let filtered = [...this.events];
 
-    if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(e =>
-        e.title.toLowerCase().includes(query) ||
-        e.description.toLowerCase().includes(query) ||
-        (e.artist && e.artist.toLowerCase().includes(query)) ||
-        (e.organization && e.organization.toLowerCase().includes(query)) ||
-        (e.category && e.category.toLowerCase().includes(query)) ||
-        e.location.toLowerCase().includes(query)
-      );
-    }
-
-    if (this.selectedCategory) {
-      filtered = filtered.filter(e => e.category === this.selectedCategory);
-    }
-
-    if (this.selectedCity) {
-      filtered = filtered.filter(e => this.extractCityFromLocation(e.location) === this.selectedCity);
-    }
-
-    if (this.dateFrom) {
-      const fromDate = new Date(this.dateFrom);
-      filtered = filtered.filter(e => new Date(e.date) >= fromDate);
-    }
-
-    if (this.dateTo) {
-      const toDate = new Date(this.dateTo);
-      filtered = filtered.filter(e => new Date(e.date) <= toDate);
-    }
-
-    if (this.selectedPriceRange) {
-      filtered = this.applyPriceFilter(filtered);
-    }
-
-    this.filteredEvents = filtered;
-    this.applySorting();
+  if (this.searchQuery.trim()) {
+    const query = this.searchQuery.toLowerCase();
+    filtered = filtered.filter(e =>
+      e.title.toLowerCase().includes(query) ||
+      e.description.toLowerCase().includes(query) ||
+      (e.artist && e.artist.toLowerCase().includes(query)) ||
+      (e.organization && e.organization.toLowerCase().includes(query)) ||
+      (e.category && e.category.toLowerCase().includes(query)) ||
+      e.location.toLowerCase().includes(query)
+    );
   }
+
+  if (this.selectedCategory) {
+    filtered = filtered.filter(e => e.category === this.selectedCategory);
+  }
+
+  if (this.selectedCity) {
+    filtered = filtered.filter(e => this.extractCityFromLocation(e.location) === this.selectedCity);
+  }
+
+  if (this.dateFrom) {
+    const fromDate = new Date(this.dateFrom);
+    filtered = filtered.filter(e => new Date(e.date) >= fromDate);
+  }
+
+  if (this.dateTo) {
+    const toDate = new Date(this.dateTo);
+    filtered = filtered.filter(e => new Date(e.date) <= toDate);
+  }
+
+  if (this.selectedPriceRange) {
+    filtered = this.applyPriceFilter(filtered);
+  }
+
+  this.filteredEvents = filtered;
+  this.applySorting();
+
+  // Reset to first page when filters change
+  this.currentPage = 1;
+  this.calculatePagination();
+}
 
   applyPriceFilter(events: Event[]): Event[] {
     switch (this.selectedPriceRange) {
@@ -528,16 +624,19 @@ private sendRegistrationEmail(event: Event) {
   }
 
   applySorting() {
-    this.filteredEvents.sort((a, b) => {
-      switch (this.sortBy) {
-        case 'date': return new Date(a.date).getTime() - new Date(b.date).getTime();
-        case 'title': return a.title.localeCompare(b.title);
-        case 'price': return a.price - b.price;
-        case 'category': return (a.category || '').localeCompare(b.category || '');
-        default: return 0;
-      }
-    });
-  }
+  this.filteredEvents.sort((a, b) => {
+    switch (this.sortBy) {
+      case 'date': return new Date(a.date).getTime() - new Date(b.date).getTime();
+      case 'title': return a.title.localeCompare(b.title);
+      case 'price': return a.price - b.price;
+      case 'category': return (a.category || '').localeCompare(b.category || '');
+      default: return 0;
+    }
+  });
+
+  // Recalculate pagination after sorting
+  this.calculatePagination();
+}
 
   clearFilters() {
     this.searchQuery = '';

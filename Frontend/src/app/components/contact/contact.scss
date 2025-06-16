@@ -90,6 +90,10 @@
     margin: 0 auto;
   }
 
+  .btn-primary{
+    color: black;
+  }
+
 // .back-btn {
 //       @include button-3d(#64748b, darken(#64748b, 10%));
 //       color: #ffffff;
@@ -362,6 +366,7 @@
           letter-spacing: 0.01em;
           text-transform: uppercase;
           font-size: 0.9rem;
+          color: #222222;
 
           &.btn-cancel {
             // @include button-3d(#64748b, darken(#64748b, 10%));

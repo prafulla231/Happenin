@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -12,10 +12,17 @@ import { AuthService } from '../../../services/auth';
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
   isLogin = true;
   showSuccessPopup = false;
   successMessage = '';
+
+  isOtpLogin = false;
+otpSent = false;
+otpForm: FormGroup;
+resendTimer = 0;
+resendDisabled = false;
+private timerInterval: any;
 
   // Alert popup properties
   showAlertPopup = false;
@@ -37,14 +44,22 @@ export class LoginComponent {
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
 
-    // Register form with enhanced validations
+    // Register form with enhanced validations and confirm password
     this.registerForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6), this.passwordValidator]],
+      confirmPassword: ['', [Validators.required]], // Added confirm password field
       role: ['user']
-    });
+    }, { validators: this.passwordMatchValidator }); // Added form-level validator
+
+this.otpForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    otp: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/)]]
+  });
+
+
   }
 
   // Custom password validator
@@ -69,6 +84,69 @@ export class LoginComponent {
 
     return null; // Password is valid
   }
+
+  // NEW: Custom validator to check if passwords match
+  passwordMatchValidator(formGroup: AbstractControl): ValidationErrors | null {
+    const password = formGroup.get('password')?.value;
+    const confirmPassword = formGroup.get('confirmPassword')?.value;
+
+    if (password && confirmPassword && password !== confirmPassword) {
+      // Set error on confirmPassword field
+      formGroup.get('confirmPassword')?.setErrors({ passwordMismatch: true });
+      return { passwordMismatch: true };
+    } else {
+      // Clear the error if passwords match
+      const confirmPasswordControl = formGroup.get('confirmPassword');
+      if (confirmPasswordControl?.errors?.['passwordMismatch']) {
+        delete confirmPasswordControl.errors['passwordMismatch'];
+        if (Object.keys(confirmPasswordControl.errors).length === 0) {
+          confirmPasswordControl.setErrors(null);
+        }
+      }
+    }
+
+    return null;
+  }
+
+ toggleLoginMethod(isOtp: boolean): void {
+  this.isOtpLogin = isOtp;
+  this.otpSent = false;
+  this.resetResendTimer();
+  // Reset forms when switching
+  this.loginForm.reset();
+  this.otpForm.reset();
+}
+
+onSendOtp(): void {
+  const emailControl = this.otpForm.get('email');
+  if (emailControl?.valid) {
+    this.sendOtp(emailControl.value);
+  } else {
+    emailControl?.markAsTouched();
+    this.showAlert('Please enter a valid email address.', 'warning');
+  }
+}
+
+onResendOtp(): void {
+  if (!this.resendDisabled) {
+    const emailControl = this.otpForm.get('email');
+    if (emailControl?.valid) {
+      // Clear the OTP field when resending
+      this.otpForm.patchValue({ otp: '' });
+      this.sendOtp(emailControl.value);
+    }
+  }
+}
+
+onVerifyOtp(): void {
+  if (this.otpForm.valid) {
+    const { email, otp } = this.otpForm.value;
+    this.verifyOtp(email, otp);
+  } else {
+    this.markFormGroupTouched(this.otpForm);
+    this.showAlert('Please enter a valid 6-digit OTP.', 'warning');
+  }
+}
 
   toggleForm(isLoginForm: boolean): void {
     this.isLogin = isLoginForm;
@@ -102,6 +180,139 @@ export class LoginComponent {
       this.hideAlert();
     }, 4000);
   }
+
+ sendOtp(email: string) {
+  this.http.post('http://localhost:5000/api/users/send-otp', { email }).subscribe({
+    next: () => {
+      this.otpSent = true;
+      this.startResendTimer();
+      this.showAlert('OTP sent to your email successfully! 📧', 'info');
+    },
+    error: (err) => {
+      console.error('OTP send failed', err);
+      let errorMessage = 'Failed to send OTP. Please try again.';
+      if (err.error?.message) {
+        errorMessage = err.error.message;
+      }
+      this.showAlert(errorMessage, 'error');
+    }
+  });
+}
+
+
+getOtpEmailError(): string | null {
+  const emailControl = this.otpForm.get('email');
+  if (!emailControl?.errors || !emailControl?.touched) {
+    return null;
+  }
+
+  if (emailControl.errors['required']) {
+    return 'Email is required';
+  }
+  if (emailControl.errors['email']) {
+    return 'Please enter a valid email address';
+  }
+
+  return null;
+}
+
+getOtpError(): string | null {
+  const otpControl = this.otpForm.get('otp');
+  if (!otpControl?.errors || !otpControl?.touched) {
+    return null;
+  }
+
+  if (otpControl.errors['required']) {
+    return 'OTP is required';
+  }
+  if (otpControl.errors['pattern']) {
+    return 'Please enter a valid 6-digit OTP';
+  }
+
+  return null;
+}
+
+private startResendTimer(): void {
+  this.resendTimer = 180; // 3 minutes = 180 seconds
+  this.resendDisabled = true;
+
+  this.timerInterval = setInterval(() => {
+    this.resendTimer--;
+
+    if (this.resendTimer <= 0) {
+      this.resetResendTimer();
+    }
+  }, 1000);
+}
+
+private resetResendTimer(): void {
+  this.resendTimer = 0;
+  this.resendDisabled = false;
+
+  if (this.timerInterval) {
+    clearInterval(this.timerInterval);
+    this.timerInterval = null;
+  }
+}
+
+getFormattedTimer(): string {
+  const minutes = Math.floor(this.resendTimer / 60);
+  const seconds = this.resendTimer % 60;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Clean up timer on component destroy
+ngOnDestroy(): void {
+  this.resetResendTimer();
+}
+
+
+verifyOtp(email: string, otp: string) {
+  this.http.post('http://localhost:5000/api/users/verify-otp', { email, otp }).subscribe({
+        next: (response: any) => {
+          const userRole = response.data.user?.role;
+
+          if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+            sessionStorage.setItem('token', response.data.token);
+          }
+          if (response.data.user) {
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            sessionStorage.setItem('user', JSON.stringify(response.data.user));
+          }
+
+          // Show success message
+          this.showSuccessMessage('Logged in successfully! 🎉');
+
+          // Navigate after showing success message
+          setTimeout(() => {
+            if (userRole === 'organizer') {
+              this.router.navigate(['/organizer-dashboard']);
+            } else if (userRole === 'admin') {
+              this.router.navigate(['/admin-dashboard']);
+            } else {
+              this.router.navigate(['/user-dashboard']);
+            }
+          }, 1000);
+        },
+        error: (error) => {
+          console.error('Login failed', error);
+
+          // Handle specific error messages
+          let errorMessage = 'Login failed. Please check your credentials and try again.';
+          if (error.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error.status === 401) {
+            errorMessage = 'Invalid email or password. Please try again.';
+          } else if (error.status === 0) {
+            errorMessage = 'Network error. Please check your connection.';
+          }
+
+          // Use custom alert instead of default alert
+          this.showAlert(errorMessage, 'error');
+        }
+      });
+}
 
   // Method to manually hide alert popup
   hideAlert(): void {
@@ -166,71 +377,73 @@ export class LoginComponent {
   }
 
   onRegisterSubmit(): void {
-  if (this.registerForm.valid) {
-    const data = this.registerForm.value;
+    if (this.registerForm.valid) {
+      const data = this.registerForm.value;
+      // Remove confirmPassword from the data sent to server
+      const { confirmPassword, ...registrationData } = data;
 
-    this.authService.registerUser(data).subscribe({
-      next: () => {
-        // Automatically log the user in with the same credentials
-        const loginData = {
-          email: data.email,
-          password: data.password
-        };
+      this.authService.registerUser(registrationData).subscribe({
+        next: () => {
+          // Automatically log the user in with the same credentials
+          const loginData = {
+            email: registrationData.email,
+            password: registrationData.password
+          };
 
-        this.authService.loginUser(loginData).subscribe({
-          next: (response: any) => {
-            const userRole = response.data.user?.role;
+          this.authService.loginUser(loginData).subscribe({
+            next: (response: any) => {
+              const userRole = response.data.user?.role;
 
-            if (response.data.token) {
-              localStorage.setItem('token', response.data.token);
-              sessionStorage.setItem('token', response.data.token);
-            }
-            if (response.data.user) {
-              localStorage.setItem('user', JSON.stringify(response.data.user));
-              sessionStorage.setItem('user', JSON.stringify(response.data.user));
-            }
-
-            // Show success message
-            this.showSuccessMessage('Registered and logged in successfully! 🎉');
-
-            // Navigate after showing success message
-            setTimeout(() => {
-              if (userRole === 'organizer') {
-                this.router.navigate(['/organizer-dashboard']);
-              } else if (userRole === 'admin') {
-                this.router.navigate(['/admin-dashboard']);
-              } else {
-                this.router.navigate(['/user-dashboard']);
+              if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+                sessionStorage.setItem('token', response.data.token);
               }
-            }, 2000);
-          },
-          error: (loginError) => {
-            console.error('Auto-login failed after registration', loginError);
-            this.showAlert('Registration succeeded but auto-login failed. Please try logging in.', 'warning');
-            this.toggleForm(true); // fallback to login form
+              if (response.data.user) {
+                localStorage.setItem('user', JSON.stringify(response.data.user));
+                sessionStorage.setItem('user', JSON.stringify(response.data.user));
+              }
+
+              // Show success message
+              this.showSuccessMessage('Registered and logged in successfully! 🎉');
+
+              // Navigate after showing success message
+              setTimeout(() => {
+                if (userRole === 'organizer') {
+                  this.router.navigate(['/organizer-dashboard']);
+                } else if (userRole === 'admin') {
+                  this.router.navigate(['/admin-dashboard']);
+                } else {
+                  this.router.navigate(['/user-dashboard']);
+                }
+              }, 2000);
+            },
+            error: (loginError) => {
+              console.error('Auto-login failed after registration', loginError);
+              this.showAlert('Registration succeeded but auto-login failed. Please try logging in.', 'warning');
+              this.toggleForm(true); // fallback to login form
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Registration failed', error);
+
+          let errorMessage = 'Registration failed. Please try again.';
+          if (error.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error.status === 409) {
+            errorMessage = 'Email already exists. Please use a different email.';
+          } else if (error.status === 0) {
+            errorMessage = 'Network error. Please check your connection.';
           }
-        });
-      },
-      error: (error) => {
-        console.error('Registration failed', error);
 
-        let errorMessage = 'Registration failed. Please try again.';
-        if (error.error?.message) {
-          errorMessage = error.error.message;
-        } else if (error.status === 409) {
-          errorMessage = 'Email already exists. Please use a different email.';
-        } else if (error.status === 0) {
-          errorMessage = 'Network error. Please check your connection.';
+          this.showAlert(errorMessage, 'error');
         }
-
-        this.showAlert(errorMessage, 'error');
-      }
-    });
-  } else {
-    this.markFormGroupTouched(this.registerForm);
-    this.showAlert('Please fill in all required fields correctly.', 'warning');
+      });
+    } else {
+      this.markFormGroupTouched(this.registerForm);
+      this.showAlert('Please fill in all required fields correctly.', 'warning');
+    }
   }
-}
 
   // Utility method to mark all form controls as touched
   private markFormGroupTouched(formGroup: FormGroup): void {
@@ -265,6 +478,23 @@ export class LoginComponent {
       if (passwordControl.errors['number']) {
         return 'Password must contain at least one number';
       }
+    }
+
+    return null;
+  }
+
+  // NEW: Get confirm password validation error message
+  getConfirmPasswordError(): string | null {
+    const confirmPasswordControl = this.registerForm.get('confirmPassword');
+    if (!confirmPasswordControl?.errors || !confirmPasswordControl?.touched) {
+      return null;
+    }
+
+    if (confirmPasswordControl.errors['required']) {
+      return 'Please confirm your password';
+    }
+    if (confirmPasswordControl.errors['passwordMismatch']) {
+      return 'Passwords do not match';
     }
 
     return null;

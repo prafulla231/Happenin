@@ -10,8 +10,8 @@ export const createApproval = async (req, res) => {
   try {
     const {
       title, description, date, timeSlot, duration, location,
-      category, price, maxRegistrations, createdBy,
-      artist, organization
+      category, price, maxRegistrations, createdBy,  
+      artist, organization 
     } = req.body;
 
     // console.log('Authenticated user:', req.user);

@@ -9,6 +9,8 @@ const eventSchema = new mongoose.Schema(
     duration: { type: String },
     location: { type: String },
     category: { type: String },
+    state : {type : String},
+    city : {type: String},
     price: { type: Number, default: 0 },
     isDeleted: {
     type: Boolean,

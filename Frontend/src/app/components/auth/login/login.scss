@@ -497,6 +497,247 @@
   z-index: 1;
 }
 
+// Add these styles to your existing login.scss file
+
+// Login Method Toggle Styles
+// Login Method Toggle Styles
+.login-method-toggle {
+  position: relative;
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 25px;
+  padding: 4px;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  .method-toggle-background {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    height: calc(100% - 8px);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid black;
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+
+    &.otp-active {
+      transform: translateX(100%);
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      box-shadow: 0 2px 10px rgba(240, 147, 251, 0.3);
+    }
+  }
+
+  .method-toggle-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 20px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+
+    .method-icon {
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .method-text {
+      transition: all 0.3s ease;
+      color: black;
+    }
+
+    &.active {
+      color: white;
+
+      .method-icon {
+        transform: scale(1.1);
+      }
+    }
+
+    &:hover:not(.active) {
+      color: rgba(255, 255, 255, 0.8);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// OTP Form Specific Styles
+.otp-form {
+  .otp-input {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    font-family: 'Courier New', monospace;
+  }
+}
+
+.otp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.otp-send-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+}
+
+.otp-verify-btn {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0f8a7c 0%, #32d96b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4);
+  }
+}
+
+.otp-verify-section {
+  animation: slideInUp 0.4s ease-out;
+}
+
+.resend-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  align-self: center;
+
+  .resend-text {
+    position: relative;
+    color: black;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: currentColor;
+      transition: width 0.3s ease;
+    }
+  }
+
+  .resend-section {
+  margin-top: 1rem;
+  text-align: center;
+
+  .resend-btn {
+    background: transparent;
+    border: 2px solid #6c5ce7;
+    color: #6c5ce7;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover:not(.disabled) {
+      background: #6c5ce7;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    &.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      color: #999;
+      border-color: #999;
+    }
+
+    .timer-text {
+      font-family: monospace;
+      font-weight: 700;
+      color: black;
+    }
+  }
+}
+
+  .timer-text {
+    color: rgba(0, 0, 0, 0.6);
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+  }
+
+  &:hover:not(.disabled) {
+    color: white;
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+
+    .resend-text::after {
+      width: 100%;
+    }
+  }
+
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    border-color: rgba(255, 255, 255, 0.2);
+
+    &:hover {
+      transform: none;
+      color: rgba(255, 255, 255, 0.6);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+// Animation for OTP verify section
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive updates for mobile
+@media (max-width: 768px) {
+  .login-method-toggle {
+    margin-bottom: 1.5rem;
+
+    .method-toggle-btn {
+      padding: 10px 16px;
+      font-size: 12px;
+
+      .method-icon {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .otp-input {
+    font-size: 16px !important;
+    letter-spacing: 2px !important;
+  }
+}
 .glass-form {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
   backdrop-filter: blur(20px);
@@ -1186,5 +1427,66 @@
 
   .form-title {
     font-size: 1.7rem;
+  }
+}
+
+// Add these styles to your existing login.scss file
+
+// Success message for confirm password
+.success-message {
+  font-size: 0.875rem;
+  color: #10b981;
+  margin-top: 0.5rem;
+  opacity: 0;
+  animation: fadeInUp 0.3s ease-out forwards;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+}
+
+// Enhanced input states
+.form-input {
+  &.success {
+    border-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+
+    &:focus {
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+  }
+}
+
+// Success highlight animation
+.input-group .form-input.success + .input-highlight {
+  background: linear-gradient(90deg, transparent, #10b981, transparent);
+  animation: successSweep 1s ease-out;
+}
+
+@keyframes successSweep {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

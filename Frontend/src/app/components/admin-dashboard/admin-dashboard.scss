@@ -70,7 +70,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   min-height: 100vh;
   background: $admin-gradient-primary;
   padding: 20px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  // font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   position: relative;
 
   &::before {

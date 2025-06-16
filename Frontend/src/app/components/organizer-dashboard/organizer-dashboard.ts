@@ -331,6 +331,8 @@ private alertTimeout?: any;
         placeName: form.location,
       };
 
+      console.log(eventData)
+
       // First book the location
       this.locationService.bookLocation(locationData).pipe(
         takeUntil(this.destroy$)

@@ -11,7 +11,7 @@ export const approveEvent = async (req, res) => {
       _id, 
       title, description, date, timeSlot, duration, location,
       category, price, maxRegistrations, createdBy,
-      artist, organization,
+      artist, organization
     } = req.body;
 
     if (!_id) {
@@ -29,6 +29,7 @@ export const approveEvent = async (req, res) => {
       timeSlot,
       duration,
       location,
+      state , city,
       category,
       price: price || 0,
       maxRegistrations,
@@ -37,6 +38,7 @@ export const approveEvent = async (req, res) => {
       artist,
       organization,
       isDeleted: false,
+      
     });
 
     await newEvent.save();

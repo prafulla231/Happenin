@@ -60,7 +60,7 @@ export const registerForEvent = async (req, res) => {
 
     // console.log('Checking registration capacity...');
     const registeredCount = await Registration.countDocuments({ eventId, isDeleted: false });
-    console.log('Current registrations:', registeredCount, 'Max allowed:', event.maxRegistrations);
+    // console.log('Current registrations:', registeredCount, 'Max allowed:', event.maxRegistrations);
     
     if (registeredCount >= event.maxRegistrations) {
       console.log('Event registration full');
@@ -73,7 +73,7 @@ export const registerForEvent = async (req, res) => {
     // console.log('Existing registration found:', !!registration);
     
     if (registration) {
-      console.log('Registration status - isDeleted:', registration.isDeleted);
+      // console.log('Registration status - isDeleted:', registration.isDeleted);
       if (!registration.isDeleted) {
         // Already registered
         console.log('User already registered');
