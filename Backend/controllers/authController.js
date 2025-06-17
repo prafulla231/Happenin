@@ -11,16 +11,6 @@ import validator from 'validator'; // npm i validator
 
 dotenv.config(); // make sure you load your .env
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
 
 export const registerUser = async (req, res) => {
   try {
@@ -156,6 +146,17 @@ export const verifyOtpAndLogin = async (req, res) => {
       },
     });
 };
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
 
 
 export const checkLogin = async (req, res) => {

@@ -1,6 +1,6 @@
 import {Location} from '../models/locationModel.js';
 
-// 📌 Book a slot
+//  Book a slot
 export const bookLocation = async (req, res) => {
   try {
     const { state, city, placeName, startTime_one, endTime_one } = req.body;
@@ -8,7 +8,7 @@ export const bookLocation = async (req, res) => {
     if (!state || !city || !placeName || !startTime_one || !endTime_one) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
-    // eslint-disable-next-line security/detect-nosql-injection
+    
     const location = await Location.findOne({ state, city, placeName });
 
     if (!location) {
@@ -40,7 +40,7 @@ export const bookLocation = async (req, res) => {
       });
     }
 
-    // Add new booking with standardized field names
+    // Add new booking 
     location.bookings.push({
       startTime: newStart,
       endTime: newEnd,

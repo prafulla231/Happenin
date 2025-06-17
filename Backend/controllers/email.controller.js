@@ -5,31 +5,22 @@ import dotenv from 'dotenv';
 import {Event} from '../models/Event.js';
 import {jsPDF} from 'jspdf';
 
-// Configure your email transporter (example with Gmail)
+
 dotenv.config();
 // console.log("EMAIL_USER:", process.env.EMAIL_USER);
 // console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "Loaded" : "MISSING");
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER, // Your email
-    pass: process.env.EMAIL_PASS  // Your app password
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS  
   },
   tls: {
-    rejectUnauthorized: false // <-- THIS Ignores self-signed certificate errors
+    rejectUnauthorized: false // Ignores self-signed certificate errors
   }
 });
 
-// Alternative configuration for other email services
-// const transporter = nodemailer.createTransporter({
-//   host: 'smtp.your-email-provider.com',
-//   port: 587,
-//   secure: false,
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS
-//   }
-// });
+
 
 export const sendTicketEmail = async (req, res) => {
   try {
@@ -149,15 +140,13 @@ export const sendTicketEmail = async (req, res) => {
       attachments: []
     };
 
-    // Add PDF attachment if requested
+ 
     if (sendPDF) {
       try {
-        // You'll need to install jspdf for server-side PDF generation
-        // npm install jspdf
-        // const jsPDF = require('jspdf');
+        
         const doc = new jsPDF();
         
-        // Generate PDF (simplified version)
+        // Generate PDF
         const pageWidth = doc.internal.pageSize.width;
         const margin = 20;
 
@@ -199,7 +188,7 @@ export const sendTicketEmail = async (req, res) => {
         });
       } catch (pdfError) {
         console.error('Error generating PDF:', pdfError);
-        // Continue without PDF attachment
+     
       }
     }
 
@@ -260,7 +249,3 @@ export const sendCustomEmail = async (req, res) => {
   }
 };
 
-// module.exports = {
-//   sendTicketEmail,
-//   sendCustomEmail
-// };

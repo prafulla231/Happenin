@@ -28,8 +28,6 @@ export const approveEvent = async (req, res) => {
       date,
       timeSlot,
       duration,
-      location,
-      state , city,
       category,
       price: price || 0,
       maxRegistrations,
