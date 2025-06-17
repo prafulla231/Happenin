@@ -13,7 +13,7 @@ export const environment = {
     getUpcomingEvent : '/events/getupcomingevent',
     getExpiredEvent : '/events/getexpiredevent',
 
-    // Missing endpoints that were in development but not production:
+
     registeredEvents: (userId: string) => `/events/registered-events/${userId}`,
     registerForEvent: '/events/register',
     deregisterForEvent: '/events/deregister',
@@ -39,5 +39,9 @@ export const environment = {
     // Users
     registerUser: '/users/register',
     loginUser: '/users/login',
+
+      //otp
+    sendOtp: '/users/send-otp',
+    verifyOtp: '/users/verify-otp',
   }
 };

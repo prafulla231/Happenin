@@ -8,7 +8,7 @@ const registrationSchema = new mongoose.Schema(
       required: true,
     },
     eventId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId, //many-to-many relationship
       ref: 'Event',
       required: true,
     },
@@ -24,6 +24,7 @@ const registrationSchema = new mongoose.Schema(
   { timestamps: false }
 );
 
+// Unique Constraint -> prevents duplicate registrations for the same user and event
 registrationSchema.index({ userId: 1, eventId: 1 }, { unique: true });
 
 

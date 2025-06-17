@@ -1,9 +1,9 @@
+import { send } from "@emailjs/browser";
 
-// environment.ts
 export const environment = {
   production: false,
   apiBaseUrl: 'https://happenin-byma.onrender.com/api',
-  // apiBaseUrl: 'http://localhost:5000/api', // Use your local development URL here
+  // apiBaseUrl: 'http://localhost:5000/api',
 
   apis: {
     // Events
@@ -39,5 +39,9 @@ export const environment = {
     //users
     registerUser: '/users/register',
     loginUser: '/users/login',
+
+    //otp
+    sendOtp: '/users/send-otp',
+    verifyOtp: '/users/verify-otp',
   }
 };

@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, A
 import { RouterModule, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth';
+import { environment } from '../../../../environment.prod';
 
 @Component({
   selector: 'app-login',
@@ -182,7 +183,7 @@ onVerifyOtp(): void {
   }
 
  sendOtp(email: string) {
-  this.http.post('http://localhost:5000/api/users/send-otp', { email }).subscribe({
+  this.http.post(`${environment.apiBaseUrl}${environment.apis.sendOtp}`, { email }).subscribe({
     next: () => {
       this.otpSent = true;
       this.startResendTimer();
@@ -268,7 +269,7 @@ ngOnDestroy(): void {
 
 
 verifyOtp(email: string, otp: string) {
-  this.http.post('http://localhost:5000/api/users/verify-otp', { email, otp }).subscribe({
+  this.http.post(`${environment.apiBaseUrl}${environment.apis.verifyOtp}`, { email, otp }).subscribe({
         next: (response: any) => {
           const userRole = response.data.user?.role;
 
