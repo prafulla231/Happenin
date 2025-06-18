@@ -68,28 +68,12 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
 // Main Container
 .admin-dashboard-container {
   min-height: 100vh;
-  background: $admin-gradient-primary;
-  padding: 20px;
-  // font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  position: relative;
+  background: linear-gradient(135deg, #f8faff 0%, #f1f5ff 50%, #e8f0ff 100%);
+  // padding: 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  &::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background:
-      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(139, 95, 191, 0.1) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  > * {
-    position: relative;
-    z-index: 1;
+  @media (max-width: 768px) {
+    padding: 1rem;
   }
 }
 
@@ -142,6 +126,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   gap: 16px;
   justify-content: center;
   align-items: center;
+  margin-top: 2.5rem;
 
   // Responsive behavior
   @media (max-width: 768px) {

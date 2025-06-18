@@ -12,6 +12,9 @@ import { EventService } from '../../services/event';
 import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { environment } from '../../../environment';
+import { HeaderComponent, HeaderButton } from '../header/header';
+import { FooterComponent } from '../footer/footer';
+
 
 
 export interface Event {
@@ -67,7 +70,7 @@ export interface CustomAlert {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, HeaderComponent, FooterComponent],
   // providers: [FormBuilder],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss']
@@ -82,6 +85,7 @@ export class AdminDashboardComponent {
   filteredEventsone: Event[] = [];
   filteredExpiredEvents: Event[] = [];
   usersMap: { [eventId: string]: RegisteredUsersResponse } = {};
+userName: string | null = null;
 
   // Event details modal properties
   selectedEvent: Event | null = null;
@@ -90,6 +94,36 @@ export class AdminDashboardComponent {
 
    showFilters: boolean = false;
 showViewLocations = false;
+
+// get displayUserName(): string {
+//     return this.userName || 'Guest';
+//   }
+
+adminButtons: HeaderButton[] = [
+    // { text: 'Users', action: 'manageUsers' },
+    { text: 'Upcoming Events', action: 'viewAvailableEvents' },
+    { text: 'Pening Approvals', action: 'viewPendingEvents' },
+    { text: 'Expired Events', action: 'viewExpiredEvents' },
+    // { text: 'System', action: 'systemSettings', style: 'secondary' },
+    { text: 'Logout', action: 'logout', style: 'primary' }
+  ];
+
+  handleHeaderAction(action: string): void {
+    switch (action) {
+      case 'viewPendingEvents':
+        this.viewPendingEvents();
+        break;
+      case 'viewExpiredEvents':
+        this.viewExpiredEvents();
+        break;
+      case 'viewAvailableEvents':
+        this.viewAvailableEvents();
+        break;
+      case 'logout':
+        this.logout();
+        break;
+    }
+  }
 
 
 
@@ -175,6 +209,38 @@ showViewLocations = false;
       phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       role: ['admin']  // Fixed value
     });
+  }
+
+
+
+
+
+  viewPendingEvents() {
+    const availableSection = document.querySelector('.waiting-approval');
+    if (availableSection) {
+      availableSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }
+  viewExpiredEvents() {
+    const availableSection = document.querySelector('.expired-events');
+    if (availableSection) {
+      availableSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }
+  viewAvailableEvents() {
+    const availableSection = document.querySelector('.upcoming-events');
+    if (availableSection) {
+      availableSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
   }
 
    toggleFilters(): void {

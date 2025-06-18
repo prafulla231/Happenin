@@ -80,7 +80,7 @@ export const registerUser = async (req, res) => {
 };
 
 
-// authController.js
+
 
 export const sendOtpToEmail = async (req, res) => {
   const { email } = req.body;

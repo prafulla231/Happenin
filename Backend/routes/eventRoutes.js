@@ -1,20 +1,17 @@
 import express from 'express';
-import {
-  createApproval,
-  getEvents,
-  getEventById,
-  updateEvent,
-  deleteEvent, removeUserFromEvent , getUpcomingEvents , getExpiredEvents
-} from '../controllers/eventController.js';
+import {createApproval,getEvents,getEventById,updateEvent,deleteEvent, removeUserFromEvent , getUpcomingEvents , getExpiredEvents} from '../controllers/eventController.js';
 
 import { registerForEvent , getRegisteredEvents , deregisterEvent , getEventDetails } from '../controllers/userActivityController.js';
+import { authenticateToken } from '../middleware/authMiddleware.js';
 
 
 
 const router = express.Router();
+// router.use(authenticateToken);
 
-router.get('/upcoming' , getUpcomingEvents);
-router.get('/expired' , getExpiredEvents);
+
+router.get('/upcoming' ,authenticateToken, getUpcomingEvents);
+router.get('/expired' ,authenticateToken, getExpiredEvents);
 
 
 // Create new event
@@ -70,7 +67,7 @@ router.get('/expired' , getExpiredEvents);
  *       500:
  *         description: Server error
  */
-router.post('/', createApproval);
+router.post('/',authenticateToken, createApproval);
 
 
 /**
@@ -102,7 +99,7 @@ router.post('/', createApproval);
  *       500:
  *         description: Server error
  */
-router.post('/register', registerForEvent);
+router.post('/register',authenticateToken, registerForEvent);
 
 
 /**
@@ -126,7 +123,7 @@ router.post('/register', registerForEvent);
  *       500:
  *         description: Server error
  */
-router.get('/registered-events/:userId', getRegisteredEvents);
+router.get('/registered-events/:userId', authenticateToken,getRegisteredEvents);
 
 
 /**
@@ -160,7 +157,7 @@ router.get('/registered-events/:userId', getRegisteredEvents);
  *       500:
  *         description: Server error
  */
-router.delete('/deregister', deregisterEvent);
+router.delete('/deregister',authenticateToken, deregisterEvent);
 
 
 /**
@@ -184,7 +181,7 @@ router.delete('/deregister', deregisterEvent);
  *       500:
  *         description: Server error
  */
-router.get('/registered-users/:eventId', getEventDetails);
+router.get('/registered-users/:eventId',authenticateToken, getEventDetails);
 
 
 /**
@@ -213,7 +210,7 @@ router.get('/registered-users/:eventId', getEventDetails);
  *       500:
  *         description: Server error
  */
-router.delete('/removeuser/:eventId/users/:userId', removeUserFromEvent);
+router.delete('/removeuser/:eventId/users/:userId',authenticateToken, removeUserFromEvent);
 
 
 /**
@@ -229,7 +226,7 @@ router.delete('/removeuser/:eventId/users/:userId', removeUserFromEvent);
  *       500:
  *         description: Server error
  */
-router.get('/', getEvents);
+router.get('/',authenticateToken, getEvents);
 
 
 /**
@@ -253,7 +250,7 @@ router.get('/', getEvents);
  *       500:
  *         description: Server error
  */
-router.get('/:id', getEventById);
+router.get('/:id',authenticateToken, getEventById);
 
 
 /**
@@ -285,7 +282,7 @@ router.get('/:id', getEventById);
  *       500:
  *         description: Server error
  */
-router.put('/:id', updateEvent);
+router.put('/:id',authenticateToken, updateEvent);
 
 
 /**
@@ -311,7 +308,7 @@ router.put('/:id', updateEvent);
  *       500:
  *         description: Server error
  */
-router.delete('/:id', deleteEvent);
+router.delete('/:id',authenticateToken, deleteEvent);
 
 
 export default router;

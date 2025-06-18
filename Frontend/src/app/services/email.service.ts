@@ -37,6 +37,16 @@ export class EmailService {
   /**
    * Send ticket confirmation email with event details and/or PDF
    */
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+  }
+
+
   sendTicketEmail(request: TicketEmailRequest): Observable<any> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',

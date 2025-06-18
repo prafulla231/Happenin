@@ -1,8 +1,10 @@
 import express from 'express';
 import {approveEvent , viewApprovalRequest , denyRequest,viewApprovalRequestforOrganizer} from '../controllers/approvalController.js';
+import { authenticateToken } from '../middleware/authMiddleware.js';
 const router = express.Router();
+// router.use(authenticateToken);
 
-
+ 
 /**
  * @swagger
  * /approvals/approveEvent:
@@ -59,7 +61,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post('/approveEvent', approveEvent);
+router.post('/approveEvent',authenticateToken,approveEvent);
 
 
 /**
@@ -75,7 +77,7 @@ router.post('/approveEvent', approveEvent);
  *       500:
  *         description: Server error while fetching approvals
  */
-router.get('/viewApproval', viewApprovalRequest);
+router.get('/viewApproval', authenticateToken,viewApprovalRequest);
 
 
 /**
@@ -102,7 +104,7 @@ router.get('/viewApproval', viewApprovalRequest);
  *       500:
  *         description: Server error
  */
-router.delete('/deny/:id', denyRequest);
+router.delete('/deny/:id',authenticateToken, denyRequest);
 
 
 /**
@@ -127,5 +129,5 @@ router.delete('/deny/:id', denyRequest);
  *       500:
  *         description: Server error while fetching events
  */
-router.get('/viewrequests/:id', viewApprovalRequestforOrganizer);
+router.get('/viewrequests/:id',authenticateToken, viewApprovalRequestforOrganizer);
 export default router;

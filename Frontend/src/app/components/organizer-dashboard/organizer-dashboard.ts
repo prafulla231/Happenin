@@ -10,6 +10,9 @@ import { ApprovalService } from '../../services/approval';
 import { AuthService } from '../../services/auth';
 import { EventService } from '../../services/event';
 import { map, takeUntil, finalize } from 'rxjs/operators';
+import { HeaderComponent, HeaderButton } from '../header/header';
+import { FooterComponent } from '../footer/footer';
+
 
 // Interfaces
 export interface Event {
@@ -52,13 +55,13 @@ export interface PopupConfig {
 @Component({
   selector: 'app-organizer-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormsModule, HeaderComponent, FooterComponent],
   templateUrl: './organizer-dashboard.html',
   styleUrls: ['./organizer-dashboard.scss'],
 })
 export class OrganizerDashboardComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
-
+userName: string | null = null;
   showCreateForm = false;
   isEditMode = false;
   posterFile: File | null = null;
@@ -92,6 +95,37 @@ private alertTimeout?: any;
 
   categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Technical', 'Comedy', 'Arts', 'Exhibition', 'other'];
   minDate: string = '';
+
+  get displayUserName(): string {
+    return this.userName || 'Guest';
+  }
+
+   organizerButtons: HeaderButton[] = [
+    { text: 'My Events', action: 'viewMyEvents' },
+    { text: 'Create Event', action: 'createEvent', style: 'primary' },
+    // { text: 'Analytics', action: 'viewAnalytics' },
+    // { text: 'Settings', action: 'openSettings' },
+    { text: 'Contact', action: 'openContact' },
+    { text: 'Logout', action: 'logout' }
+  ];
+
+handleHeaderAction(action: string): void {
+    switch (action) {
+      case 'viewMyEvents':
+        this.viewMyEvents();
+        break;
+      case 'createEvent':
+        this.createEvent();
+        break;
+      case 'openContact':
+        this.openContact();
+        break;
+      case 'logout':
+        this.logout();
+        break;
+    }
+  }
+
 
   constructor(
     private fb: FormBuilder,
@@ -180,11 +214,32 @@ private alertTimeout?: any;
 
       const payload = JSON.parse(atob(tokenParts[1]));
       this.organizerId = payload.userId || payload.id || null;
+      this.userName = payload.userName || payload.name || null;
 
       console.log('Decoded organizer ID:', this.organizerId);
     } catch (error) {
       console.error('Error decoding token:', error);
       this.organizerId = null;
+    }
+  }
+
+  viewMyEvents() {
+    const availableSection = document.querySelector('.events-section');
+    if (availableSection) {
+      availableSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }
+
+  createEvent() {
+    const availableSection = document.querySelector('.create-event-btn');
+    if (availableSection) {
+      availableSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
     }
   }
 

@@ -38,6 +38,7 @@ export class AuthService {
 
 
 
+
   registerUser(data: any) {
     return this.http.post(`${environment.apiBaseUrl}${environment.apis.registerUser}`, data);
   }

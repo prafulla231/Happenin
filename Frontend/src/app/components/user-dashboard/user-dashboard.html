@@ -1,10 +1,16 @@
 <!-- user-dashboard -->
 <div class="dashboard-container">
-  <header class="dashboard-header">
+
+  <app-header
+  [userName]="displayUserName"
+  [title]="'Dashboard'"
+  [buttons]="headerButtons"
+  (buttonClick)="handleHeaderAction($event)">
+</app-header>
+  <!-- <header class="dashboard-header">
     <div class="header-content">
   <h1 class="main-title">
     <span class="title-gradient">Welcome, {{userName}}</span>
-    <!-- <span class="title-highlight">Dashboard</span> -->
   </h1>
   <div class="header-buttons">
     <button class="logout-btn" (click)="scrollToAvailableEvents()">
@@ -15,10 +21,6 @@
       <span class="btn-text">My Events</span>
       <div class="btn-glow"></div>
     </button>
-     <!-- <button class="contact-btn" (click)="openContact()">
-      <i class="fas fa-envelope"></i>
-     <span>Contact</span>
-    </button> -->
     <button class="logout-btn" (click)="openContact()">
       <span class="btn-text">Contact</span>
       <div class="btn-glow"></div>
@@ -29,7 +31,7 @@
     </button>
   </div>
 </div>
-  </header>
+  </header> -->
 
 
 
@@ -542,21 +544,14 @@
     </div>
   </div>
 
-  <footer class="dashboard-footer">
-    <h2 class="footer-title"><span class="brand-highlight">Happenin'</span></h2>
-    <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin.events.app&#64;gmail.com</span></p>
-    <!-- <div class="footer-socials">
-      <a href="https://www.instagram.com" target="_blank" aria-label="Instagram" class="social-icon">
-        <img class="insta-logo" src="/images/instagram.png" alt="Instagram" />
-      </a>
-      <a href="https://www.twitter.com" target="_blank" aria-label="Twitter" class="social-icon">
-        <img class="twitter-logo" src="/images/twitter.png" alt="Twitter" />
-      </a>
-      <a href="https://www.linkedin.com" target="_blank" aria-label="LinkedIn" class="social-icon">
-        <img class="linkedin-logo" src="/images/linkedin.png" alt="LinkedIn" />
-      </a>
-    </div> -->
-  </footer>
+
+
+
+<app-footer
+  brandName="Happenin'"
+  contactEmail="happenin.events.app@gmail.com"
+  [showSocials]="false">
+</app-footer>
 
   <!-- Custom Alert/Confirmation Modal -->
 <div class="custom-alert-overlay" *ngIf="customAlert.show" (click)="closeAlert()">

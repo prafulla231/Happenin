@@ -14,6 +14,9 @@ import { environment } from '../../../environment';
 import { EmailService } from '../../services/email.service';
 import { Router } from '@angular/router';
 import { Contact } from '../contact/contact';
+import { HeaderComponent, HeaderButton } from '../header/header';
+import { FooterComponent } from '../footer/footer';
+
 
 export interface Event {
   _id: string;
@@ -46,7 +49,7 @@ export interface CustomAlert {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule,ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, FormsModule,ReactiveFormsModule, HeaderComponent, FooterComponent],
   templateUrl: './user-dashboard.html',
   styleUrls: ['./user-dashboard.scss']
 })
@@ -61,7 +64,37 @@ export class UserDashboardComponent {
   selectedEvent: Event | null = null;
   showEventDetails: boolean = false;
   userEmail: string | null = null;
+  //  userName = 'John Doe';
   //  Math = Math;
+
+   get displayUserName(): string {
+    return this.userName || 'Guest';
+  }
+
+  headerButtons: HeaderButton[] = [
+    { text: 'Available Events', action: 'scrollToAvailableEvents' },
+    { text: 'My Events', action: 'scrollToRegisteredEvents' },
+    { text: 'Contact', action: 'openContact' },
+    { text: 'Logout', action: 'logout', style: 'primary' }
+  ];
+
+   handleHeaderAction(action: string): void {
+    switch (action) {
+      case 'scrollToAvailableEvents':
+        this.scrollToAvailableEvents();
+        break;
+      case 'scrollToRegisteredEvents':
+        this.scrollToRegisteredEvents();
+        break;
+      case 'openContact':
+        this.openContact();
+        break;
+      case 'logout':
+        this.logout();
+        break;
+    }
+  }
+
 
   // Custom Alert System
   customAlert: CustomAlert = {

@@ -1,20 +1,25 @@
 <div class="dashboard-container">
   <!-- Header Section -->
-  <div class="dashboard-header">
+  <!-- <div class="dashboard-header">
     <div class="header-content">
       <div class="header-left">
         <h1 class="dashboard-title">Organizer Dashboard</h1>
         <p class="dashboard-subtitle">Manage your events with ease</p>
       </div>
-      <!-- <button class="logout-btn" (click)="openContact()">
-        <span class="btn-text">Contact</span>
-      <div class="btn-glow"></div>
-      </button> -->
       <button class="logout-btn" (click)="logout()">
         Logout
       </button>
     </div>
-  </div>
+  </div> -->
+
+
+ <app-header
+        [userName]="displayUserName"
+        [title]="'Organizer Panel'"
+        [buttons]="organizerButtons"
+        (buttonClick)="handleHeaderAction($event)">
+      </app-header>
+
 
   <!-- Action Button -->
   <div class="action-section">
@@ -334,11 +339,15 @@
   </div>
 
   <!-- Footer -->
-  <footer class="dashboard-footer">
-    <h2 class="footer-title"><span class="brand-highlight">Happenin'</span></h2>
-    <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin.events.app&#64;gmail.com</span>
-    </p>
-  </footer>
+
+
+<app-footer
+  brandName="Happenin' Organizer"
+  contactEmail="happenin.events.app@gmail.com"
+  customMessage="'Manage your events efficiently. Contact us for support'"
+  [showSocials]="false">
+</app-footer>
+
 </div>
   <div class="custom-popup-overlay" *ngIf="showPopup" (click)="onPopupOverlayClick($event)">
   <div class="custom-popup" [ngClass]="'popup-' + popupConfig.type">

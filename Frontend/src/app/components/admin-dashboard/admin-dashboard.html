@@ -1,9 +1,16 @@
 <!-- ========= HEADER ========= -->
-  <div class="admin-dashboard-header">
+  <!-- <div class="admin-dashboard-header">
     <span class="brand-highlight"> Happenin'</span>
   <h2>Admin Dashboard</h2>
   <button class="admin-logout-btn" (click)="logout()">Logout</button>
-</div>
+</div> -->
+<div class="admin-dashboard-container">
+<app-header
+        [title]="'Admin Panel'"
+        [buttons]="adminButtons"
+        (buttonClick)="handleHeaderAction($event)">
+      </app-header>
+
 
 <!-- Buttons Row Container -->
 <!-- Location Form Toggle Button Row -->
@@ -372,7 +379,7 @@
   </div>
 
   <div>
-  <h2
+  <h2 class="waiting-approval"
    *ngIf="filteredEventsone.length > 0"
   style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; color: #4A90E2; font-weight: 600; font-size: 28px; text-shadow: 1px 1px 2px #ccc;">
   Waiting for Approval
@@ -413,7 +420,7 @@
 </div>
 
   <!-- ========= EVENT MANAGEMENT ========= -->
-   <h2
+   <h2 class="upcoming-events"
    *ngIf="filteredEventsone.length > 0"
   style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; color: #4A90E2; font-weight: 600; font-size: 28px; text-shadow: 1px 1px 2px #ccc;">
   Upcoming Events
@@ -630,7 +637,7 @@
   </div>
 </div> -->
 
-<h2
+<h2 class="expired-events"
   *ngIf="expiredEvents.length > 0"
   style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; color: #4A90E2; font-weight: 600; font-size: 28px; text-shadow: 1px 1px 2px #ccc;">
   Expired Events
@@ -663,21 +670,13 @@
 </div>
 
 
-<footer class="dashboard-footer">
-    <h2 class="footer-title"><span class="brand-highlight">Happenin'</span></h2>
-    <p class="footer-text">For any queries please reach out to us at <span class="gmailid">happenin.events.app&#64;gmail.com</span></p>
-    <!-- <div class="footer-socials">
-      <a href="https://www.instagram.com" target="_blank" aria-label="Instagram" class="social-icon">
-        <img class="insta-logo" src="/images/instagram.png" alt="Instagram" />
-      </a>
-      <a href="https://www.twitter.com" target="_blank" aria-label="Twitter" class="social-icon">
-        <img class="twitter-logo" src="/images/twitter.png" alt="Twitter" />
-      </a>
-      <a href="https://www.linkedin.com" target="_blank" aria-label="LinkedIn" class="social-icon">
-        <img class="linkedin-logo" src="/images/linkedin.png" alt="LinkedIn" />
-      </a>
-    </div> -->
-  </footer>
+<app-footer
+  brandName="Happenin' Admin"
+  contactEmail="happenin.events.app@gmail.com"
+  [showSocials]="false">
+</app-footer>
+
+</div>
 
 <!-- Custom Alert/Confirmation Modal  -->
 <div class="custom-alert-overlay" *ngIf="customAlert.show" (click)="closeAlert()">

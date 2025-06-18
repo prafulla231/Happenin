@@ -2,8 +2,10 @@ import express from 'express';
 import { createLocation, getAllLocations , viewLocations , deleteLocation } from '../controllers/locationController.js';
 import { bookLocation , cancelBooking } from '../controllers/bookingController.js';
 // import asyncHandler from 'express-async-handler';
+import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+// router.use(authenticateToken);
 
 /**
  * @swagger
@@ -47,7 +49,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post('/', createLocation);
+router.post('/',authenticateToken, createLocation);
 
 
 /**
@@ -63,7 +65,7 @@ router.post('/', createLocation);
  *       500:
  *         description: Server error
  */
-router.get('/', getAllLocations);
+router.get('/',authenticateToken, getAllLocations);
 
 
 /**
@@ -95,7 +97,7 @@ router.get('/', getAllLocations);
  *       500:
  *         description: Server error
  */
-router.post('/book', bookLocation);
+router.post('/book', authenticateToken,bookLocation);
 
 
 /**
@@ -122,7 +124,7 @@ router.post('/book', bookLocation);
  *       500:
  *         description: Server error
  */
-router.post('/cancel', cancelBooking);
+router.post('/cancel', authenticateToken,cancelBooking);
 
 
 /**
@@ -138,7 +140,7 @@ router.post('/cancel', cancelBooking);
  *       500:
  *         description: Server error
  */
-router.get('/getLocations', viewLocations);
+router.get('/getLocations',authenticateToken, viewLocations);
 
 
 /**
@@ -175,7 +177,7 @@ router.get('/getLocations', viewLocations);
  *       500:
  *         description: Server error
  */
-router.delete('/deleteLocation', deleteLocation);
+router.delete('/deleteLocation', authenticateToken,deleteLocation);
 
 
 export default router;

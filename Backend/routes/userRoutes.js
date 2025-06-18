@@ -5,6 +5,7 @@ import { authenticateToken } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 
+
 /**
  * @swagger
  * tags:
@@ -116,10 +117,10 @@ router.get('/protected', authenticateToken, (req, res) => {
   res.json({ message: 'You accessed protected route', user: req.user });
 });
 
-router.post('/send-otp', sendOtpToEmail);
+router.post('/send-otp',authenticateToken, sendOtpToEmail);
 
 // Verify OTP Route
-router.post('/verify-otp', verifyOtpAndLogin);
+router.post('/verify-otp',authenticateToken, verifyOtpAndLogin);
 
 
 // router.get('/my-events', authenticateToken, getUserRegisteredEvents);

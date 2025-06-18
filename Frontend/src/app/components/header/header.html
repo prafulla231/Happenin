@@ -1,0 +1,19 @@
+<header class="dashboard-header">
+  <div class="header-content">
+    <h1 class="main-title">
+      <span class="title-gradient">Welcome, {{userName}}</span>
+      <span class="title-highlight" *ngIf="title">{{title}}</span>
+    </h1>
+    <div class="header-buttons">
+      <button
+        *ngFor="let button of buttons"
+        class="logout-btn"
+        [class.btn-primary]="button.style === 'primary'"
+        [class.btn-secondary]="button.style === 'secondary'"
+        (click)="onButtonClick(button.action)">
+        <span class="btn-text">{{button.text}}</span>
+        <div class="btn-glow"></div>
+      </button>
+    </div>
+  </div>
+</header>

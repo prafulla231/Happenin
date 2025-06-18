@@ -102,12 +102,6 @@ export class EventService {
   registerForEvent(userId: string, eventId: string): Observable<any> {
     const payload = { userId, eventId };
     const url = `${environment.apiBaseUrl}${environment.apis.registerForEvent}`;
-
-    // console.log('=== SERVICE REGISTRATION CALL ===');
-    // console.log('URL:', url);
-    // console.log('Payload:', payload);
-    // console.log('Headers:', this.getAuthHeaders());
-
     return this.http.post(url, payload, {
       headers: this.getAuthHeaders()
     });
@@ -122,71 +116,5 @@ export class EventService {
       headers: this.getAuthHeaders()
     });
   }
-
-
-//   getUpcomingEvents(): Observable<Event[]> {
-//   return this.http.get<{ data: Event[] }>(`${environment.apiBaseUrl}${environment.apis.getUpcomingEvent}`,
-//     {headers: this.getAuthHeaders()}
-//   )
-//     .pipe(map(res => res.data));
-// }
-
-// getExpiredEvents(): Observable<Event[]> {
-//   return this.http.get<{ data: Event[] }>(`${environment.apiBaseUrl}${environment.apis.getExpiredEvent}`,
-//     {headers: this.getAuthHeaders()}
-//   )
-//     .pipe(map(res => res.data));
-// }
-  // getUpcomingEvents(): Observable<Event[]> {
-  //   const url = `${environment.apiBaseUrl}${environment.apis.getUpcomingEvent}`;
-  //   return this.http.get<data: Event[]>(url).pipe(
-  //     map(res => res.data)
-  //   );
-  // }
-
-  // getExpiredEvents(): Observable<Event[]> {
-  //   const url = `${environment.apiBaseUrl}${environment.apis.getExpiredEvent}`;
-  //   return this.http.get<ApiResponse>(url).pipe(
-  //     map(res => res.data)
-  //   );
-  // }
 }
 
-
-// Error loading events
-// HttpErrorResponse
-// error
-// :
-// message
-// :
-// "Invalid user ID."
-// success
-// :
-// false
-// [[Prototype]]
-// :
-// Object
-// headers
-// :
-// _HttpHeaders {headers: undefined, normalizedNames: Map(0), lazyUpdate: null, lazyInit: ƒ}
-// message
-// :
-// "Http failure response for http://localhost:5000/api/events/getexpiredevent: 400 Bad Request"
-// name
-// :
-// "HttpErrorResponse"
-// ok
-// :
-// false
-// status
-// :
-// 400
-// statusText
-// :
-// "Bad Request"
-// type
-// :
-// undefined
-// url
-// :
-// "http://localhost:5000/api/events/getexpiredevent"
