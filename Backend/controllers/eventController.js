@@ -61,7 +61,7 @@ export const createApproval = async (req, res) => {
 // GET ALL EVENTS (only not deleted)
 export const getEvents = async (req, res) => {
   try {
-    console.log("Get events is called");
+    //console.log("Get events is called");
     const events = await Event.find({ isDeleted: false }).populate('createdBy', 'name email role');
     return apiResponse(res, 200, 'Events fetched successfully', events);
   } catch (error) {
