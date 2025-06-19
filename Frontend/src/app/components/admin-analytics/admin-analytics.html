@@ -1,115 +1,70 @@
-<!-- Header Component -->
-<app-header 
-  [title]="'Analytics Dashboard'" 
+
+
+<div class="analytics-container">
+
+  <app-header
+  [title]="'Analytics Dashboard'"
   [buttons]="adminButtons"
   (buttonClick)="handleHeaderAction($event)">
 </app-header>
 
-<!-- Main Analytics Content -->
-<div class="analytics-container">
+  <!-- Key Metrics Cards -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-value">{{ analyticsData.totalEvents }}</div>
+      <div class="metric-label">Total Events</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ analyticsData.upcomingEvents }}</div>
+      <div class="metric-label">Upcoming Events</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ analyticsData.expiredEvents }}</div>
+      <div class="metric-label">Expired Events</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ analyticsData.totalRegistrations }}</div>
+      <div class="metric-label">Total Registrations</div>
+    </div>
+  </div>
+
   <!-- Charts Grid -->
   <div class="charts-grid">
-    <div class="chart-container half-width" data-aos="fade-up" data-aos-delay="200">
-      <div class="chart-header">
-        <div class="chart-title-section">
-          <h3 class="chart-title">Event Categories</h3>
-          <p class="chart-subtitle">Distribution by category</p>
-        </div>
-      </div>
-      <div class="chart-wrapper">
-        <div id="categoryChart" class="chart-content"></div>
-      </div>
-    </div>
-
-    <div class="chart-container half-width" data-aos="fade-up" data-aos-delay="300">
-      <div class="chart-header">
-        <div class="chart-title-section">
-          <h3 class="chart-title">Event Status</h3>
-          <p class="chart-subtitle">Active vs Expired events</p>
-        </div>
-        
-      </div>
-      <div class="chart-wrapper">
-        <div id="eventStatusChart" class="chart-content"></div>
-      </div>
-    </div>
-
-    <!-- Row 3: Monthly Trends -->
-    <!-- <div class="chart-container full-width" data-aos="fade-up" data-aos-delay="400">
-      <div class="chart-header">
-        <div class="chart-title-section">
-          <h3 class="chart-title">Monthly Performance Trends</h3>
-          <p class="chart-subtitle">Events, registrations, and revenue over time</p>
-        </div>
-        
-      </div>
-      <div class="chart-wrapper">
-        <div id="monthlyTrendsChart" class="chart-content"></div>
-      </div>
+    <!-- Overview Chart -->
+    <!-- <div class="chart-container">
+      <div id="overviewChart" class="chart"></div>
     </div> -->
 
-    <!-- Row 4: Location Performance & Price Range -->
-    <div class="chart-container half-width" data-aos="fade-up" data-aos-delay="500">
-      <div class="chart-header">
-        <div class="chart-title-section">
-          <h3 class="chart-title">Location Performance</h3>
-          <p class="chart-subtitle">Revenue by location</p>
-        </div>
-        
-      </div>
-      <div class="chart-wrapper">
-        <div id="locationChart" class="chart-content"></div>
-      </div>
+    <!-- Category Distribution Chart -->
+    <div class="chart-container">
+      <div id="categoryChart" class="chart"></div>
     </div>
 
-    <div class="chart-container half-width" data-aos="fade-up" data-aos-delay="600">
-      <div class="chart-header">
-        <div class="chart-title-section">
-          <h3 class="chart-title">Price Range Distribution</h3>
-          <p class="chart-subtitle">Events by price category</p>
-        </div>
-        
-      </div>
-      <div class="chart-wrapper">
-        <div id="priceRangeChart" class="chart-content"></div>
-      </div>
+    <!-- Monthly Trends Chart -->
+    <!-- <div class="chart-container">
+      <div id="monthlyTrendsChart" class="chart"></div>
+    </div> -->
+
+    <!-- Registrations Chart -->
+    <div class="chart-container">
+      <div id="registrationsChart" class="chart"></div>
     </div>
 
-    <!-- Row 5: Top Events & Capacity -->
-    <div class="chart-container half-width" data-aos="fade-up" data-aos-delay="700">
-      <div class="chart-header">
-        <div class="chart-title-section">
-          <h3 class="chart-title">Top Performing Events</h3>
-          <p class="chart-subtitle">Highest revenue generating events</p>
-        </div>
-        
-      </div>
-      <div class="chart-wrapper">
-        <div id="topEventsChart" class="chart-content"></div>
-      </div>
+    <!-- Revenue Chart -->
+    <div class="chart-container">
+      <div id="revenueChart" class="chart"></div>
     </div>
 
-    <div class="chart-container half-width" data-aos="fade-up" data-aos-delay="800">
-      <div class="chart-header">
-        <div class="chart-title-section">
-          <h3 class="chart-title">Capacity Utilization</h3>
-          <p class="chart-subtitle">Event capacity vs registrations</p>
-        </div>
-        
-      </div>
-      <div class="chart-wrapper">
-        <div id="capacityChart" class="chart-content"></div>
-      </div>
+    <!-- Event Status Chart -->
+    <div class="chart-container">
+      <div id="eventStatusChart" class="chart"></div>
     </div>
-  <!-- Loading Overlay -->
-  <!-- <div class="loading-overlay" *ngIf="loadingService.isLoading$ | async">
-    <div class="loading-spinner">
-      <div class="spinner"></div>
-      <p>Loading analytics data...</p>
-    </div>
-  </div> -->
+  </div>
 
+  <app-footer
+  brandName="Happenin' Admin"
+  contactEmail="happenin.events.app@gmail.com"
+  [showSocials]="false">
+</app-footer>
 </div>
 
-<!-- Footer Component -->
-<app-footer></app-footer>

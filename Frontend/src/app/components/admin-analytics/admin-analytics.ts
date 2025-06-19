@@ -12,17 +12,13 @@ import { NgChartsModule } from 'ng2-charts';
 
 export interface AnalyticsData {
   totalEvents: number;
+  upcomingEvents: number;
+  expiredEvents: number;
   totalRegistrations: number;
-  totalRevenue: number;
-  averageEventCapacity: number;
-  categoryDistribution: { [key: string]: number };
-  monthlyEventTrends: { month: string; events: number; registrations: number; revenue: number }[];
-  locationPerformance: { location: string; events: number; registrations: number; revenue: number }[];
-  priceRangeDistribution: { range: string; count: number; revenue: number }[];
-  eventStatusBreakdown: { status: string; count: number; percentage: number }[];
-  topPerformingEvents: { title: string; registrations: number; revenue: number; capacity: number }[];
-  registrationTrends: { date: string; registrations: number }[];
-  capacityUtilization: { eventTitle: string; utilized: number; total: number; percentage: number }[];
+  eventsByCategory: { [key: string]: number };
+  eventsByMonth: { [key: string]: number };
+  registrationsByEvent: { eventTitle: string; registrations: number }[];
+  revenueByEvent: { eventTitle: string; revenue: number }[];
 }
 
 @Component({
@@ -36,26 +32,27 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
   
   analyticsData: AnalyticsData = {
     totalEvents: 0,
+    upcomingEvents: 0,
+    expiredEvents: 0,
     totalRegistrations: 0,
-    totalRevenue: 0,
-    averageEventCapacity: 0,
-    categoryDistribution: {},
-    monthlyEventTrends: [],
-    locationPerformance: [],
-    priceRangeDistribution: [],
-    eventStatusBreakdown: [],
-    topPerformingEvents: [],
-    registrationTrends: [],
-    capacityUtilization: []
+    eventsByCategory: {},
+    eventsByMonth: {},
+    registrationsByEvent: [],
+    revenueByEvent: []
   };
 
   private charts: { [key: string]: echarts.ECharts } = {};
   private resizeObserver: ResizeObserver | null = null;
+  private dataLoaded = false;
+  private viewInitialized = false;
 
   adminButtons: HeaderButton[] = [
-    { text: 'Dashboard', action: 'dashboard' },
-    { text: 'Export Data', action: 'exportData', style: 'secondary' },
-    { text: 'Refresh', action: 'refresh', style: 'secondary' },
+    { text: 'Dashboard', action: 'dashboard', style: 'primary' },
+    // { text: 'Upcoming Events', action: 'viewAvailableEvents' },
+    // { text: 'Pending Approvals', action: 'viewPendingEvents' },
+    // { text: 'Expired Events', action: 'viewExpiredEvents' },
+    { text: 'Export Data', action: 'exportData', style: 'primary' },
+    { text: 'Refresh', action: 'refresh', style: 'primary' },
     { text: 'Logout', action: 'logout', style: 'primary' }
   ];
 
@@ -75,19 +72,21 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Initialize charts after view is ready
-    setTimeout(() => {
-      this.initializeAllCharts();
-    }, 100);
+    this.viewInitialized = true;
+    // Initialize charts if data is already loaded
+    if (this.dataLoaded) {
+      this.initializeChartsWhenReady();
+    }
   }
 
   ngOnDestroy(): void {
     // Dispose all charts
     Object.values(this.charts).forEach(chart => {
-      if (chart) {
+      if (chart && !chart.isDisposed()) {
         chart.dispose();
       }
     });
+    this.charts = {};
     
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
@@ -99,6 +98,15 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
       case 'dashboard':
         this.router.navigate(['/admin-dashboard']);
         break;
+      // case 'viewAvailableEvents':
+      //   this.router.navigate(['/admin-dashboard']); // Navigate to admin dashboard and handle the action there
+      //   break;
+      // case 'viewPendingEvents':
+      //   this.router.navigate(['/admin-dashboard']); // Navigate to admin dashboard and handle the action there
+      //   break;
+      // case 'viewExpiredEvents':
+      //   this.router.navigate(['/admin-dashboard']); // Navigate to admin dashboard and handle the action there
+      //   break;
       case 'exportData':
         this.exportAnalyticsData();
         break;
@@ -114,7 +122,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
   private setupResizeObserver(): void {
     this.resizeObserver = new ResizeObserver(() => {
       Object.values(this.charts).forEach(chart => {
-        if (chart) {
+        if (chart && !chart.isDisposed()) {
           chart.resize();
         }
       });
@@ -124,173 +132,103 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
   loadAnalyticsData(): void {
     this.loadingService.show();
     
-    // Load all events data
-    this.eventService.getAllEvents().subscribe({
-      next: (events) => {
-        this.processEventsData(events);
-        
-        // Load expired events
-        this.eventService.getExpiredEvents().subscribe({
-          next: (expiredEvents) => {
-            this.processExpiredEventsData(expiredEvents);
-            this.loadingService.hide();
-            
-            // Initialize charts after data is loaded
-            setTimeout(() => {
-              this.initializeAllCharts();
-            }, 100);
-          },
-          error: (err) => {
-            console.error('Error loading expired events', err);
-            this.loadingService.hide();
+    // Call the admin analytics API endpoint
+    this.http.get<{ success: boolean; data: AnalyticsData }>('http://localhost:5000/api/analytics/admin', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token') || sessionStorage.getItem('token')}`
+      }
+    }).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.analyticsData = response.data;
+          console.log('Analytics data loaded:', this.analyticsData);
+          this.dataLoaded = true;
+          this.loadingService.hide();
+          
+          // Initialize charts if view is ready
+          if (this.viewInitialized) {
+            this.initializeChartsWhenReady();
           }
-        });
+        } else {
+          console.error('Failed to load analytics data');
+          this.loadingService.hide();
+        }
       },
       error: (err) => {
-        console.error('Error loading events', err);
+        console.error('Error loading analytics data:', err);
         this.loadingService.hide();
+        // Handle authentication errors
+        if (err.status === 401 || err.status === 403) {
+          this.logout();
+        }
       }
     });
   }
 
-  private processEventsData(events: any[]): void {
-    this.analyticsData.totalEvents = events.length;
-    
-    // Process category distribution
-    const categoryCount: { [key: string]: number } = {};
-    let totalRegistrations = 0;
-    let totalRevenue = 0;
-    let totalCapacity = 0;
-    
-    const monthlyData: { [key: string]: { events: number; registrations: number; revenue: number } } = {};
-    const locationData: { [key: string]: { events: number; registrations: number; revenue: number } } = {};
-    const priceRanges = {
-      'Free': { count: 0, revenue: 0 },
-      '₹1-500': { count: 0, revenue: 0 },
-      '₹501-1000': { count: 0, revenue: 0 },
-      '₹1001-2000': { count: 0, revenue: 0 },
-      '₹2000+': { count: 0, revenue: 0 }
-    };
-
-    events.forEach(event => {
-      // Category distribution
-      if (event.category) {
-        categoryCount[event.category] = (categoryCount[event.category] || 0) + 1;
-      }
-
-      // Monthly trends
-      const eventDate = new Date(event.date);
-      const monthKey = eventDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-      if (!monthlyData[monthKey]) {
-        monthlyData[monthKey] = { events: 0, registrations: 0, revenue: 0 };
-      }
-      monthlyData[monthKey].events += 1;
-      
-      // Simulate registration data (replace with real data from your API)
-      const registrationCount = Math.floor(Math.random() * event.maxRegistrations);
-      monthlyData[monthKey].registrations += registrationCount;
-      monthlyData[monthKey].revenue += event.price * registrationCount;
-      
-      totalRegistrations += registrationCount;
-      totalRevenue += event.price * registrationCount;
-      totalCapacity += event.maxRegistrations;
-
-      // Location performance
-      const locationCity = this.extractCityFromLocation(event.location);
-      if (!locationData[locationCity]) {
-        locationData[locationCity] = { events: 0, registrations: 0, revenue: 0 };
-      }
-      locationData[locationCity].events += 1;
-      locationData[locationCity].registrations += registrationCount;
-      locationData[locationCity].revenue += event.price * registrationCount;
-
-      // Price range distribution
-      if (event.price === 0) {
-        priceRanges['Free'].count += 1;
-      } else if (event.price <= 500) {
-        priceRanges['₹1-500'].count += 1;
-        priceRanges['₹1-500'].revenue += event.price * registrationCount;
-      } else if (event.price <= 1000) {
-        priceRanges['₹501-1000'].count += 1;
-        priceRanges['₹501-1000'].revenue += event.price * registrationCount;
-      } else if (event.price <= 2000) {
-        priceRanges['₹1001-2000'].count += 1;
-        priceRanges['₹1001-2000'].revenue += event.price * registrationCount;
-      } else {
-        priceRanges['₹2000+'].count += 1;
-        priceRanges['₹2000+'].revenue += event.price * registrationCount;
-      }
-    });
-
-    this.analyticsData.categoryDistribution = categoryCount;
-    this.analyticsData.totalRegistrations = totalRegistrations;
-    this.analyticsData.totalRevenue = totalRevenue;
-    this.analyticsData.averageEventCapacity = totalCapacity / events.length || 0;
-
-    // Convert monthly data to array
-    this.analyticsData.monthlyEventTrends = Object.entries(monthlyData).map(([month, data]) => ({
-      month,
-      ...data
-    })).sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
-
-    // Convert location data to array
-    this.analyticsData.locationPerformance = Object.entries(locationData)
-      .map(([location, data]) => ({ location, ...data }))
-      .sort((a, b) => b.revenue - a.revenue);
-
-    // Convert price range data
-    this.analyticsData.priceRangeDistribution = Object.entries(priceRanges)
-      .map(([range, data]) => ({ range, ...data }));
-
-    // Generate top performing events
-    this.analyticsData.topPerformingEvents = events
-      .map(event => ({
-        title: event.title,
-        registrations: Math.floor(Math.random() * event.maxRegistrations),
-        revenue: event.price * Math.floor(Math.random() * event.maxRegistrations),
-        capacity: event.maxRegistrations
-      }))
-      .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 10);
-  }
-
-  private processExpiredEventsData(expiredEvents: any[]): void {
-    // Process event status breakdown
-    const totalEvents = this.analyticsData.totalEvents + expiredEvents.length;
-    this.analyticsData.eventStatusBreakdown = [
-      {
-        status: 'Active',
-        count: this.analyticsData.totalEvents,
-        percentage: (this.analyticsData.totalEvents / totalEvents) * 100
-      },
-      {
-        status: 'Expired',
-        count: expiredEvents.length,
-        percentage: (expiredEvents.length / totalEvents) * 100
-      }
-    ];
-  }
-
-  private extractCityFromLocation(location: string): string {
-    if (!location) return 'Unknown';
-    const parts = location.split(',');
-    return parts.length >= 2 ? parts[parts.length - 2].trim() : parts[0].trim();
+  private initializeChartsWhenReady(): void {
+    // Wait a bit for DOM to be fully ready
+    setTimeout(() => {
+      this.initializeAllCharts();
+    }, 300);
   }
 
   private initializeAllCharts(): void {
-    this.initializeOverviewChart();
-    this.initializeCategoryChart();
-    this.initializeMonthlyTrendsChart();
-    this.initializeLocationPerformanceChart();
-    this.initializePriceRangeChart();
-    this.initializeEventStatusChart();
-    this.initializeTopEventsChart();
-    this.initializeCapacityUtilizationChart();
+    // Dispose existing charts first to prevent multiple initialization
+    this.disposeAllCharts();
+
+    // Initialize each chart individually with error handling
+    try {
+      this.initializeOverviewChart();
+    } catch (error) {
+      console.error('Error initializing overview chart:', error);
+    }
+
+    try {
+      this.initializeCategoryChart();
+    } catch (error) {
+      console.error('Error initializing category chart:', error);
+    }
+
+    try {
+      this.initializeMonthlyTrendsChart();
+    } catch (error) {
+      console.error('Error initializing monthly trends chart:', error);
+    }
+
+    try {
+      this.initializeRegistrationsChart();
+    } catch (error) {
+      console.error('Error initializing registrations chart:', error);
+    }
+
+    try {
+      this.initializeRevenueChart();
+    } catch (error) {
+      console.error('Error initializing revenue chart:', error);
+    }
+
+    try {
+      this.initializeEventStatusChart();
+    } catch (error) {
+      console.error('Error initializing event status chart:', error);
+    }
+  }
+
+  private disposeAllCharts(): void {
+    Object.values(this.charts).forEach(chart => {
+      if (chart && !chart.isDisposed()) {
+        chart.dispose();
+      }
+    });
+    this.charts = {};
   }
 
   private initializeOverviewChart(): void {
     const chartDom = document.getElementById('overviewChart');
-    if (!chartDom) return;
+    if (!chartDom) {
+      console.warn('Overview chart container not found');
+      return;
+    }
 
     const myChart = echarts.init(chartDom);
     this.charts['overview'] = myChart;
@@ -315,7 +253,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
           type: 'gauge',
           center: ['75%', '60%'],
           radius: '50%',
-          max: Math.max(this.analyticsData.totalRegistrations, 1000),
+          max: Math.max(this.analyticsData.totalRegistrations, 100),
           detail: { formatter: '{value}' },
           data: [{ value: this.analyticsData.totalRegistrations, name: 'Registrations' }],
           axisLine: { lineStyle: { color: [[1, '#2196F3']] } }
@@ -329,12 +267,15 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private initializeCategoryChart(): void {
     const chartDom = document.getElementById('categoryChart');
-    if (!chartDom) return;
+    if (!chartDom) {
+      console.warn('Category chart container not found');
+      return;
+    }
 
     const myChart = echarts.init(chartDom);
     this.charts['category'] = myChart;
 
-    const data = Object.entries(this.analyticsData.categoryDistribution).map(([name, value]) => ({
+    const data = Object.entries(this.analyticsData.eventsByCategory).map(([name, value]) => ({
       name,
       value
     }));
@@ -380,64 +321,59 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private initializeMonthlyTrendsChart(): void {
     const chartDom = document.getElementById('monthlyTrendsChart');
-    if (!chartDom) return;
+    if (!chartDom) {
+      console.warn('Monthly trends chart container not found');
+      return;
+    }
 
     const myChart = echarts.init(chartDom);
     this.charts['monthlyTrends'] = myChart;
 
-    const months = this.analyticsData.monthlyEventTrends.map(item => item.month);
-    const events = this.analyticsData.monthlyEventTrends.map(item => item.events);
-    const registrations = this.analyticsData.monthlyEventTrends.map(item => item.registrations);
-    const revenue = this.analyticsData.monthlyEventTrends.map(item => item.revenue);
+    // Sort months chronologically
+    const monthOrder = [
+      'Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025',
+      'Jul 2024', 'Aug 2024', 'Sep 2024', 'Oct 2024', 'Nov 2024', 'Dec 2024'
+    ];
+
+    const months = monthOrder.filter(month => this.analyticsData.eventsByMonth.hasOwnProperty(month));
+    const eventCounts = months.map(month => this.analyticsData.eventsByMonth[month] || 0);
 
     const option = {
       title: {
-        text: 'Monthly Performance Trends',
+        text: 'Monthly Event Trends',
         left: 'center',
         textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
       },
-      tooltip: { trigger: 'axis' },
-      legend: {
-        data: ['Events', 'Registrations', 'Revenue'],
-        top: '10%'
+      tooltip: { 
+        trigger: 'axis',
+        formatter: function(params: any) {
+          return `${params[0].name}<br/>Events: ${params[0].value}`;
+        }
       },
       xAxis: {
         type: 'category',
         data: months,
-        axisPointer: { type: 'shadow' }
+        axisPointer: { type: 'shadow' },
+        axisLabel: { rotate: 45 }
       },
-      yAxis: [
-        {
-          type: 'value',
-          name: 'Count',
-          position: 'left'
-        },
-        {
-          type: 'value',
-          name: 'Revenue (₹)',
-          position: 'right'
-        }
-      ],
+      yAxis: {
+        type: 'value',
+        name: 'Number of Events'
+      },
       series: [
         {
           name: 'Events',
-          type: 'bar',
-          data: events,
-          itemStyle: { color: '#4CAF50' }
-        },
-        {
-          name: 'Registrations',
-          type: 'bar',
-          data: registrations,
-          itemStyle: { color: '#2196F3' }
-        },
-        {
-          name: 'Revenue',
           type: 'line',
-          yAxisIndex: 1,
-          data: revenue,
-          itemStyle: { color: '#FF9800' },
-          lineStyle: { width: 3 }
+          data: eventCounts,
+          itemStyle: { color: '#4CAF50' },
+          lineStyle: { width: 3 },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(76, 175, 80, 0.3)' },
+              { offset: 1, color: 'rgba(76, 175, 80, 0.1)' }
+            ])
+          },
+          smooth: true
         }
       ]
     };
@@ -446,106 +382,196 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
     this.setupChartResize('monthlyTrends');
   }
 
-  private initializeLocationPerformanceChart(): void {
-    const chartDom = document.getElementById('locationChart');
-    if (!chartDom) return;
+  private initializeRegistrationsChart(): void {
+    const chartDom = document.getElementById('registrationsChart');
+    if (!chartDom) {
+      console.warn('Registrations chart container not found');
+      return;
+    }
 
     const myChart = echarts.init(chartDom);
-    this.charts['location'] = myChart;
+    this.charts['registrations'] = myChart;
 
-    const locations = this.analyticsData.locationPerformance.slice(0, 10).map(item => item.location);
-    const revenue = this.analyticsData.locationPerformance.slice(0, 10).map(item => item.revenue);
+    // Get events with registrations > 0, sorted by registrations
+    const eventsWithRegistrations = this.analyticsData.registrationsByEvent
+      .filter(item => item.registrations > 0)
+      .sort((a, b) => b.registrations - a.registrations)
+      .slice(0, 10);
+
+    if (eventsWithRegistrations.length === 0) {
+      // Show message if no registrations
+      const option = {
+        title: {
+          text: 'Top Events by Registrations',
+          subtext: 'No registrations data available',
+          left: 'center',
+          textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
+        }
+      };
+      myChart.setOption(option);
+      this.setupChartResize('registrations');
+      return;
+    }
+
+    const eventTitles = eventsWithRegistrations.map(item => 
+      item.eventTitle.length > 25 ? item.eventTitle.substring(0, 25) + '...' : item.eventTitle
+    );
+    const registrations = eventsWithRegistrations.map(item => item.registrations);
 
     const option = {
       title: {
-        text: 'Top Performing Locations',
+        text: 'Top Events by Registrations',
         left: 'center',
         textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
       },
       tooltip: {
         trigger: 'axis',
-        axisPointer: { type: 'shadow' }
+        axisPointer: { type: 'shadow' },
+        formatter: function(params: any) {
+          const originalTitle = eventsWithRegistrations[params[0].dataIndex].eventTitle;
+          return `${originalTitle}<br/>Registrations: ${params[0].value}`;
+        }
       },
-      xAxis: {
-        type: 'category',
-        data: locations,
-        axisLabel: { rotate: 45 }
+      grid: {
+        left: '15%',
+        right: '10%',
+        top: '15%',
+        bottom: '10%'
       },
       yAxis: {
+        type: 'category',
+        data: eventTitles,
+        axisLabel: { fontSize: 10 }
+      },
+      xAxis: {
         type: 'value',
-        name: 'Revenue (₹)'
+        name: 'Registrations'
       },
       series: [
         {
           type: 'bar',
-          data: revenue,
+          data: registrations,
           itemStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: '#9C27B0' },
-              { offset: 1, color: '#E91E63' }
+            color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [
+              { offset: 0, color: '#2196F3' },
+              { offset: 1, color: '#21CBF3' }
             ])
           },
-          emphasis: {
-            itemStyle: { color: '#673AB7' }
-          }
+          barWidth: '60%'
         }
       ]
     };
 
     myChart.setOption(option);
-    this.setupChartResize('location');
+    this.setupChartResize('registrations');
   }
 
-  private initializePriceRangeChart(): void {
-    const chartDom = document.getElementById('priceRangeChart');
-    if (!chartDom) return;
+  private initializeRevenueChart(): void {
+    const chartDom = document.getElementById('revenueChart');
+    if (!chartDom) {
+      console.warn('Revenue chart container not found');
+      return;
+    }
 
     const myChart = echarts.init(chartDom);
-    this.charts['priceRange'] = myChart;
+    this.charts['revenue'] = myChart;
 
-    const ranges = this.analyticsData.priceRangeDistribution.map(item => item.range);
-    const counts = this.analyticsData.priceRangeDistribution.map(item => item.count);
+    // Get events with revenue > 0, sorted by revenue
+    const eventsWithRevenue = this.analyticsData.revenueByEvent
+      .filter(item => item.revenue > 0)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 10);
+
+    if (eventsWithRevenue.length === 0) {
+      // Show message if no revenue
+      const option = {
+        title: {
+          text: 'Top Events by Revenue',
+          subtext: 'No revenue data available',
+          left: 'center',
+          textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
+        }
+      };
+      myChart.setOption(option);
+      this.setupChartResize('revenue');
+      return;
+    }
+
+    const eventTitles = eventsWithRevenue.map(item => 
+      item.eventTitle.length > 20 ? item.eventTitle.substring(0, 20) + '...' : item.eventTitle
+    );
+    const revenues = eventsWithRevenue.map(item => item.revenue);
 
     const option = {
       title: {
-        text: 'Price Range Distribution',
+        text: 'Top Events by Revenue',
         left: 'center',
         textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
       },
-      tooltip: { trigger: 'axis' },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        formatter: function(params: any) {
+          const originalTitle = eventsWithRevenue[params[0].dataIndex].eventTitle;
+          return `${originalTitle}<br/>Revenue: ₹${params[0].value.toLocaleString()}`;
+        }
+      },
+      grid: {
+        left: '10%',
+        right: '10%',
+        top: '15%',
+        bottom: '15%'
+      },
       xAxis: {
         type: 'category',
-        data: ranges
+        data: eventTitles,
+        axisLabel: { rotate: 45, fontSize: 10 }
       },
       yAxis: {
         type: 'value',
-        name: 'Number of Events'
+        name: 'Revenue (₹)',
+        axisLabel: {
+          formatter: function(value: number) {
+            if (value >= 1000) {
+              return '₹' + (value / 1000).toFixed(1) + 'K';
+            }
+            return '₹' + value;
+          }
+        }
       },
       series: [
         {
           type: 'bar',
-          data: counts,
-          itemStyle: { color: '#00BCD4' },
-          emphasis: { itemStyle: { color: '#009688' } }
+          data: revenues,
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#FF9800' },
+              { offset: 1, color: '#F57C00' }
+            ])
+          },
+          barWidth: '60%'
         }
       ]
     };
 
     myChart.setOption(option);
-    this.setupChartResize('priceRange');
+    this.setupChartResize('revenue');
   }
 
   private initializeEventStatusChart(): void {
     const chartDom = document.getElementById('eventStatusChart');
-    if (!chartDom) return;
+    if (!chartDom) {
+      console.warn('Event status chart container not found');
+      return;
+    }
 
     const myChart = echarts.init(chartDom);
     this.charts['eventStatus'] = myChart;
 
-    const data = this.analyticsData.eventStatusBreakdown.map(item => ({
-      name: item.status,
-      value: item.count
-    }));
+    const data = [
+      { name: 'Upcoming Events', value: this.analyticsData.upcomingEvents },
+      { name: 'Expired Events', value: this.analyticsData.expiredEvents }
+    ];
 
     const option = {
       title: {
@@ -557,12 +583,16 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
         trigger: 'item',
         formatter: '{a} <br/>{b}: {c} ({d}%)'
       },
+      legend: {
+        bottom: '5%',
+        left: 'center'
+      },
       series: [
         {
           name: 'Event Status',
           type: 'pie',
           radius: ['40%', '70%'],
-          center: ['50%', '60%'],
+          center: ['50%', '50%'],
           data: data,
           itemStyle: {
             borderRadius: 10,
@@ -572,129 +602,14 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
           label: {
             show: true,
             formatter: '{b}: {d}%'
-          }
+          },
+          color: ['#4CAF50', '#FF5722']
         }
       ]
     };
 
     myChart.setOption(option);
     this.setupChartResize('eventStatus');
-  }
-
-  private initializeTopEventsChart(): void {
-    const chartDom = document.getElementById('topEventsChart');
-    if (!chartDom) return;
-
-    const myChart = echarts.init(chartDom);
-    this.charts['topEvents'] = myChart;
-
-    const eventTitles = this.analyticsData.topPerformingEvents.slice(0, 8).map(item => 
-      item.title.length > 20 ? item.title.substring(0, 20) + '...' : item.title
-    );
-    const revenues = this.analyticsData.topPerformingEvents.slice(0, 8).map(item => item.revenue);
-
-    const option = {
-      title: {
-        text: 'Top Performing Events',
-        left: 'center',
-        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
-      },
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: { type: 'shadow' }
-      },
-      yAxis: {
-        type: 'category',
-        data: eventTitles,
-        axisLabel: { fontSize: 10 }
-      },
-      xAxis: {
-        type: 'value',
-        name: 'Revenue (₹)'
-      },
-      series: [
-        {
-          type: 'bar',
-          data: revenues,
-          itemStyle: {
-            color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [
-              { offset: 0, color: '#FF6B6B' },
-              { offset: 1, color: '#4ECDC4' }
-            ])
-          }
-        }
-      ]
-    };
-
-    myChart.setOption(option);
-    this.setupChartResize('topEvents');
-  }
-
-  private initializeCapacityUtilizationChart(): void {
-    const chartDom = document.getElementById('capacityChart');
-    if (!chartDom) return;
-
-    const myChart = echarts.init(chartDom);
-    this.charts['capacity'] = myChart;
-
-    // Generate sample capacity utilization data
-    const capacityData = this.analyticsData.topPerformingEvents.slice(0, 6).map(event => ({
-      eventTitle: event.title.length > 15 ? event.title.substring(0, 15) + '...' : event.title,
-      utilized: event.registrations,
-      total: event.capacity,
-      percentage: (event.registrations / event.capacity) * 100
-    }));
-
-    const eventNames = capacityData.map(item => item.eventTitle);
-    const utilizationRates = capacityData.map(item => item.percentage);
-
-    const option = {
-      title: {
-        text: 'Capacity Utilization Rate',
-        left: 'center',
-        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
-      },
-      tooltip: {
-        trigger: 'axis',
-        formatter: function(params: any) {
-          const data = capacityData[params[0].dataIndex];
-          return `${data.eventTitle}<br/>
-                  Utilized: ${data.utilized}/${data.total}<br/>
-                  Rate: ${params[0].value.toFixed(1)}%`;
-        }
-      },
-      xAxis: {
-        type: 'category',
-        data: eventNames,
-        axisLabel: { rotate: 30, fontSize: 10 }
-      },
-      yAxis: {
-        type: 'value',
-        name: 'Utilization %',
-        max: 100
-      },
-      series: [
-        {
-          type: 'bar',
-          data: utilizationRates,
-          itemStyle: {
-            color: function(params: any) {
-              const value = params.value;
-              if (value >= 80) return '#4CAF50';
-              if (value >= 60) return '#FF9800';
-              return '#F44336';
-            }
-          },
-          markLine: {
-            data: [{ yAxis: 75, name: 'Target: 75%' }],
-            lineStyle: { color: '#666', type: 'dashed' }
-          }
-        }
-      ]
-    };
-
-    myChart.setOption(option);
-    this.setupChartResize('capacity');
   }
 
   private setupChartResize(chartKey: string): void {
@@ -707,6 +622,9 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   refreshData(): void {
+    // Dispose charts before refreshing data
+    this.disposeAllCharts();
+    this.dataLoaded = false;
     this.loadAnalyticsData();
   }
 
