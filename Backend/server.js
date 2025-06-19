@@ -11,6 +11,7 @@ import swaggerUi from 'swagger-ui-express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import expressListEndpoints from 'express-list-endpoints';
+import analyticsRoutes from './routes/analytics.routes.js';
 
 
 dotenv.config();
@@ -62,6 +63,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/approval' , approveRoute);
 app.use('/api/email', emailRoutes);
+app.use('/api/analytics',analyticsRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

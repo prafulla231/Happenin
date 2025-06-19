@@ -1,4 +1,3 @@
-// models/Approval.js
 import mongoose from 'mongoose';
 
 const approvalSchema = new mongoose.Schema({

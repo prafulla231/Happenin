@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 // import { FormsModule } from '@angular/forms';
 import { LoadingService } from '../loading';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -100,30 +100,34 @@ showViewLocations = false;
 //   }
 
 adminButtons: HeaderButton[] = [
-    // { text: 'Users', action: 'manageUsers' },
-    { text: 'Upcoming Events', action: 'viewAvailableEvents' },
-    { text: 'Pening Approvals', action: 'viewPendingEvents' },
-    { text: 'Expired Events', action: 'viewExpiredEvents' },
-    // { text: 'System', action: 'systemSettings', style: 'secondary' },
-    { text: 'Logout', action: 'logout', style: 'primary' }
-  ];
+  // { text: 'Users', action: 'manageUsers' },
+  { text: 'Upcoming Events', action: 'viewAvailableEvents' },
+  { text: 'Pending Approvals', action: 'viewPendingEvents' },
+  { text: 'Expired Events', action: 'viewExpiredEvents' },
+  { text: 'Analytics', action: 'viewAnalytics', style: 'secondary' }, // New Analytics button
+  // { text: 'System', action: 'systemSettings', style: 'secondary' },
+  { text: 'Logout', action: 'logout', style: 'primary' }
+];
 
-  handleHeaderAction(action: string): void {
-    switch (action) {
-      case 'viewPendingEvents':
-        this.viewPendingEvents();
-        break;
-      case 'viewExpiredEvents':
-        this.viewExpiredEvents();
-        break;
-      case 'viewAvailableEvents':
-        this.viewAvailableEvents();
-        break;
-      case 'logout':
-        this.logout();
-        break;
-    }
+handleHeaderAction(action: string): void {
+  switch (action) {
+    case 'viewPendingEvents':
+      this.viewPendingEvents();
+      break;
+    case 'viewExpiredEvents':
+      this.viewExpiredEvents();
+      break;
+    case 'viewAvailableEvents':
+      this.viewAvailableEvents();
+      break;
+    case 'viewAnalytics': // New case for analytics
+      this.viewAnalytics();
+      break;
+    case 'logout':
+      this.logout();
+      break;
   }
+}
 
 
 
@@ -191,6 +195,7 @@ adminButtons: HeaderButton[] = [
     private eventService: EventService,
     private locationService: LocationService,
     private ApprovalService: ApprovalService,
+    private router:Router
 
   ) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -213,7 +218,9 @@ adminButtons: HeaderButton[] = [
 
 
 
-
+viewAnalytics(): void {
+  this.router.navigate(['/admin-analytics']);
+}
 
   viewPendingEvents() {
     const availableSection = document.querySelector('.waiting-approval');

@@ -12,6 +12,7 @@ import { EventService } from '../../services/event';
 import { map, takeUntil, finalize } from 'rxjs/operators';
 import { HeaderComponent, HeaderButton } from '../header/header';
 import { FooterComponent } from '../footer/footer';
+import {  OnInit } from '@angular/core';
 
 
 // Interfaces
@@ -103,6 +104,7 @@ private alertTimeout?: any;
    organizerButtons: HeaderButton[] = [
     { text: 'My Events', action: 'viewMyEvents' },
     { text: 'Create Event', action: 'createEvent', style: 'primary' },
+    { text: 'Analytics', action: 'openAnalytics', style: 'primary' },
     // { text: 'Analytics', action: 'viewAnalytics' },
     // { text: 'Settings', action: 'openSettings' },
     { text: 'Contact', action: 'openContact' },
@@ -116,6 +118,9 @@ handleHeaderAction(action: string): void {
         break;
       case 'createEvent':
         this.createEvent();
+        break;
+        case 'openAnalytics':
+        this.openAnalytics();
         break;
       case 'openContact':
         this.openContact();
@@ -539,6 +544,9 @@ await this.showAlert('Error', 'Failed to delete event', 'error')
     openContact() {
   this.router.navigate(['/contact']);
 }
+
+openAnalytics() {
+  this.router.navigate(['/analytics']);}
 
   async logout() {
     const confirmed = await this.showConfirm('Confirm', 'Are you sure you want to logout?')
