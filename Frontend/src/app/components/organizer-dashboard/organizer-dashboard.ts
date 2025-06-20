@@ -220,8 +220,6 @@ handleHeaderAction(action: string): void {
       const payload = JSON.parse(atob(tokenParts[1]));
       this.organizerId = payload.userId || payload.id || null;
       this.userName = payload.userName || payload.name || null;
-
-      console.log('Decoded organizer ID:', this.organizerId);
     } catch (error) {
       console.error('Error decoding token:', error);
       this.organizerId = null;
@@ -390,8 +388,6 @@ handleHeaderAction(action: string): void {
         city: form.city,
         placeName: form.location,
       };
-
-      console.log(eventData)
 
       // First book the location
       this.locationService.bookLocation(locationData).pipe(

@@ -3,13 +3,14 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoadingService } from './loading';
 import { Subscription } from 'rxjs';
+// import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-spinner',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="spinner-overlay" *ngIf="isLoading" [@fadeInOut]>
+    <div class="spinner-overlay" *ngIf="isLoading">
       <div class="spinner-container">
         <div class="spinner">
           <div class="spinner-inner">

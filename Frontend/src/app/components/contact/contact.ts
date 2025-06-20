@@ -270,7 +270,6 @@ export class Contact implements OnInit {
     )
     .then(
       (response) => {
-        console.log('Email sent successfully!', response.status, response.text);
         this.handleSubmissionSuccess();
       },
       (error) => {

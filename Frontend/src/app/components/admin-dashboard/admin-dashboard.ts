@@ -471,7 +471,6 @@ deleteLocation(state: string, city: string, placeName: string): void {
     next: (events) => {
       this.events = events;
       this.filteredEvents = [...events];
-      console.log(this.filteredEvents);
       this.extractFilterOptions();
       this.applySorting();
         this.events.forEach(event => {
@@ -565,13 +564,7 @@ deleteLocation(state: string, city: string, placeName: string): void {
     const eventToDeny = this.eventsone.find(e => e._id === eventId);
     const eventTitle = eventToDeny ? eventToDeny.title : 'Unknown Event';
 
-    console.log(eventDate , eventTimeSlot , eventLocation);
-
     const { startTime, endTime } = this.extractStartEndTime(eventTimeSlot, eventDate);
-
-    console.log(startTime, endTime);
-
-
 
     let cancelData = { eventLocation , startTime , endTime};
 

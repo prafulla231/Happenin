@@ -41,7 +41,6 @@ export class EventService {
 
   getUpcomingEvents(): Observable<Event[]> {
     const url = `${environment.apiBaseUrl}${environment.apis.getUpcomingEvent}`;
-    console.log("Url fetched: ",url);
     return this.http.get<{ data: Event[] }>(url, {
       headers: this.getAuthHeaders()
     }).pipe(
@@ -52,7 +51,6 @@ export class EventService {
 
   getExpiredEvents(): Observable<Event[]> {
     const url = `${environment.apiBaseUrl}${environment.apis.getExpiredEvent}`;
-    console.log("Url fetched: ",url);
     return this.http.get<{ data: Event[] }>(url, {
       headers: this.getAuthHeaders()
     }).pipe(

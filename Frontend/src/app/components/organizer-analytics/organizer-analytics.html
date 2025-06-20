@@ -1,20 +1,11 @@
 <!-- components/organizer-analytics/organizer-analytics.component.html -->
 <div class="analytics-container">
   <!-- Header -->
-  <div class="analytics-header">
-    <h1 class="page-title">
-      <i class="fas fa-chart-bar"></i>
-      Analytics Dashboard
-    </h1>
-    <button
-      class="refresh-btn"
-      (click)="refreshAnalytics()"
-      [disabled]="refreshing || loading"
-      [class.refreshing]="refreshing">
-      <i class="fas fa-sync-alt" [class.spinning]="refreshing"></i>
-      {{ refreshing ? 'Refreshing...' : 'Refresh' }}
-    </button>
-  </div>
+  <app-header
+  [title]="'Analytics Dashboard'"
+  [buttons]="organizerButtons"
+  (buttonClick)="handleHeaderAction($event)">
+</app-header>
 
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
@@ -27,7 +18,7 @@
     <i class="fas fa-exclamation-triangle"></i>
     <h3>Unable to Load Analytics</h3>
     <p>{{ error }}</p>
-    <button class="retry-btn" (click)="loadAnalytics()">
+    <button class="retry-btn" (click)="loadAnalyticsData()">
       <i class="fas fa-redo"></i>
       Try Again
     </button>
@@ -160,4 +151,10 @@
       <p>Create your first event to start seeing analytics data.</p>
     </div>
   </div>
+
+  <app-footer
+  brandName="Happenin' Organizer"
+  contactEmail="happenin.events.app@gmail.com"
+  [showSocials]="false">
+</app-footer>
 </div>

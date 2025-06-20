@@ -27,6 +27,7 @@ export const approveEvent = async (req, res) => {
       description,
       date,
       timeSlot,
+      location,
       duration,
       category,
       price: price || 0,

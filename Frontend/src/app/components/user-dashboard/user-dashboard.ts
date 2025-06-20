@@ -1,5 +1,5 @@
 // user-dashboard.ts
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule,  } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -55,7 +55,7 @@ export interface CustomAlert {
 })
 
 
-export class UserDashboardComponent {
+export class UserDashboardComponent implements OnDestroy{
   events: Event[] = [];
   filteredEvents: Event[] = [];
   userId: string | null = null;
@@ -64,6 +64,9 @@ export class UserDashboardComponent {
   selectedEvent: Event | null = null;
   showEventDetails: boolean = false;
   userEmail: string | null = null;
+
+  private searchTimeout: any;
+
   //  userName = 'John Doe';
   //  Math = Math;
 
@@ -379,7 +382,6 @@ getPageNumbers(): number[] {
       // Use the service method
       this.eventService.registerForEvent(this.userId!, eventId).subscribe({
         next: (response) => {
-          console.log('Registration successful:', response);
           this.loadRegisteredEvents();
 
           // Send confirmation email after successful registration
@@ -440,7 +442,6 @@ private sendRegistrationEmail(event: Event) {
 
   this.emailService.sendTicketEmail(emailRequest).subscribe({
     next: (response) => {
-      console.log('Confirmation email sent successfully:', response);
       // Email sent successfully - already showing success message in registerForEvent
     },
     error: (err) => {
@@ -593,23 +594,41 @@ private sendRegistrationEmail(event: Event) {
 
   // Filter logic
   onSearchChange() {
-    this.applyFilters();
+     if (this.searchTimeout) {
+    clearTimeout(this.searchTimeout);
   }
+  
+  // Set new timeout for debounced search
+  this.searchTimeout = setTimeout(() => {
+    this.applyFilters();
+  }, 300); // 300ms delay
+  }
+
+  ngOnDestroy() {
+  if (this.searchTimeout) {
+    clearTimeout(this.searchTimeout);
+  }
+}
 
   applyFilters() {
-  let filtered = [...this.events];
+    let filtered = [...this.events];
 
-  if (this.searchQuery.trim()) {
-    const query = this.searchQuery.toLowerCase();
-    filtered = filtered.filter(e =>
-      e.title.toLowerCase().includes(query) ||
-      e.description.toLowerCase().includes(query) ||
-      (e.artist && e.artist.toLowerCase().includes(query)) ||
-      (e.organization && e.organization.toLowerCase().includes(query)) ||
-      (e.category && e.category.toLowerCase().includes(query)) ||
-      e.location.toLowerCase().includes(query)
-    );
-  }
+    // Enhanced search with trimming and better matching
+    if (this.searchQuery && this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(e => {
+        const searchableText = [
+          e.title,
+          e.description,
+          e.artist || '',
+          e.organization || '',
+          e.category || '',
+          e.location
+        ].join(' ').toLowerCase();
+        
+        return searchableText.includes(query);
+      });
+    }
 
   if (this.selectedCategory) {
     filtered = filtered.filter(e => e.category === this.selectedCategory);
@@ -685,7 +704,24 @@ private sendRegistrationEmail(event: Event) {
 
   clearSearch() {
     this.searchQuery = '';
+    
+    // Clear any pending search timeout
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    
     this.applyFilters();
+  }
+
+
+   debugSearch() {
+    console.log('Search Debug Info:');
+    console.log('Search Query:', this.searchQuery);
+    console.log('All Events Count:', this.events.length);
+    console.log('Filtered Events Count:', this.filteredEvents.length);
+    console.log('Paginated Events Count:', this.paginatedEvents.length);
+    console.log('Current Page:', this.currentPage);
+    console.log('Total Pages:', this.totalPages);
   }
 
   hasActiveFilters(): boolean {

@@ -117,10 +117,10 @@ router.get('/protected', authenticateToken, (req, res) => {
   res.json({ message: 'You accessed protected route', user: req.user });
 });
 
-router.post('/send-otp',authenticateToken, sendOtpToEmail);
+router.post('/send-otp', sendOtpToEmail);
 
 // Verify OTP Route
-router.post('/verify-otp',authenticateToken, verifyOtpAndLogin);
+router.post('/verify-otp', verifyOtpAndLogin);
 
 
 // router.get('/my-events', authenticateToken, getUserRegisteredEvents);

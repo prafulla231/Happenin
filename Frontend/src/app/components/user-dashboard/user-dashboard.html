@@ -7,41 +7,11 @@
   [buttons]="headerButtons"
   (buttonClick)="handleHeaderAction($event)">
 </app-header>
-  <!-- <header class="dashboard-header">
-    <div class="header-content">
-  <h1 class="main-title">
-    <span class="title-gradient">Welcome, {{userName}}</span>
-  </h1>
-  <div class="header-buttons">
-    <button class="logout-btn" (click)="scrollToAvailableEvents()">
-      <span class="btn-text">Available Events</span>
-      <div class="btn-glow"></div>
-    </button>
-    <button class="logout-btn" (click)="scrollToRegisteredEvents()">
-      <span class="btn-text">My Events</span>
-      <div class="btn-glow"></div>
-    </button>
-    <button class="logout-btn" (click)="openContact()">
-      <span class="btn-text">Contact</span>
-      <div class="btn-glow"></div>
-    </button>
-    <button class="logout-btn" (click)="logout()">
-      <span class="btn-text">Logout</span>
-      <div class="btn-glow"></div>
-    </button>
-  </div>
-</div>
-  </header> -->
-
 
 
 <section class="filters-section">
   <div class="filters-container">
     <div class="filters-header">
-      <!-- <h2 class="filters-title">
-        <span class="title-icon">🔍</span>
-        Find Your Perfect Event
-      </h2> -->
       <div class="header-actions">
         <button class="toggle-filters-btn" (click)="toggleFilters()">
           <span class="btn-icon">{{ showFilters ? '📁' : '📂' }}</span>
@@ -53,20 +23,27 @@
           <span class="btn-text">Clear All</span>
         </button>
         <div class="search-container">
-      <div class="search-input-wrapper">
-        <span class="search-icon">🔍</span>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Search events..."
-          [(ngModel)]="searchQuery"
-          (input)="onSearchChange()"
-        />
-        <button class="search-clear-btn" (click)="clearSearch()" *ngIf="searchQuery">
-          <span>✕</span>
-        </button>
-      </div>
-    </div>
+  <div class="search-input-wrapper">
+    <span class="search-icon">🔍</span>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search events..."
+      [(ngModel)]="searchQuery"
+      (input)="onSearchChange()"
+      (keyup.enter)="applyFilters()"
+      #searchInput
+    />
+    <button 
+      class="search-clear-btn" 
+      (click)="clearSearch()" 
+      *ngIf="searchQuery && searchQuery.trim()"
+      type="button"
+    >
+      <span>✕</span>
+    </button>
+  </div>
+</div>
       </div>
     </div>
 
@@ -199,6 +176,9 @@
     <!-- Results Count -->
     <div class="results-info">
   <span class="results-count">
+    <span *ngIf="searchQuery && searchQuery.trim()" class="search-indicator">
+      🔍 Search results for "{{ searchQuery }}": 
+    </span>
     {{ filteredEvents.length }} {{ filteredEvents.length === 1 ? 'event' : 'events' }} found
     <span *ngIf="totalPages > 1" class="page-info">
       (Page {{ currentPage }} of {{ totalPages }})
