@@ -1,4 +1,3 @@
-// services/analytics.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -6,11 +5,12 @@ import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environment';
 import { EventAnalytics, AdminAnalytics, UserAnalytics, ApiResponse } from '../interfaces/analytics.interface';
 
+
 @Injectable({
   providedIn: 'root'
 })
 export class AnalyticsService {
-// Update with your actual API URL
+
 
   constructor(private http: HttpClient) {}
 

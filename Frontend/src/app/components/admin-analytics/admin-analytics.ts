@@ -8,7 +8,8 @@ import { EventService } from '../../services/event';
 import { LocationService } from '../../services/location';
 import { HeaderComponent, HeaderButton } from '../header/header';
 import { FooterComponent } from '../footer/footer';
-import { NgChartsModule } from 'ng2-charts';
+import { AnalyticsService } from '../../services/analytics.service';
+import { AdminAnalytics } from '../../interfaces/analytics.interface';
 
 export interface AnalyticsData {
   totalEvents: number;
@@ -29,7 +30,7 @@ export interface AnalyticsData {
   styleUrls: ['./admin-analytics.scss']
 })
 export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
-  
+
   analyticsData: AnalyticsData = {
     totalEvents: 0,
     upcomingEvents: 0,
@@ -58,6 +59,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(
     private http: HttpClient,
+     private AnalyticsService: AnalyticsService,
     private router: Router,
     private loadingService: LoadingService,
     private eventService: EventService,
@@ -87,7 +89,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
     this.charts = {};
-    
+
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
@@ -129,9 +131,9 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  loadAnalyticsData(): void {
+  /*loadAnalyticsData(): void {
     this.loadingService.show();
-    
+
     // Call the admin analytics API endpoint
     this.http.get<{ success: boolean; data: AnalyticsData }>('http://localhost:5000/api/analytics/admin', {
       headers: {
@@ -144,7 +146,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
           console.log('Analytics data loaded:', this.analyticsData);
           this.dataLoaded = true;
           this.loadingService.hide();
-          
+
           // Initialize charts if view is ready
           if (this.viewInitialized) {
             this.initializeChartsWhenReady();
@@ -163,7 +165,29 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
         }
       }
     });
-  }
+  }*/
+
+  loadAnalyticsData(): void {
+  this.loadingService.show();
+
+  this.AnalyticsService.getAdminAnalytics().subscribe({
+    next: (data: AdminAnalytics) => {
+      this.analyticsData = data;
+      this.dataLoaded = true;
+      if (this.viewInitialized) this.initializeChartsWhenReady();
+      this.loadingService.hide();
+    },
+    error: (err) => {
+      console.error('Error loading analytics data:', err.message);
+      this.loadingService.hide();
+      if (err.message.includes('401') || err.message.includes('403')) {
+        this.logout();
+      }
+    }
+  });
+}
+
+
 
   private initializeChartsWhenReady(): void {
     // Wait a bit for DOM to be fully ready
@@ -344,7 +368,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
         left: 'center',
         textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
       },
-      tooltip: { 
+      tooltip: {
         trigger: 'axis',
         formatter: function(params: any) {
           return `${params[0].name}<br/>Events: ${params[0].value}`;
@@ -413,7 +437,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    const eventTitles = eventsWithRegistrations.map(item => 
+    const eventTitles = eventsWithRegistrations.map(item =>
       item.eventTitle.length > 25 ? item.eventTitle.substring(0, 25) + '...' : item.eventTitle
     );
     const registrations = eventsWithRegistrations.map(item => item.registrations);
@@ -497,7 +521,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    const eventTitles = eventsWithRevenue.map(item => 
+    const eventTitles = eventsWithRevenue.map(item =>
       item.eventTitle.length > 20 ? item.eventTitle.substring(0, 20) + '...' : item.eventTitle
     );
     const revenues = eventsWithRevenue.map(item => item.revenue);

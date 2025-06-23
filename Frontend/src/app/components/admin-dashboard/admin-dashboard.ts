@@ -100,12 +100,10 @@ showViewLocations = false;
 //   }
 
 adminButtons: HeaderButton[] = [
-  // { text: 'Users', action: 'manageUsers' },
   { text: 'Upcoming Events', action: 'viewAvailableEvents' },
   { text: 'Pending Approvals', action: 'viewPendingEvents' },
   { text: 'Expired Events', action: 'viewExpiredEvents' },
-  { text: 'Analytics', action: 'viewAnalytics', style: 'secondary' }, // New Analytics button
-  // { text: 'System', action: 'systemSettings', style: 'secondary' },
+  { text: 'Analytics', action: 'viewAnalytics', style: 'primary' },
   { text: 'Logout', action: 'logout', style: 'primary' }
 ];
 

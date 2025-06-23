@@ -4,11 +4,13 @@ import { CommonModule } from '@angular/common';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import { Subject, takeUntil } from 'rxjs';
-import { AnalyticsService } from '../../services/analytics.service';
+// import { AnalyticsService } from '../../services/analytics.service';
 import { EventAnalytics } from '../../interfaces/analytics.interface';
 import { RouterModule, Router } from '@angular/router';
 import { HeaderComponent, HeaderButton } from '../header/header';
 import { FooterComponent } from '../footer/footer';
+import { AnalyticsService } from '../../services/analytics.service';
+
 
 @Component({
   selector: 'app-organizer-analytics',
@@ -18,13 +20,13 @@ import { FooterComponent } from '../footer/footer';
   styleUrls: ['./organizer-analytics.scss']
 })
 export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
-  
+
   private destroy$ = new Subject<void>();
 
   // Properties
   organizerId: string | null = null;
   userName: string | null = null;
-  
+
   analytics: EventAnalytics | null = null;
   loading = true;
   error = '';
@@ -138,7 +140,7 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
   handleHeaderAction(action: string): void {
     switch (action) {
       case 'dashboard':
-        this.router.navigate(['/admin-dashboard']);
+        this.router.navigate(['/organizer-dashboard']);
         break;
       case 'exportData':
         this.exportAnalyticsData();
@@ -152,7 +154,7 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadAnalyticsData(): void { // Renamed from loadAnalytics to match usage
+  loadAnalyticsData(): void {
     this.loading = true;
     this.error = '';
 
@@ -220,7 +222,7 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
       const payload = JSON.parse(atob(tokenParts[1]));
       this.organizerId = payload.userId || payload.id || null;
       this.userName = payload.userName || payload.name || null;
-      
+
       if (!this.organizerId) {
         this.error = 'User ID not found in token. Please log in again.';
       }

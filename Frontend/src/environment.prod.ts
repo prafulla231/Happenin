@@ -43,5 +43,8 @@ export const environment = {
       //otp
     sendOtp: '/users/send-otp',
     verifyOtp: '/users/verify-otp',
+
+     //Analytics
+    analytics : '/analytics'
   }
 };
