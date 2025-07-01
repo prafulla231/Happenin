@@ -14,6 +14,8 @@ import { inject } from '@angular/core';
 import { environment } from '../../../environment';
 import { HeaderComponent, HeaderButton } from '../header/header';
 import { FooterComponent } from '../footer/footer';
+import{CustomAlertComponent} from '../custom-alert/custom-alert'
+
 
 
 
@@ -70,7 +72,7 @@ export interface CustomAlert {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, HeaderComponent, FooterComponent],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, HeaderComponent, FooterComponent, CustomAlertComponent],
   // providers: [FormBuilder],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss']

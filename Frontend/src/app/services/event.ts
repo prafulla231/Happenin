@@ -39,6 +39,13 @@ export class EventService {
     );
   }
 
+  getPaginatedEvents(page: number = 1, limit: number =10): Observable<any> {
+  const url = `${environment.apiBaseUrl}/events/paginatedEvents?page=${page}&limit=${limit}`;
+  return this.http.get<any>(url, {
+    headers: this.getAuthHeaders()
+  });
+}
+
   getUpcomingEvents(): Observable<Event[]> {
     const url = `${environment.apiBaseUrl}${environment.apis.getUpcomingEvent}`;
     return this.http.get<{ data: Event[] }>(url, {

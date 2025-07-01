@@ -40,5 +40,6 @@ export const routes: Routes = [
     component: AdminDashboardComponent,
     canActivate: [AuthGuard],
     data: { role: 'admin' }
-  }
+  },
+  { path: '**', redirectTo: 'fallback' }
 ];

@@ -76,4 +76,4 @@ app.listen(PORT, () => {
 
 
 const endpoints = expressListEndpoints(app);
-console.log(endpoints);
+// console.log(endpoints);

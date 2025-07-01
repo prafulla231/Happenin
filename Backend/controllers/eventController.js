@@ -9,7 +9,7 @@ import { Approval } from '../models/approval.js';
 export const createApproval = async (req, res) => {
   try {
     const {
-      title, description, date, timeSlot, duration, location,
+      title, description, date, timeSlot, duration, location,city,
       category, price, maxRegistrations, createdBy,  
       artist, organization 
     } = req.body;
@@ -38,6 +38,7 @@ export const createApproval = async (req, res) => {
       date,
       timeSlot,
       duration,
+      city,
       location,
       category,
       price: price || 0,
@@ -69,12 +70,57 @@ export const getEvents = async (req, res) => {
     return apiError(res, 500, 'Server error while fetching events', error);
   }
 };
+
+/*pagination */
+// export const getPaginatedEvents = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const skip = (page - 1) * limit;
+
+//     console.log('🔄 Pagination Request Received');
+//     console.log(`➡ Page: ${page}, Limit: ${limit}, Skip: ${skip}`);
+
+//     const filter = { isDeleted: false };
+//     console.log('🔍 Applying Filter:', filter);
+
+//     const events = await Event.find(filter)
+//       .skip(skip)
+//       .limit(limit)
+//       .populate('createdBy', 'name email role');
+
+//     console.log(`✅ Events Fetched: ${events.length}`);
+
+//     const total = await Event.countDocuments(filter);
+//     console.log(`📊 Total Events Matching Filter: ${total}`);
+
+//     const pagination = {
+//       totalItems: total,
+//       currentPage: page,
+//       totalPages: Math.ceil(total / limit),
+//       perPage: limit,
+//     };
+
+//     console.log('📦 Pagination Metadata:', pagination);
+
+//     return apiResponse(res, 200, 'Paginated events fetched successfully', {
+//       events,
+//       pagination
+//     });
+//   } catch (error) {
+//     console.error('❌ Get Paginated Events error:', error.message);
+//     return apiError(res, 500, 'Server error while fetching paginated events', error);
+//   }
+// };
+
+
 export const getUpcomingEvents = async (req, res) => {
   try {
     const events = await Event.find({ 
       date: { $gte: new Date() }, 
       isDeleted: false 
     }).sort({ date: 1 }).populate('createdBy', 'name email role');
+    // console.log("events : ", events);
     
     return apiResponse(res, 200, "Upcoming events fetched successfully", events);
   } catch (error) {

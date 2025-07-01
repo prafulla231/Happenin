@@ -4,7 +4,7 @@
   padding: 1.5rem 0;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible */
   min-height: 120px;
   height: auto;
 
@@ -39,7 +39,7 @@
     margin: 0 auto;
     padding: 0 2rem;
     position: relative;
-    z-index: 1;
+    z-index: 10;
 
     @media (max-width: 768px) {
       flex-direction: column;
@@ -58,32 +58,6 @@
 @keyframes wave-animation {
   0% { transform: translateX(0); }
   100% { transform: translateX(-100px); }
-}
-
-.header-buttons {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-shrink: 0;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0.75rem;
-    width: 100%;
-    max-width: 300px;
-  }
-
-  @media (max-width: 480px) {
-    gap: 0.5rem;
-    max-width: 280px;
-  }
-
-  /* Handle multiple buttons */
-  > * {
-    @media (max-width: 768px) {
-      width: 100%;
-    }
-  }
 }
 
 .main-title {
@@ -159,26 +133,10 @@
   align-items: center;
   justify-content: center;
 
-  @media (max-width: 768px) {
-    width: 100%;
-    max-width: 300px;
-    padding: 0.875rem 1.5rem;
-    font-size: 0.95rem;
-  }
-
-  @media (max-width: 480px) {
-    padding: 0.75rem 1.25rem;
-    font-size: 0.9rem;
-  }
-
   &:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-
-    @media (max-width: 768px) {
-      transform: translateY(-1px);
-    }
   }
 
   &:active {
@@ -197,13 +155,6 @@
 
   &:hover .btn-glow {
     left: 100%;
-  }
-}
-
-/* Additional button styles for multiple buttons */
-.header-buttons .logout-btn:not(:only-child) {
-  @media (max-width: 768px) {
-    margin-bottom: 0;
   }
 }
 
@@ -229,8 +180,8 @@
 /* Improved touch targets for mobile */
 @media (max-width: 768px) {
   .logout-btn {
-    min-height: 44px; /* Recommended touch target size */
-    touch-action: manipulation; /* Prevents zoom on double-tap */
+    min-height: 44px;
+    touch-action: manipulation;
   }
 }
 
@@ -251,4 +202,300 @@
   .main-title .title-highlight {
     font-size: 2rem;
   }
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+/* Mobile Menu Container */
+.mobile-menu-container {
+  display: none;
+  position: relative;
+  z-index: 100; /* Increased z-index */
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+}
+
+/* Desktop buttons - hide on mobile */
+.desktop-buttons {
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+}
+
+/* 3D Hamburger Button */
+.hamburger-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  z-index: 101; /* Higher than container */
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(1.05);
+  }
+}
+
+/* Hamburger Lines Container */
+.hamburger-lines {
+  width: 24px;
+  height: 18px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Individual Lines */
+.line {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background: white;
+  border-radius: 2px;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform-origin: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Active state animations */
+.hamburger-btn.active {
+  .line1 {
+    transform: translateY(7.5px) rotate(45deg);
+  }
+
+  .line2 {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  .line3 {
+    transform: translateY(-7.5px) rotate(-45deg);
+  }
+}
+
+/* Mobile Menu Dropdown - FIXED VERSION */
+.mobile-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+transform: translateX(-50%) translateY(-20px) scale(0.9);
+  background: rgba(102, 126, 234, 0.95); /* More opaque background */
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  min-width: 200px;
+  margin-top: 10px;
+  z-index: 9999; /* Very high z-index */
+
+  /* Default hidden state */
+  transform: translateY(-20px) scale(0.9);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none; /* Prevent interaction when hidden */
+
+  /* Smooth transitions */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: 768px) {
+    display: block; /* Always block on mobile */
+  }
+
+  @media (max-width: 480px) {
+    right: -0.75rem; /* Adjust positioning */
+    min-width: 180px;
+  }
+
+  /* Open state - IMPORTANT: This makes the menu visible */
+  &.open {
+    transform: translateX(-50%) translateY(0) scale(1) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important; /* Allow interaction when open */
+  }
+
+  /* Arrow pointer */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+     left: 50%;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid rgba(102, 126, 234, 0.95);
+    z-index: 10000;
+  }
+}
+
+/* Mobile Menu Content */
+.mobile-menu-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 10001;
+}
+
+/* Mobile Menu Items */
+.mobile-menu-item {
+  position: relative;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  touch-action: manipulation;
+
+  /* Animation properties */
+  transform: translateX(20px);
+  opacity: 0;
+  animation: slideInRight 0.5s ease forwards;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(0) scale(1.02);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: translateX(0) scale(0.98);
+  }
+
+  .btn-glow {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+  }
+
+  &:hover .btn-glow {
+    left: 100%;
+  }
+}
+
+/* Animation for menu items */
+@keyframes slideInRight {
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Mobile menu item variations */
+.mobile-menu-item.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.mobile-menu-item.btn-primary {
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+}
+
+/* Enhanced touch targets for mobile */
+@media (max-width: 480px) {
+  .hamburger-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .mobile-menu-item {
+    font-size: 0.95rem;
+  }
+
+  .mobile-menu {
+    min-width: 180px;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .hamburger-btn,
+  .line,
+  .mobile-menu,
+  .mobile-menu-item {
+    transition-duration: 0.1s;
+  }
+
+  .mobile-menu-item {
+    animation: none;
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* Focus styles for accessibility */
+.hamburger-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.mobile-menu-item:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: -2px;
+}
+
+.mobile-menu.open {
+  border: 3px solid rgb(255, 255, 255) !important;
+  align-items: center;
+  justify-content: center;
 }

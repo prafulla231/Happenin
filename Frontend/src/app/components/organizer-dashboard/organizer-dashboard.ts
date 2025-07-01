@@ -13,6 +13,9 @@ import { map, takeUntil, finalize } from 'rxjs/operators';
 import { HeaderComponent, HeaderButton } from '../header/header';
 import { FooterComponent } from '../footer/footer';
 import {  OnInit } from '@angular/core';
+import { ChatbotWidgetComponent } from '../chatbot-widget/chatbot-widget';
+import{CustomAlertComponent} from '../custom-alert/custom-alert'
+
 
 
 // Interfaces
@@ -48,15 +51,26 @@ export interface PopupConfig {
   title: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
-  showConfirm?: boolean;
+  showConfirmation?: boolean;
   confirmText?: string;
   cancelText?: string;
+}
+
+export interface CustomAlert {
+  show: boolean;
+  type: 'success' | 'error' | 'warning' | 'info' | 'confirm';
+  title: string;
+  message: string;
+  confirmAction?: () => void;
+  cancelAction?: () => void;
+  showCancel?: boolean;
+  autoClose?: boolean;
 }
 
 @Component({
   selector: 'app-organizer-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormsModule, HeaderComponent, FooterComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormsModule, HeaderComponent, FooterComponent,ChatbotWidgetComponent, CustomAlertComponent],
   templateUrl: './organizer-dashboard.html',
   styleUrls: ['./organizer-dashboard.scss'],
 })
@@ -131,6 +145,14 @@ handleHeaderAction(action: string): void {
     }
   }
 
+  customAlert: CustomAlert = {
+    show: false,
+    type: 'info',
+    title: '',
+    message: '',
+    showCancel: false
+  };
+
 
   constructor(
     private fb: FormBuilder,
@@ -176,6 +198,37 @@ handleHeaderAction(action: string): void {
     this.initializeData();
   }
 
+  showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string, autoClose: boolean = true, duration: number = 2000) {
+  this.customAlert = {
+    show: true,
+    type,
+    title,
+    message,
+    showCancel: false,
+    autoClose: autoClose
+  };
+
+  // Auto-close after specified duration
+  if (autoClose) {
+    setTimeout(() => {
+      this.closeAlert();
+    }, duration);
+  }
+}
+
+
+  showConfirmation(title: string, message: string, confirmAction: () => void, cancelAction?: () => void) {
+  this.customAlert = {
+    show: true,
+    type: 'confirm',
+    title,
+    message,
+    confirmAction,
+    cancelAction,
+    showCancel: true
+  };
+}
+
   ngOnDestroy() {
   this.destroy$.next();
   this.destroy$.complete();
@@ -193,7 +246,7 @@ handleHeaderAction(action: string): void {
 
     if (!this.organizerId) {
       console.error('No organizer ID found');
-      await this.showAlert('Alert', 'message', 'info')
+      this.showAlert('error', 'Authentication Error', 'No organizer ID found. Please login again.');
       this.logout();
       return;
     }
@@ -225,6 +278,27 @@ handleHeaderAction(action: string): void {
       this.organizerId = null;
     }
   }
+
+
+handleAlertConfirm() {
+  if (this.customAlert.confirmAction) {
+    this.customAlert.confirmAction();
+  }
+  this.closeAlert();
+}
+
+ handleAlertCancel() {
+  if (this.customAlert.cancelAction) {
+    this.customAlert.cancelAction();
+  }
+  this.closeAlert();
+}
+  closeAlert() {
+    this.customAlert.show = false;
+    this.customAlert.confirmAction = undefined;
+    this.customAlert.cancelAction = undefined;
+  }
+
 
   viewMyEvents() {
     const availableSection = document.querySelector('.events-section');
@@ -362,7 +436,7 @@ handleHeaderAction(action: string): void {
   // Event Submit/Create/Update
   async onSubmit() {
     if (this.eventForm.invalid) {
-      await this.showAlert('Validation Error', 'Please fill required fields', 'error')
+      this.showAlert( 'error','Validation Error', 'Please fill required fields')
       return;
     }
 
@@ -375,7 +449,7 @@ handleHeaderAction(action: string): void {
       const eventData = {
         ...form,
         createdBy: this.organizerId,
-        timeSlot
+        timeSlot,city: form.city
       };
 
       const startDateTime = new Date(`${form.date}T${form.startTime}:00`).toISOString();
@@ -403,13 +477,13 @@ handleHeaderAction(action: string): void {
           ).subscribe({
             next: async () => {
               // await alert(`Event ${this.isEditMode ? 'updated' : 'created'} successfully!`);
-              await this.showAlert('Success', `Event ${this.isEditMode ? 'updated' : 'created'} successfully!`, 'success');
+              this.showAlert('success','Success', `Event ${this.isEditMode ? 'updated' : 'created'} successfully!`);
               // this.resetForm();
               // this.loadAllData(); // Reload data after successful operation
             },
             error: async (error) => {
               console.error('Event creation/update error:', error);
-              await this.showAlert('Error', 'Event creation/updation failed', 'error')
+              this.showAlert( 'error','Error', 'Event creation/updation failed')
             },
             complete: () => {
               this.isLoading = false;
@@ -420,7 +494,7 @@ handleHeaderAction(action: string): void {
         error: async (error) => {
           console.error('Location booking error:', error);
           // await alert('Failed to book location');
-          await this.showAlert('Error', 'Failed to book location', 'error')
+          this.showAlert( 'error', 'Error', 'Failed to book location')
           this.isLoading = false;
           this.loadingService.hide();
         }
@@ -453,37 +527,33 @@ handleHeaderAction(action: string): void {
   }
 
   async onDelete(eventId: string) {
-    const confirm = await this.showConfirm('Confirm', 'Are you sure you want to delete this event? This action cannot be undone.');
+  this.showConfirmation(
+    'Confirm',
+    'Are you sure you want to delete this event? This action cannot be undone.',
+    () => {
+      // Confirm action - proceed with deletion
+      this.isLoading = true;
+      this.loadingService.show();
 
-//     if (!confirm){
-// console.log("Not deleted")
-//       return;
-//     }
-
-
-    this.isLoading = true;
-    this.loadingService.show();
-
-    this.eventService.deleteEvent(eventId).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: async () => {
-        // await alert('Event deleted!');
-        await this.showAlert('Success', 'Event deleted!', 'success')
-        this.loadAllData();
-
-      },
-      error: async (error) => {
-        console.error('Delete error:', error);
-        // await alert( 'Failed to delete event');
-await this.showAlert('Error', 'Failed to delete event', 'error')
-      },
-      complete: () => {
-        this.isLoading = false;
-        this.loadingService.hide();
-      }
-    });
-  }
+      this.eventService.deleteEvent(eventId).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
+        next: async () => {
+          this.showAlert('success','Success', 'Event deleted!');
+          this.loadAllData();
+        },
+        error: async (error) => {
+          console.error('Delete error:', error);
+          this.showAlert('error','Error', 'Failed to delete event');
+        },
+        complete: () => {
+          this.isLoading = false;
+          this.loadingService.hide();
+        }
+      });
+    }
+  );
+}
 
   loadRegisteredUsers(eventId: string, callback?: () => void) {
     this.eventService.getRegisteredUsers(eventId).pipe(
@@ -496,7 +566,7 @@ await this.showAlert('Error', 'Failed to delete event', 'error')
       error: (error) => {
         console.error('Error loading registered users:', error);
         // alert('Failed to load registered users');
-         this.showAlert('Alert', 'Failed to load registered users', 'info')
+         this.showAlert('error', 'Error', 'Failed to load registered users')
       }
     });
   }
@@ -545,71 +615,17 @@ openAnalytics() {
   this.router.navigate(['/analytics']);}
 
   async logout() {
-    const confirmed = await this.showConfirm('Confirm', 'Are you sure you want to logout?')
-    if (confirmed) {
+  this.showConfirmation(
+    'Confirm',
+    'Are you sure you want to logout?',
+    () => {
+      // Confirm action - what happens when user clicks confirm
       localStorage.clear();
       sessionStorage.clear();
-      // alert('You have been logged out');
-      await this.showAlert('Success', 'You have been logged out', 'success')
+      this.showAlert('success','Success', 'You have been logged out');
       setTimeout(() => (window.location.href = '/login'), 500);
     }
-  }
-
-  // Popup logic
-  showAlert(title: string, message: string, type: PopupConfig['type']): Promise<boolean> {
-  return new Promise(resolve => {
-    this.popupConfig = { title, message, type, showConfirm: false };
-    this.showPopup = true;
-
-    // Auto-close alert after 2 seconds
-    this.alertTimeout = setTimeout(() => {
-      this.showPopup = false;
-      resolve(true);
-    }, 2000);
-
-    this.popupResolve = resolve;
-  });
-}
-
-  showConfirm(title: string, message: string, confirmText = 'Yes', cancelText = 'No'): Promise<boolean> {
-  return new Promise(resolve => {
-    this.popupConfig = {
-      title,
-      message,
-      type: 'warning',
-      showConfirm: true,
-      confirmText,
-      cancelText
-    };
-    this.showPopup = true;
-    this.popupResolve = resolve;
-  });
-}
-
-  onPopupConfirm() {
-  if (this.alertTimeout) {
-    clearTimeout(this.alertTimeout);
-    this.alertTimeout = undefined;
-  }
-  this.showPopup = false;
-  this.popupResolve?.(true);
-  this.popupResolve = null;
-}
-
-  onPopupCancel() {
-  if (this.alertTimeout) {
-    clearTimeout(this.alertTimeout);
-    this.alertTimeout = undefined;
-  }
-  this.showPopup = false;
-  this.popupResolve?.(false);
-  this.popupResolve = null;
-}
-
-onPopupOverlayClick(event: MouseEvent) {
-  if (event.target === event.currentTarget && !this.popupConfig.showConfirm) {
-    this.onPopupCancel();
-  }
+  );
 }
 
   openUserModal(eventId: string) {

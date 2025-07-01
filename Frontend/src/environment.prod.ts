@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://happenin-byma.onrender.com/api',
-   // apiBaseUrl: 'http://localhost:5000/api',
+  // apiBaseUrl: 'https://happenin-byma.onrender.com/api',
+   apiBaseUrl: 'http://localhost:5000/api',
 
   apis: {
     // Events

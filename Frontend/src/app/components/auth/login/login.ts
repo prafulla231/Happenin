@@ -315,6 +315,30 @@ verifyOtp(email: string, otp: string) {
       });
 }
 
+getRoleAndNavigate() {
+  const token = localStorage.getItem('token');
+  // console.log('Token from localStorage:', token);
+
+  this.http.get(`${environment.apiBaseUrl}/users/dashboard`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }).subscribe({
+    next: (res: any) => {
+      const redirectPath = res.data.redirectTo;
+      if (redirectPath) {
+        this.router.navigate([redirectPath]);
+      } else {
+        this.router.navigate(['/fallback']);
+      }
+    },
+    error: () => {
+      this.showAlert('Access denied or session expired', 'error');
+    }
+  });
+}
+
+
   // Method to manually hide alert popup
   hideAlert(): void {
     this.showAlertPopup = false;
@@ -341,14 +365,17 @@ verifyOtp(email: string, otp: string) {
           this.showSuccessMessage('Logged in successfully! 🎉');
 
           // Navigate after showing success message
+          // setTimeout(() => {
+          //   if (userRole === 'organizer') {
+          //     this.router.navigate(['/organizer-dashboard']);
+          //   } else if (userRole === 'admin') {
+          //     this.router.navigate(['/admin-dashboard']);
+          //   } else {
+          //     this.router.navigate(['/user-dashboard']);
+          //   }
+          // }, 2000);
           setTimeout(() => {
-            if (userRole === 'organizer') {
-              this.router.navigate(['/organizer-dashboard']);
-            } else if (userRole === 'admin') {
-              this.router.navigate(['/admin-dashboard']);
-            } else {
-              this.router.navigate(['/user-dashboard']);
-            }
+            this.getRoleAndNavigate();
           }, 2000);
         },
         error: (error) => {

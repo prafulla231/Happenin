@@ -1,6 +1,7 @@
 import express from 'express';
 import { registerUser , checkLogin,sendOtpToEmail, verifyOtpAndLogin} from '../controllers/authController.js';
-import { authenticateToken } from '../middleware/authMiddleware.js';
+import { authenticateToken , authenticate } from '../middleware/authMiddleware.js';
+import { dashboardRedirect } from '../controllers/dashboardController.js';
 
 const router = express.Router();
 
@@ -97,7 +98,7 @@ router.post('/register', registerUser);
  *         description: Server error
  */
 router.post('/login', checkLogin);
-
+router.get('/dashboard', authenticate, dashboardRedirect);
 
 /**
  * @swagger

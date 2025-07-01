@@ -16,144 +16,270 @@
     </button>
   </div>
 
+
+<app-chatbot-widget (fillForm)="eventForm.patchValue($event)"></app-chatbot-widget>
   <!-- Create/Edit Event Form -->
-  <div class="form-container" [class.show]="showCreateForm">
+<div class="form-container" [class.show]="showCreateForm">
+  <div class="form-wrapper">
     <div class="form-card">
       <div class="form-header">
+        <div class="header-icon">
+          <span>{{ isEditMode ? '📝' : '✨' }}</span>
+        </div>
         <h3>{{ isEditMode ? 'Edit Event' : 'Create New Event' }}</h3>
+        <p class="header-subtitle">Fill in the details to {{ isEditMode ? 'update your' : 'create an amazing' }} event</p>
       </div>
 
       <form [formGroup]="eventForm" (ngSubmit)="onSubmit()" class="event-form">
         <div class="form-grid">
-          <!-- Basic Information -->
-          <div class="form-group full-width">
-            <label class="form-label">Event Title</label>
-            <input type="text" formControlName="title" class="form-input" placeholder="Enter event title" required />
+          <!-- Basic Information Section -->
+          <div class="form-section full-width">
+            <div class="section-header">
+              <h4>📋 Basic Information</h4>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                <span class="label-text">Event Title</span>
+                <span class="required-asterisk">*</span>
+              </label>
+              <div class="input-wrapper">
+                <input type="text" formControlName="title" class="form-input" 
+                       placeholder="Enter an exciting event title" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <span class="label-text">Description</span>
+              </label>
+              <div class="input-wrapper">
+                <textarea formControlName="description" class="form-textarea" 
+                          placeholder="Tell people what makes this event special..." rows="4"></textarea>
+              </div>
+            </div>
           </div>
 
-          <div class="form-group full-width">
-            <label class="form-label">Description</label>
-            <textarea formControlName="description" class="form-textarea" placeholder="Describe your event..."
-              rows="4"></textarea>
+          <!-- Date and Time Section -->
+          <div class="form-section full-width">
+            <div class="section-header">
+              <h4>🕐 Date & Time</h4>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">Event Date</span>
+                  <span class="required-asterisk">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <input type="date" formControlName="date" class="form-input" [min]="minDate" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">Start Time</span>
+                </label>
+                <div class="input-wrapper">
+                  <input type="time" formControlName="startTime" class="form-input" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">End Time</span>
+                </label>
+                <div class="input-wrapper">
+                  <input type="time" formControlName="endTime" class="form-input" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">Duration</span>
+                </label>
+                <div class="input-wrapper">
+                  <input type="text" formControlName="duration" class="form-input" 
+                         placeholder="Auto-calculated" readonly />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Date and Time -->
-          <div class="form-group">
-            <label class="form-label">Event Date</label>
-            <input type="date" formControlName="date" class="form-input" [min]="minDate" required />
+          <!-- Location Section -->
+          <div class="form-section full-width">
+            <div class="section-header">
+              <h4>📍 Location</h4>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">State</span>
+                  <span class="required-asterisk">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <select formControlName="state" [(ngModel)]="selectedState" (change)="onStateChange()" 
+                          class="form-select" required>
+                    <option value="" disabled>Select State</option>
+                    <option *ngFor="let state of filteredStates" [value]="state">
+                      {{ state }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">City</span>
+                  <span class="required-asterisk">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <select formControlName="city" [(ngModel)]="selectedCity" (change)="onCityChange()"
+                          [disabled]="!eventForm.get('state')?.value" class="form-select" required>
+                    <option value="" disabled>Select City</option>
+                    <option *ngFor="let city of filteredCities" [value]="city">
+                      {{ city }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">Venue</span>
+                  <span class="required-asterisk">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <select formControlName="location" (change)="onVenueChange()" 
+                          [disabled]="!eventForm.get('city')?.value" class="form-select" required>
+                    <option value="" disabled>Select Venue</option>
+                    <option *ngFor="let place of filteredPlaceNames" [value]="place">
+                      {{ place }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Venue Details -->
+            <div *ngIf="selectedVenue" class="venue-details">
+              <div class="venue-info-card">
+                <h5>🏛️ Venue Information</h5>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <span class="label-text">Max Seating Capacity</span>
+                    </label>
+                    <div class="input-wrapper">
+                      <input type="number" class="form-input" 
+                             [value]="selectedVenue?.maxSeatingCapacity || ''" readonly
+                             placeholder="Capacity will appear here" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">
+                      <span class="label-text">Amenities</span>
+                    </label>
+                    <div class="input-wrapper">
+                      <input type="text" class="form-input"
+                             [value]="selectedVenue?.amenities?.join(', ') || 'No amenities listed'" readonly
+                             placeholder="Amenities will appear here" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Start Time</label>
-            <input type="time" formControlName="startTime" class="form-input" />
-          </div>
+          <!-- Event Details Section -->
+          <div class="form-section full-width">
+            <div class="section-header">
+              <h4>🎯 Event Details</h4>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">Category</span>
+                </label>
+                <div class="input-wrapper">
+                  <select formControlName="category" class="form-select">
+                    <option value="" disabled selected>Select a category</option>
+                    <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+                  </select>
+                </div>
+              </div>
 
-          <div class="form-group">
-            <label class="form-label">End Time</label>
-            <input type="time" formControlName="endTime" class="form-input" />
-          </div>
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">Price (₹)</span>
+                </label>
+                <div class="input-wrapper">
+                  <input type="number" formControlName="price" class="form-input" 
+                         placeholder="0 for free events" min="0" />
+                </div>
+              </div>
 
-          <div class="form-group">
-            <label class="form-label">Duration</label>
-            <input type="text" formControlName="duration" class="form-input" placeholder="e.g., 2 hours" readonly />
-          </div>
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">Max Registrations</span>
+                  <span class="required-asterisk">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <input type="number" formControlName="maxRegistrations" class="form-input"
+                         placeholder="Enter max registrations" 
+                         [max]="selectedVenue?.maxSeatingCapacity || 999999" min="1" required
+                         (input)="onMaxRegistrationsChange()" />
+                </div>
+                <div class="form-feedback">
+                  <small class="form-helper-text" *ngIf="selectedVenue?.maxSeatingCapacity">
+                    💡 Maximum venue capacity: {{ selectedVenue.maxSeatingCapacity }}
+                  </small>
+                  <small class="form-error-text" *ngIf="eventForm.get('maxRegistrations')?.errors?.['overCapacity']">
+                    ⚠️ Registrations exceed venue capacity!
+                  </small>
+                </div>
+              </div>
+            </div>
 
-          <!-- Location -->
-          <div class="form-group">
-            <label class="form-label">State</label>
-            <select formControlName="state" [(ngModel)]="selectedState" (change)="onStateChange()" class="form-select"
-              required>
-              <option value="" disabled>Select State</option>
-              <option *ngFor="let state of filteredStates" [value]="state">
-                {{ state }}
-              </option>
-            </select>
-          </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">Artist/Speaker</span>
+                </label>
+                <div class="input-wrapper">
+                  <input type="text" formControlName="artist" class="form-input" 
+                         placeholder="Featured artist or speaker" />
+                </div>
+              </div>
 
-          <div class="form-group">
-            <label class="form-label">City</label>
-            <select formControlName="city" [(ngModel)]="selectedCity" (change)="onCityChange()"
-              [disabled]="!eventForm.get('state')?.value" class="form-select" required>
-              <option value="" disabled>Select City</option>
-              <option *ngFor="let city of filteredCities" [value]="city">
-                {{ city }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Venue</label>
-            <select formControlName="location" (change)="onVenueChange()" [disabled]="!eventForm.get('city')?.value"
-              class="form-select" required>
-              <option value="" disabled>Select Venue</option>
-              <option *ngFor="let place of filteredPlaceNames" [value]="place">
-                {{ place }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Venue Details (shown only when venue is selected) -->
-          <div *ngIf="selectedVenue" class="form-group">
-            <label class="form-label">Max Seating Capacity</label>
-            <input type="number" class="form-input" [value]="selectedVenue?.maxSeatingCapacity || ''" readonly
-              placeholder="Capacity will appear here" />
-          </div>
-
-          <div *ngIf="selectedVenue" class="form-group">
-            <label class="form-label">Amenities</label>
-            <input type="text" class="form-input"
-              [value]="selectedVenue?.amenities?.join(', ') || 'No amenities listed'" readonly
-              placeholder="Amenities will appear here" />
-          </div>
-
-          <!-- Event Details -->
-          <div class="form-group">
-            <label class="form-label">Category</label>
-            <select formControlName="category" class="form-input">
-              <option value="" disabled selected>Select a category</option>
-              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Price (₹)</label>
-            <input type="number" formControlName="price" class="form-input" placeholder="0" min="0" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Max Registrations</label>
-            <input type="number" formControlName="maxRegistrations" class="form-input"
-              placeholder="Enter max registrations" [max]="selectedVenue?.maxSeatingCapacity || 999999" min="1" required
-              (input)="onMaxRegistrationsChange()" />
-            <small class="form-helper-text" *ngIf="selectedVenue?.maxSeatingCapacity">
-              Maximum venue capacity: {{ selectedVenue.maxSeatingCapacity }}
-            </small>
-            <small class="form-helper-text" *ngIf="eventForm.get('maxRegistrations')?.errors?.['overCapacity']"
-              style="color: #ff6b6b;">
-              Registrations exceed venue capacity!
-            </small>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Artist/Speaker</label>
-            <input type="text" formControlName="artist" class="form-input" placeholder="Featured artist or speaker" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Organization</label>
-            <input type="text" formControlName="organization" class="form-input" placeholder="Organizing body" />
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-text">Organization</span>
+                </label>
+                <div class="input-wrapper">
+                  <input type="text" formControlName="organization" class="form-input" 
+                         placeholder="Organizing body" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="form-actions">
           <button type="submit" class="submit-btn" [disabled]="eventForm.invalid || isLoading">
             <span class="btn-icon">{{ isEditMode ? '📝' : '✨' }}</span>
-            {{ isEditMode ? 'Update Event' : 'Create Event' }}
+            <span class="btn-text">{{ isEditMode ? 'Update Event' : 'Create Event' }}</span>
+            <div class="btn-shine"></div>
           </button>
         </div>
       </form>
     </div>
   </div>
+</div>
 
   <!-- Approved Events Section -->
   <div class="events-section" *ngIf="events.length > 0">
@@ -298,34 +424,18 @@
   </div>
 
 </div>
-  <div class="custom-popup-overlay" *ngIf="showPopup" (click)="onPopupOverlayClick($event)">
-  <div class="custom-popup" [ngClass]="'popup-' + popupConfig.type">
-    <div class="popup-header">
-      <div class="popup-icon">
-        <span *ngIf="popupConfig.type === 'success'">✅</span>
-        <span *ngIf="popupConfig.type === 'error'">❌</span>
-        <span *ngIf="popupConfig.type === 'warning'">⚠️</span>
-        <span *ngIf="popupConfig.type === 'info'">ℹ️</span>
-      </div>
-      <h3 class="popup-title">{{ popupConfig.title }}</h3>
-    </div>
+  
 
-    <div class="popup-body">
-      <p class="popup-message">{{ popupConfig.message }}</p>
-    </div>
-
-    <div class="popup-actions" *ngIf="popupConfig.showConfirm">
-      <button class="popup-btn popup-cancel-btn" (click)="onPopupCancel()">
-        {{ popupConfig.cancelText || 'Cancel' }}
-      </button>
-      <button class="popup-btn popup-confirm-btn" (click)="onPopupConfirm()">
-        {{ popupConfig.confirmText || 'Confirm' }}
-      </button>
-    </div>
-  </div>
+  <app-custom-alert
+  [alertData]="customAlert"
+  [autoCloseDuration]="2000"
+  (alertClosed)="closeAlert()"
+  (alertConfirmed)="handleAlertConfirm()"
+  (alertCancelled)="handleAlertCancel()">
+</app-custom-alert>
 
 
-    
+
         <app-footer
   brandName="Happenin' Organizer"
   contactEmail="happenin.events.app@gmail.com"

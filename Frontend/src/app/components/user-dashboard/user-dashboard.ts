@@ -16,6 +16,7 @@ import { Router } from '@angular/router';
 import { Contact } from '../contact/contact';
 import { HeaderComponent, HeaderButton } from '../header/header';
 import { FooterComponent } from '../footer/footer';
+import{CustomAlertComponent} from '../custom-alert/custom-alert'
 
 
 export interface Event {
@@ -25,6 +26,8 @@ export interface Event {
   date: string;
   timeSlot: string;
   duration: string;
+  city: string;
+
   location: string;
   category: string;
   price: number;
@@ -49,7 +52,7 @@ export interface CustomAlert {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule,ReactiveFormsModule, HeaderComponent, FooterComponent],
+  imports: [CommonModule, RouterModule, FormsModule,ReactiveFormsModule, HeaderComponent, FooterComponent, CustomAlertComponent],
   templateUrl: './user-dashboard.html',
   styleUrls: ['./user-dashboard.scss']
 })
@@ -230,6 +233,20 @@ paginatedEvents: Event[] = [];
     this.customAlert.confirmAction = undefined;
     this.customAlert.cancelAction = undefined;
   }
+
+  onConfirmAction() {
+  if (this.customAlert.confirmAction) {
+    this.customAlert.confirmAction();
+  }
+  this.closeAlert();
+}
+
+onCancelAction() {
+  if (this.customAlert.cancelAction) {
+    this.customAlert.cancelAction();
+  }
+  this.closeAlert();
+}
 
    getMaxValue(a: number, b: number): number {
     return Math.min(a, b);
@@ -451,43 +468,6 @@ private sendRegistrationEmail(event: Event) {
   });
 }
 
-// Optional: Add method to manually resend confirmation email
-// resendConfirmationEmail(event: Event) {
-//   if (!this.userEmail) {
-//     this.showAlert('error', 'Email Not Available', 'Your email address is not available. Please contact support.');
-//     return;
-//   }
-
-//   this.showConfirmation(
-//     'Resend Confirmation',
-//     `Resend confirmation email for "${event.title}" to ${this.userEmail}?`,
-//     () => {
-//       this.loadingService.show();
-
-//       const emailRequest = {
-//         userId: this.userId!,
-//         eventId: event._id,
-//         userEmail: this.userEmail!,
-//         userName: this.userName || 'Guest',
-//         sendPDF: true,
-//         sendDetails: true
-//       };
-
-//       this.emailService.sendTicketEmail(emailRequest).subscribe({
-//         next: (response) => {
-//           this.loadingService.hide();
-//           this.showAlert('success', 'Email Sent', 'Confirmation email has been resent successfully!');
-//         },
-//         error: (err) => {
-//           this.loadingService.hide();
-//           console.error('Failed to resend confirmation email:', err);
-//           this.showAlert('error', 'Failed to Send Email', 'Could not send confirmation email. Please try again later.');
-//         }
-//       });
-//     }
-//   );
-// }
-
 
 
   deregister(userId: string, eventId: string) {
@@ -526,11 +506,12 @@ private sendRegistrationEmail(event: Event) {
     )].sort();
 
     this.availableCities = [...new Set(
-      this.events.map(e => this.extractCityFromLocation(e.location)).filter(Boolean)
+      this.events.map(e => this.extractCityFromLocation(e.city)).filter(Boolean)
     )].sort();
   }
 
   extractCityFromLocation(location: string): string {
+    // console.log('Extracting city from location:', location);
     if (!location) return '';
     const parts = location.split(',').map(part => part.trim());
     if (parts.length >= 2) {
@@ -564,7 +545,6 @@ private sendRegistrationEmail(event: Event) {
     }
 
     const payloadBase64 = parts[1];
-    // console.log('Payload base64 length:', payloadBase64.length);
 
     const decoded = JSON.parse(atob(payloadBase64));
     // console.log('Decoded token payload:', decoded);
@@ -573,12 +553,7 @@ private sendRegistrationEmail(event: Event) {
     this.userName = decoded.userName || decoded.name || null;
     this.userEmail = decoded.userEmail || decoded.email || null; // Add this line
 
-    // console.log('Extracted userId:', this.userId);
-    // console.log('Extracted userName:', this.userName);
-    // console.log('Extracted userEmail:', this.userEmail); // Add this line
-    // console.log('=== TOKEN DECODE SUCCESS ===');
   } catch (err) {
-    console.error('=== TOKEN DECODE ERROR ===');
     console.error('Token decode error:', err);
     this.userId = null;
     this.userName = null;
@@ -597,7 +572,7 @@ private sendRegistrationEmail(event: Event) {
      if (this.searchTimeout) {
     clearTimeout(this.searchTimeout);
   }
-  
+
   // Set new timeout for debounced search
   this.searchTimeout = setTimeout(() => {
     this.applyFilters();
@@ -623,9 +598,9 @@ private sendRegistrationEmail(event: Event) {
           e.artist || '',
           e.organization || '',
           e.category || '',
-          e.location
+          e.city
         ].join(' ').toLowerCase();
-        
+
         return searchableText.includes(query);
       });
     }
@@ -635,7 +610,7 @@ private sendRegistrationEmail(event: Event) {
   }
 
   if (this.selectedCity) {
-    filtered = filtered.filter(e => this.extractCityFromLocation(e.location) === this.selectedCity);
+    filtered = filtered.filter(e => this.extractCityFromLocation(e.city) === this.selectedCity);
   }
 
   if (this.dateFrom) {
@@ -704,25 +679,25 @@ private sendRegistrationEmail(event: Event) {
 
   clearSearch() {
     this.searchQuery = '';
-    
+
     // Clear any pending search timeout
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
     }
-    
+
     this.applyFilters();
   }
 
 
-   debugSearch() {
-    console.log('Search Debug Info:');
-    console.log('Search Query:', this.searchQuery);
-    console.log('All Events Count:', this.events.length);
-    console.log('Filtered Events Count:', this.filteredEvents.length);
-    console.log('Paginated Events Count:', this.paginatedEvents.length);
-    console.log('Current Page:', this.currentPage);
-    console.log('Total Pages:', this.totalPages);
-  }
+  //  debugSearch() {
+  //   console.log('Search Debug Info:');
+  //   console.log('Search Query:', this.searchQuery);
+  //   console.log('All Events Count:', this.events.length);
+  //   console.log('Filtered Events Count:', this.filteredEvents.length);
+  //   console.log('Paginated Events Count:', this.paginatedEvents.length);
+  //   console.log('Current Page:', this.currentPage);
+  //   console.log('Total Pages:', this.totalPages);
+  // }
 
   hasActiveFilters(): boolean {
     return !!(this.searchQuery || this.selectedCategory || this.selectedCity || this.dateFrom || this.dateTo || this.selectedPriceRange);

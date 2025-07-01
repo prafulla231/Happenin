@@ -678,8 +678,7 @@
 
 </div>
 
-<!-- Custom Alert/Confirmation Modal  -->
-<div class="custom-alert-overlay" *ngIf="customAlert.show" (click)="closeAlert()">
+<!-- <div class="custom-alert-overlay" *ngIf="customAlert.show" (click)="closeAlert()">
   <div class="custom-alert-modal" (click)="$event.stopPropagation()"
        [class.alert-success]="customAlert.type === 'success'"
        [class.alert-error]="customAlert.type === 'error'"
@@ -687,7 +686,6 @@
        [class.alert-info]="customAlert.type === 'info'"
        [class.alert-confirm]="customAlert.type === 'confirm'">
 
-    <!-- Alert Header -->
     <div class="custom-alert-header">
       <div class="alert-icon-container">
         <div class="alert-icon">
@@ -706,12 +704,10 @@
       </div>
     </div>
 
-    <!-- Alert Content -->
     <div class="custom-alert-content">
       <p class="alert-message">{{ customAlert.message }}</p>
     </div>
 
-    <!-- Alert Actions -->
     <div class="custom-alert-actions">
       <button
   *ngIf="customAlert.type !== 'confirm' && !customAlert.autoClose"
@@ -737,7 +733,12 @@
       </div>
     </div>
 
-    <!-- Animated border -->
     <div class="alert-border-animation"></div>
-  </div>
-</div>
+  </div> -->
+<app-custom-alert
+  [alertData]="customAlert"
+  [autoCloseDuration]="2000"
+  (alertClosed)="closeAlert()"
+  (alertConfirmed)="handleAlertConfirm()"
+  (alertCancelled)="handleAlertCancel()">
+</app-custom-alert>

@@ -34,9 +34,9 @@
       (keyup.enter)="applyFilters()"
       #searchInput
     />
-    <button 
-      class="search-clear-btn" 
-      (click)="clearSearch()" 
+    <button
+      class="search-clear-btn"
+      (click)="clearSearch()"
       *ngIf="searchQuery && searchQuery.trim()"
       type="button"
     >
@@ -86,7 +86,7 @@
           <div class="filter-group">
             <label class="filter-label">
               <span class="label-icon">🏙️</span>
-              City
+              Location
             </label>
             <select class="filter-select" [(ngModel)]="selectedCity" (change)="applyFilters()">
               <option value="">All Cities</option>
@@ -177,7 +177,7 @@
     <div class="results-info">
   <span class="results-count">
     <span *ngIf="searchQuery && searchQuery.trim()" class="search-indicator">
-      🔍 Search results for "{{ searchQuery }}": 
+      🔍 Search results for "{{ searchQuery }}":
     </span>
     {{ filteredEvents.length }} {{ filteredEvents.length === 1 ? 'event' : 'events' }} found
     <span *ngIf="totalPages > 1" class="page-info">
@@ -525,7 +525,13 @@
   </div>
 
 
-
+ <app-custom-alert
+  [alertData]="customAlert"
+  [autoCloseDuration]="2000"
+  (alertClosed)="closeAlert()"
+  (alertConfirmed)="handleAlertConfirm()"
+  (alertCancelled)="handleAlertCancel()">
+</app-custom-alert>
 
 <app-footer
   brandName="Happenin'"

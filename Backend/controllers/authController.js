@@ -38,6 +38,7 @@ export const registerUser = async (req, res) => {
     }
 
     // Check if email already exists
+
     
     const emailExists = await User.findOne({ email });
     if (emailExists) {
@@ -141,8 +142,7 @@ export const verifyOtpAndLogin = async (req, res) => {
       user: {
         userId: user._id,
         name: user.name,
-        email: user.email,
-        role: user.role,
+        email: user.email
       },
     });
 };
@@ -179,7 +179,6 @@ export const checkLogin = async (req, res) => {
       userId: user._id.toString(),
       userName : user.name,
       role: user.role,
-      email: user.email,
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -191,8 +190,7 @@ export const checkLogin = async (req, res) => {
       user: {
         userId: user._id,
         name: user.name,
-        email: user.email,
-        role: user.role,
+        email: user.email
       },
     });
 

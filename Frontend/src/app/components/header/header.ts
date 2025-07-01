@@ -21,7 +21,14 @@ export class HeaderComponent {
   @Input() buttons: HeaderButton[] = [];
   @Output() buttonClick = new EventEmitter<string>();
 
+isMenuOpen: boolean = false;
   onButtonClick(action: string): void {
     this.buttonClick.emit(action);
+    this.isMenuOpen = false;
+  }
+
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+    // console.log('Menu toggled:', this.isMenuOpen);
   }
 }

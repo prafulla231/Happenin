@@ -9,7 +9,7 @@ export const approveEvent = async (req, res) => {
   try {
     const {
       _id, 
-      title, description, date, timeSlot, duration, location,
+      title, description, date, timeSlot, duration,city,location,
       category, price, maxRegistrations, createdBy,
       artist, organization
     } = req.body;
@@ -28,6 +28,7 @@ export const approveEvent = async (req, res) => {
       date,
       timeSlot,
       location,
+      city,
       duration,
       category,
       price: price || 0,
