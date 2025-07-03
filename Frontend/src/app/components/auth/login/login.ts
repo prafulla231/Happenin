@@ -426,10 +426,10 @@ getRoleAndNavigate() {
                 localStorage.setItem('token', response.data.token);
                 sessionStorage.setItem('token', response.data.token);
               }
-              if (response.data.user) {
-                localStorage.setItem('user', JSON.stringify(response.data.user));
-                sessionStorage.setItem('user', JSON.stringify(response.data.user));
-              }
+              // if (response.data.user) {
+              //   localStorage.setItem('user', JSON.stringify(response.data.user));
+              //   sessionStorage.setItem('user', JSON.stringify(response.data.user));
+              // }
 
               // Show success message
               this.showSuccessMessage('Registered and logged in successfully! 🎉');

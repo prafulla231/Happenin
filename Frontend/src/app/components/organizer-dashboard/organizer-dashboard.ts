@@ -24,6 +24,7 @@ export interface Event {
   title: string;
   description: string;
   date: string;
+  city: string;
   timeSlot: string;
   duration: string;
   location: string;

@@ -1,7 +1,7 @@
 
 $admin-primary-purple: #8B5FBF;
 $admin-light-purple: #B794C7;
-$admin-violet: #9D7BEA;
+// #8b5cf6: #9D7BEA;
 $admin-light-blue: #A8C8EC;
 $admin-blue-accent: #7FB3D3;
 $admin-white: #FFFFFF;
@@ -11,9 +11,9 @@ $admin-text-light: #6B46C1;
 $admin-shadow-light: rgba(139, 95, 191, 0.15);
 $admin-shadow-medium: rgba(139, 95, 191, 0.25);
 $admin-shadow-dark: rgba(139, 95, 191, 0.35);
-$admin-gradient-primary: linear-gradient(135deg, $admin-light-purple 0%, $admin-violet 50%, $admin-light-blue 100%);
+$admin-gradient-primary: linear-gradient(135deg, $admin-light-purple 0%, #8b5cf6 50%, $admin-light-blue 100%);
 $admin-gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
-$admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin-violet 100%);
+$admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, #8b5cf6 100%);
 
 // Mixins
 @mixin admin-glass-effect {
@@ -71,6 +71,11 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   background: linear-gradient(135deg, #f8faff 0%, #f1f5ff 50%, #e8f0ff 100%);
   // padding: 2rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    app-header {
+    position: relative;
+    z-index: 1000; // Ensure header is above other content
+  }
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -280,106 +285,319 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   }
 }
 
+
+// Enhanced 3D Admin Events Grid
 .admin-events-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 32px;
+  margin-bottom: 40px;
+  padding: 20px;
+  perspective: 1000px;
 }
 
-// Event Card Styles
+// Enhanced Event Card with Modern 3D Design
 .admin-event-card {
-  @include admin-glass-effect;
-  @include admin-3d-shadow;
-  padding: 28px;
-  margin-bottom: 24px;
-  border-radius: 18px;
-  width: 75%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin: auto;
+  position: relative;
+  padding: 32px;
+  border-radius: 24px;
+  background: linear-gradient(145deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.85) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 
-  &:hover {
-    @include admin-hover-transform;
+  // Enhanced 3D shadow system
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  transform-style: preserve-3d;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+
+  // Animated gradient border
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 24px;
+    padding: 2px;
+    background: linear-gradient(45deg,
+      #667eea 0%,
+      #764ba2 25%,
+      #f093fb 50%,
+      #f5576c 75%,
+      #4facfe 100%);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
-  h3 {
-    color: $admin-text-dark;
-    font-size: 22px;
-    font-weight: 700;
-    margin: 0 0 16px 0;
-    background: linear-gradient(135deg, $admin-text-dark 0%, $admin-text-dark 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
 
-  p {
-    color: $admin-text-light;
-    margin: 8px 0;
-    font-size: 16px;
+  // Event Header with enhanced typography
+  .event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    position: relative;
 
-    strong {
-      color: $admin-text-dark;
-      font-weight: 600;
+    h3 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: all 0.3s ease;
+      line-height: 1.3;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+    }
+
+    &:hover h3::after {
+      width: 100px;
     }
   }
 
-  button {
-    @include admin-button-3d;
-    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
-    margin: 12px 8px 16px 0;
+  // Enhanced category badge
+  .event-category {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 
     &:hover {
-      background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     }
   }
 
-  h4 {
-    color: $admin-text-dark;
-    font-size: 18px;
-    font-weight: 600;
-    margin: 24px 0 12px 0;
-    padding-bottom: 8px;
-    border-bottom: 2px solid rgba(139, 95, 191, 0.2);
-  }
+  // Enhanced event details section
+  .event-details {
+    margin-bottom: 24px;
+    transition: transform 0.3s ease;
 
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-
-    li {
-      @include admin-glass-effect;
-      padding: 16px 20px;
+    p {
       margin: 12px 0;
-      border-radius: 12px;
+      font-size: 1rem;
+      color: #222222;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      color: $admin-text-light;
-      font-weight: 500;
+      padding: 4px 0;
+      border-radius: 8px;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(139, 95, 191, 0.1);
+      position: relative;
 
       &:hover {
+        color: #475569;
         transform: translateX(8px);
-        box-shadow: 0 6px 20px rgba(139, 95, 191, 0.2);
       }
 
-      button {
-        @include admin-button-3d;
-        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
-        padding: 8px 16px;
-        font-size: 14px;
-        margin: 0;
+      strong {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 1rem;
+        min-width: 80px;
+        margin-right: 10px;
+        position: relative;
 
-        &:hover {
-          background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+        &::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          right: 6px;
+          width: 4px;
+          height: 4px;
+          background: #667eea;
+          border-radius: 50%;
+          transform: translateY(-50%);
         }
       }
     }
   }
+
+  // Revolutionary button design
+  .event-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    transition: transform 0.3s ease;
+
+    button {
+      position: relative;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 16px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+
+      // Ripple effect
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+
+      &:active::before {
+        width: 300px;
+        height: 300px;
+      }
+
+      // &:hover {
+      //   transform: translateY(-4px) scale(1.02);
+      //   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+      // }
+
+      &:active {
+        transform: translateY(-2px) scale(0.98);
+      }
+    }
+
+    // Deny button styling
+    .delete-btn {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+      color: white;
+      box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+
+      &:hover {
+        background: linear-gradient(135deg, #ff5252 0%, #e53e3e 100%);
+        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+      }
+    }
+
+    // View details button styling
+    .view-details-btn {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      box-shadow: 0 6px 20px rgba(79, 172, 254, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &:hover {
+        background: linear-gradient(135deg, #29a9fd 0%, #00d4ff 100%);
+        box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+      }
+
+      .btn-icon {
+        font-size: 16px;
+        transition: transform 0.3s ease;
+      }
+
+      &:hover .btn-icon {
+        transform: scale(1.2);
+      }
+    }
+
+    // Approve button (if it has approve class)
+    button[class*="approve"],
+    button:last-child {
+      background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+      color: white;
+      box-shadow: 0 6px 20px rgba(81, 207, 102, 0.3);
+
+      &:hover {
+        background: linear-gradient(135deg, #37b24d 0%, #2f9e44 100%);
+        box-shadow: 0 8px 25px rgba(81, 207, 102, 0.4);
+      }
+    }
+  }
 }
+
+// Responsive design enhancements
+@media (max-width: 1200px) {
+  .admin-events-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-events-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 16px;
+  }
+
+  .admin-event-card {
+    padding: 24px;
+
+    .event-header {
+      flex-direction: column;
+      gap: 12px;
+
+      h3 {
+        font-size: 20px;
+      }
+    }
+
+    .event-actions {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+// Loading animation for cards
+.admin-event-card.loading {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: cardFadeIn 0.6s ease forwards;
+}
+
+@keyframes cardFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Stagger animation for multiple cards
+.admin-event-card:nth-child(1) { animation-delay: 0.1s; }
+.admin-event-card:nth-child(2) { animation-delay: 0.2s; }
+.admin-event-card:nth-child(3) { animation-delay: 0.3s; }
+.admin-event-card:nth-child(4) { animation-delay: 0.4s; }
+.admin-event-card:nth-child(5) { animation-delay: 0.5s; }
+.admin-event-card:nth-child(6) { animation-delay: 0.6s; }
+
 
 .view-locations-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -705,7 +923,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
     font-weight: 700;
     margin: 0 0 24px 0;
     text-align: center;
-    background: linear-gradient(135deg, $admin-text-dark 0%, $admin-violet 100%);
+    background: linear-gradient(135deg, $admin-text-dark 0%, #8b5cf6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1040,7 +1258,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
     input[type="checkbox"] {
       width: auto !important;
       margin: 0 !important;
-      accent-color: $admin-violet;
+      accent-color: #8b5cf6;
       transform: scale(1.2);
     }
   }
@@ -1064,7 +1282,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
     font-weight: 700;
     margin: 0 0 24px 0;
     text-align: center;
-    background: linear-gradient(135deg, $admin-text-dark 0%, $admin-violet 100%);
+    background: linear-gradient(135deg, $admin-text-dark 0%, #8b5cf6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1119,6 +1337,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   @include admin-3d-shadow;
   padding: 32px;
   margin-bottom: 32px;
+  margin-top: 32px;
   border-radius: 20px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -1141,7 +1360,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
     font-size: 24px;
     font-weight: 700;
     margin: 0;
-    background: linear-gradient(135deg, $admin-text-dark 0%, $admin-violet 100%);
+    background: linear-gradient(135deg, $admin-text-dark 0%, #8b5cf6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1207,7 +1426,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
 
   &:focus {
     outline: none;
-    border-color: $admin-violet;
+    border-color: #8b5cf6;
     box-shadow:
       0 0 0 4px rgba(139, 95, 191, 0.2),
       0 8px 32px rgba(139, 95, 191, 0.25);
@@ -1305,7 +1524,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
 
   &:focus {
     outline: none;
-    border-color: $admin-violet;
+    border-color: #8b5cf6;
     box-shadow:
       0 0 0 3px rgba(139, 95, 191, 0.2),
       0 6px 24px rgba(139, 95, 191, 0.2);
@@ -1400,7 +1619,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   padding: 16px 20px;
   background: linear-gradient(135deg, rgba(139, 95, 191, 0.1) 0%, rgba(168, 200, 236, 0.1) 100%);
   border-radius: 12px;
-  border-left: 4px solid $admin-violet;
+  border-left: 4px solid #8b5cf6;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1411,7 +1630,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   font-weight: 600;
   font-size: 16px;
   text-align: center;
-  background: linear-gradient(135deg, $admin-text-dark 0%, $admin-violet 100%);
+  background: linear-gradient(135deg, $admin-text-dark 0%, #8b5cf6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1437,7 +1656,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   text-align: left;
   padding: 16px 20px;
   border-radius: 12px;
-  background: linear-gradient(135deg, $admin-light-purple 0%, $admin-violet 50%, $admin-light-blue 100%);
+  background: linear-gradient(135deg, $admin-light-purple 0%, #8b5cf6 50%, $admin-light-blue 100%);
   margin-bottom: 12px;
 
   &:hover {
@@ -1474,7 +1693,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   }
 
   &::-webkit-scrollbar-thumb {
-    background: $admin-violet;
+    background: #8b5cf6;
     border-radius: 3px;
 
     &:hover {
@@ -1603,7 +1822,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   }
 
   &::-webkit-scrollbar-thumb {
-    background: $admin-violet;
+    background: #8b5cf6;
     border-radius: 4px;
 
     &:hover {
@@ -1628,7 +1847,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
   font-weight: 700;
   margin: 0;
   line-height: 1.3;
-  background: linear-gradient(135deg, $admin-text-dark 0%, $admin-violet 100%);
+  background: linear-gradient(135deg, $admin-text-dark 0%, #8b5cf6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1714,7 +1933,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, $admin
     padding: 20px;
     background: rgba(139, 95, 191, 0.05);
     border-radius: 12px;
-    border-left: 4px solid $admin-violet;
+    border-left: 4px solid #8b5cf6;
   }
 }
 

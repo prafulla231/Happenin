@@ -188,7 +188,6 @@ export const checkLogin = async (req, res) => {
     return apiResponse(res, 200, 'Login successful', {
       token,
       user: {
-        userId: user._id,
         name: user.name,
         email: user.email
       },

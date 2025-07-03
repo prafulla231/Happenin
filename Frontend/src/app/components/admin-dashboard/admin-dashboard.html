@@ -35,6 +35,16 @@
   <button class="view-locations-btn" (click)="toggleViewLocations()">
     👁️ View All Locations
   </button>
+
+<button class="toggle-filters-btn" (click)="toggleFilters()">
+      <span class="btn-icon">🔍</span>
+      <span class="btn-text">{{ showFilters ? 'Hide Filters' : 'Show Filters' }}</span>
+      <span class="dropdown-icon" [class.rotated]="showFilters">▼</span>
+    </button>
+    <!-- Show active filters count when filters are hidden -->
+    <span class="active-filters-count" *ngIf="!showFilters && getActiveFiltersCount() > 0">
+      ({{ getActiveFiltersCount() }} active)
+    </span>
 </div>
 
 <div class="locations-modal-overlay" *ngIf="showViewLocations" (click)="closeViewLocations()">
@@ -183,28 +193,6 @@
   </form>
 </div>
 
-
-  <!-- ========= TOGGLE BUTTON FOR LOCATION FORM ========= -->
-  <!-- <div class="add-location-header">
-    <button class="toggle-location-btn" (click)="toggleLocationForm()">
-      {{ showLocationForm ? 'Hide Location Form' : 'Add New Location' }}
-    </button>
-  </div> -->
-
-  <!-- ========= LOCATION FORM ========= -->
-
-  <!-- ========= TOGGLE BUTTON FOR FILTERS ========= -->
-  <div class="toggle-filters-header">
-    <button class="toggle-filters-btn" (click)="toggleFilters()">
-      <span class="btn-icon">🔍</span>
-      <span class="btn-text">{{ showFilters ? 'Hide Filters' : 'Show Filters' }}</span>
-      <span class="dropdown-icon" [class.rotated]="showFilters">▼</span>
-    </button>
-    <!-- Show active filters count when filters are hidden -->
-    <span class="active-filters-count" *ngIf="!showFilters && getActiveFiltersCount() > 0">
-      ({{ getActiveFiltersCount() }} active)
-    </span>
-  </div>
 
   <!-- ========= SEARCH AND FILTERS SECTION ========= -->
   <div class="filters-container" *ngIf="showFilters">
@@ -395,7 +383,7 @@
       <div class="event-details">
         <p><strong>Date:</strong> {{ event.date | date: 'MMM d, y' }}</p>
         <p><strong>Time:</strong> {{ event.timeSlot }}</p>
-        <p><strong>Location:</strong> {{ event.location }}</p>
+        <p><strong>Location:</strong> {{ event.city }}</p>
         <p><strong>Price:</strong> ₹{{ event.price }}</p>
         <p *ngIf="event.artist"><strong>Artist:</strong> {{ event.artist }}</p>
         <p *ngIf="event.organization"><strong>Organization:</strong> {{ event.organization }}</p>
@@ -421,7 +409,7 @@
 
   <!-- ========= EVENT MANAGEMENT ========= -->
    <h2 class="upcoming-events"
-   *ngIf="filteredEventsone.length > 0"
+   *ngIf="filteredEvents.length > 0"
   style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; color: #4A90E2; font-weight: 600; font-size: 28px; text-shadow: 1px 1px 2px #ccc;">
   Upcoming Events
 </h2>
@@ -434,12 +422,12 @@
       </div>
 
       <div class="event-details">
-        <p><strong>Date:</strong> {{ event.date | date: 'MMM d, y' }}</p>
-        <p><strong>Time:</strong> {{ event.timeSlot }}</p>
-        <p><strong>Location:</strong> {{ event.location }}</p>
-        <p><strong>Price:</strong> ₹{{ event.price }}</p>
-        <p *ngIf="event.artist"><strong>Artist:</strong> {{ event.artist }}</p>
-        <p *ngIf="event.organization"><strong>Organization:</strong> {{ event.organization }}</p>
+        <p><strong>Date</strong> {{ event.date | date: 'MMM d, y' }}</p>
+        <p><strong>Time</strong> {{ event.timeSlot }}</p>
+        <p><strong>Location</strong> {{ event.location }}</p>
+        <p><strong>Price</strong> ₹{{ event.price }}</p>
+        <p *ngIf="event.artist"><strong>Artist</strong> {{ event.artist }}</p>
+        <p *ngIf="event.organization"><strong>Organization</strong> {{ event.organization }}</p>
       </div>
 
       <div class="event-actions">

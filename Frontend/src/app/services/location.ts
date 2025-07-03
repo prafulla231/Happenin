@@ -69,7 +69,8 @@ export class LocationService {
   deleteLocation(state: string, city: string, placeName: string): Observable<any> {
     const payload = { state, city, placeName };
     return this.http.request('delete', `${environment.apiBaseUrl}${environment.apis.deleteLocation}`,  {
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders() ,
+      body : payload
     });
   }
 }
