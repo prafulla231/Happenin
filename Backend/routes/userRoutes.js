@@ -3,6 +3,9 @@ import { registerUser , checkLogin,sendOtpToEmail, verifyOtpAndLogin} from '../c
 import { authenticateToken , authenticate } from '../middleware/authMiddleware.js';
 import { dashboardRedirect } from '../controllers/dashboardController.js';
 
+
+
+
 const router = express.Router();
 
 
