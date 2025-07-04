@@ -140,6 +140,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, #8b5cf
 
     .add-admin-btn,
     .view-locations-btn,
+
     .close-location-btn,
     .add-location-btn {
       width: 100%;
@@ -149,6 +150,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, #8b5cf
 
 // Ensure buttons have consistent styling
 .add-admin-btn,
+.view-locations-btn,
 .close-location-btn,
 .add-location-btn {
   padding: 12px 20px;
@@ -612,6 +614,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, #8b5cf
   display: flex;
   align-items: center;
   gap: 8px;
+  text-align: center;
 
   &:hover {
     transform: translateY(-2px);
@@ -2787,7 +2790,7 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, #8b5cf
 
 // ========= RESPONSIVE DESIGN =========
 @media (max-width: 768px) {
-  .add-admin-btn {
+  .add-admin-btn,.view-locations-btn {
     width: 100%;
     justify-content: center;
     padding: 1rem 1.5rem;

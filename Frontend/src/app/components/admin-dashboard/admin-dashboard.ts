@@ -468,7 +468,7 @@ deleteLocation(state: string, city: string, placeName: string): void {
   loadEvents(): void {
   this.loadingService.show();
 
-  this.eventService.getAllEvents().subscribe({
+  this.eventService.getUpcomingEvents().subscribe({
     next: (events) => {
       this.events = events;
       this.filteredEvents = [...events];
