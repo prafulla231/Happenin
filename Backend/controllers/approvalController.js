@@ -1,5 +1,4 @@
 import { Event } from '../models/Event.js';
-import { Registration } from '../models/Registration.js';
 import { apiResponse } from '../utils/apiResponse.js';
 import { apiError } from '../utils/apiError.js';
 import mongoose from 'mongoose';
@@ -15,7 +14,7 @@ export const approveEvent = async (req, res) => {
     } = req.body;
 
     if (!_id) {
-      return apiError(res, 400, 'Approval document ID (_id) is required.');
+      return apiError(res, 400, 'Approval document ID  is required.');
     }
 
     if (!title || !date || !maxRegistrations || !createdBy) {

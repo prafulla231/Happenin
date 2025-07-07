@@ -207,7 +207,8 @@ paginatedEvents: Event[] = [];
 
 
     navigator.clipboard.writeText(details).then(() => {
-      alert('Event details copied to clipboard and ready to share!');
+      // alert('Event details copied to clipboard and ready to share!');
+      this.showAlert('success', 'Event copied', 'Event details copied to clipboard and ready to share!');
     }).catch(err => {
       console.error('Failed to copy: ', err);
     });
