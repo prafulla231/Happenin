@@ -178,6 +178,7 @@ export const checkLogin = async (req, res) => {
     const payload = {
       userId: user._id.toString(),
       userName : user.name,
+      email: user.email,
       role: user.role,
     };
 
