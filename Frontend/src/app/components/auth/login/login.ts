@@ -286,15 +286,18 @@ verifyOtp(email: string, otp: string) {
           this.showSuccessMessage('Logged in successfully! 🎉');
 
           // Navigate after showing success message
-          setTimeout(() => {
-            if (userRole === 'organizer') {
-              this.router.navigate(['/organizer-dashboard']);
-            } else if (userRole === 'admin') {
-              this.router.navigate(['/admin-dashboard']);
-            } else {
-              this.router.navigate(['/user-dashboard']);
-            }
-          }, 1000);
+          // setTimeout(() => {
+          //   if (userRole === 'organizer') {
+          //     this.router.navigate(['/organizer-dashboard']);
+          //   } else if (userRole === 'admin') {
+          //     this.router.navigate(['/admin-dashboard']);
+          //   } else {
+          //     this.router.navigate(['/user-dashboard']);
+          //   }
+          // }, 1000);
+           setTimeout(() => {
+            this.getRoleAndNavigate();
+          }, 2000);
         },
         error: (error) => {
           console.error('Login failed', error);
@@ -435,15 +438,18 @@ getRoleAndNavigate() {
               this.showSuccessMessage('Registered and logged in successfully! 🎉');
 
               // Navigate after showing success message
-              setTimeout(() => {
-                if (userRole === 'organizer') {
-                  this.router.navigate(['/organizer-dashboard']);
-                } else if (userRole === 'admin') {
-                  this.router.navigate(['/admin-dashboard']);
-                } else {
-                  this.router.navigate(['/user-dashboard']);
-                }
-              }, 2000);
+              // setTimeout(() => {
+              //   if (userRole === 'organizer') {
+              //     this.router.navigate(['/organizer-dashboard']);
+              //   } else if (userRole === 'admin') {
+              //     this.router.navigate(['/admin-dashboard']);
+              //   } else {
+              //     this.router.navigate(['/user-dashboard']);
+              //   }
+              // }, 2000);
+               setTimeout(() => {
+            this.getRoleAndNavigate();
+          }, 2000);
             },
             error: (loginError) => {
               console.error('Auto-login failed after registration', loginError);
