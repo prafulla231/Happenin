@@ -1,12 +1,16 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { ApprovalService } from './approval';
 
-describe('Approval', () => {
+describe('ApprovalService', () => {
   let service: ApprovalService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [ApprovalService]
+    });
     service = TestBed.inject(ApprovalService);
   });
 

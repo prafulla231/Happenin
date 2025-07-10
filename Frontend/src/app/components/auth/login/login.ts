@@ -233,7 +233,7 @@ getOtpError(): string | null {
   return null;
 }
 
-private startResendTimer(): void {
+public startResendTimer(): void {
   this.resendTimer = 180; // 3 minutes = 180 seconds
   this.resendDisabled = true;
 

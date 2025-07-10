@@ -8,6 +8,7 @@ import { SpinnerComponent } from './components/spinner';
   standalone: true,
   imports: [RouterOutlet, HttpClientModule, SpinnerComponent],
   template: `
+  <!-- <h1>Hello, Frontend</h1> -->
     <router-outlet></router-outlet>
     <app-spinner></app-spinner>
   `,
