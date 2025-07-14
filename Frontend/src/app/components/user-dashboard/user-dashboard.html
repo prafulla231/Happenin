@@ -7,7 +7,7 @@
   [buttons]="headerButtons"
   (buttonClick)="handleHeaderAction($event)">
 </app-header>
-
+<app-event-filter></app-event-filter>
 
 <section class="filters-section">
   <div class="filters-container">
@@ -47,22 +47,6 @@
       </div>
     </div>
 
-    <!-- Search Bar - Always Visible -->
-    <!-- <div class="search-container">
-      <div class="search-input-wrapper">
-        <span class="search-icon">🔍</span>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Search events by title, location, artist, category..."
-          [(ngModel)]="searchQuery"
-          (input)="onSearchChange()"
-        />
-        <button class="search-clear-btn" (click)="clearSearch()" *ngIf="searchQuery">
-          <span>✕</span>
-        </button>
-      </div>
-    </div> -->
 
     <!-- Collapsible Filter Controls -->
     <div class="filter-dropdown" [class.show]="showFilters">
@@ -121,20 +105,7 @@
             </div>
           </div>
 
-          <!-- Price Range Filter -->
-          <!-- <div class="filter-group">
-            <label class="filter-label">
-              <span class="label-icon">💰</span>
-              Price Range
-            </label>
-            <select class="filter-select" [(ngModel)]="selectedPriceRange" (change)="applyFilters()">
-              <option value="">All Prices</option>
-              <option value="0-500">Free - ₹500</option>
-              <option value="500-1000">₹500 - ₹1000</option>
-              <option value="1000-2000">₹1000 - ₹2000</option>
-              <option value="2000+">₹2000+</option>
-            </select>
-          </div> -->
+
         </div>
       </div>
     </div>
@@ -179,7 +150,7 @@
     <span *ngIf="searchQuery && searchQuery.trim()" class="search-indicator">
       🔍 Search results for "{{ searchQuery }}":
     </span>
-    {{ filteredEvents.length }} {{ filteredEvents.length === 1 ? 'event' : 'events' }} found
+    {{ paginatedEvents.length }} {{ paginatedEvents.length === 1 ? 'event' : 'events' }} found
     <span *ngIf="totalPages > 1" class="page-info">
       (Page {{ currentPage }} of {{ totalPages }})
     </span>
@@ -207,7 +178,7 @@
   </div>
 
   <!-- No Results Message -->
-  <div *ngIf="filteredEvents.length === 0" class="no-results">
+  <div *ngIf="paginatedEvents.length === 0" class="no-results">
     <div class="no-results-icon">🔍</div>
     <h3 class="no-results-title">No events found</h3>
     <p class="no-results-message">
@@ -220,7 +191,7 @@
   </div>
 
   <!-- Events Grid - Updated to use paginatedEvents -->
-  <div class="events-grid" *ngIf="filteredEvents.length > 0">
+  <div class="events-grid" *ngIf="paginatedEvents.length > 0">
     <div
       *ngFor="let event of paginatedEvents"
       class="event-card"
@@ -284,71 +255,23 @@
   </div>
 
   <!-- Pagination Controls - Add this new section -->
-  <div class="pagination-container" *ngIf="filteredEvents.length > 0 && totalPages > 1">
-    <div class="pagination-info">
-      <span class="pagination-text">
-  Showing {{ (currentPage - 1) * eventsPerPage + 1 }} -
-  {{ getMaxValue(currentPage * eventsPerPage, filteredEvents.length) }}
-  of {{ filteredEvents.length }} events
-</span>
-    </div>
 
-    <div class="pagination-controls">
-      <!-- Previous Button -->
-      <button
-        class="pagination-btn prev-btn"
-        (click)="previousPage()"
-        [disabled]="currentPage === 1"
-        [class.disabled]="currentPage === 1">
-        <span class="btn-icon">◀</span>
-        <span class="btn-text">Previous</span>
-      </button>
+<app-pagination
+  [currentPage]="currentPage"
+  [totalPages]="totalPages"
+
+  (pageChanged)="fetchEvents($event)"
+ >
+</app-pagination>
+
+
 
       <!-- Page Numbers -->
-      <div class="page-numbers">
-        <!-- First page if not in range -->
-        <button
-          *ngIf="getPageNumbers()[0] > 1"
-          class="page-btn"
-          (click)="goToPage(1)">
-          1
-        </button>
 
-        <!-- Ellipsis before current range -->
-        <span *ngIf="getPageNumbers()[0] > 2" class="page-ellipsis">...</span>
-
-        <!-- Page number buttons -->
-        <button
-          *ngFor="let page of getPageNumbers()"
-          class="page-btn"
-          [class.active]="page === currentPage"
-          (click)="goToPage(page)">
-          {{ page }}
-        </button>
-
-        <!-- Ellipsis after current range -->
-        <span *ngIf="getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1" class="page-ellipsis">...</span>
-
-        <!-- Last page if not in range -->
-        <button
-          *ngIf="getPageNumbers()[getPageNumbers().length - 1] < totalPages"
-          class="page-btn"
-          (click)="goToPage(totalPages)">
-          {{ totalPages }}
-        </button>
-      </div>
 
       <!-- Next Button -->
-      <button
-        class="pagination-btn next-btn"
-        (click)="nextPage()"
-        [disabled]="currentPage === totalPages"
-        [class.disabled]="currentPage === totalPages">
-        <span class="btn-text">Next</span>
-        <span class="btn-icon">▶</span>
-      </button>
-    </div>
-  </div>
+
+
 </section>
 
 

@@ -17,7 +17,7 @@ export interface HeaderButton {
 })
 export class HeaderComponent {
   @Input() userName: string = '';
-  @Input() title: string = 'Dashboard';
+  title: string = 'Dashboard';
   @Input() buttons: HeaderButton[] = [];
   @Output() buttonClick = new EventEmitter<string>();
 

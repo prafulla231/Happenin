@@ -1,5 +1,5 @@
 import express from 'express';
-import {createApproval,getEvents,getEventById,updateEvent,deleteEvent, removeUserFromEvent , getUpcomingEvents , getExpiredEvents, } from '../controllers/eventController.js';
+import {createApproval,getEvents,getEventById,updateEvent,deleteEvent, removeUserFromEvent , getUpcomingEvents , getExpiredEvents, getPaginatedEvents} from '../controllers/eventController.js';
 
 import { registerForEvent , getRegisteredEvents , deregisterEvent , getEventDetails } from '../controllers/userActivityController.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.get('/upcoming' ,authenticateToken, getUpcomingEvents);
 router.get('/expired' ,authenticateToken, getExpiredEvents);
-// router.get('/paginatedEvents',getPaginatedEvents ); 
+router.get('/paginatedEvents',getPaginatedEvents ); 
 
 
 // Create new event

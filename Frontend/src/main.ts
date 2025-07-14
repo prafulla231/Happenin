@@ -7,6 +7,8 @@ import { appConfig } from './app/app.config';
 import { LoadingInterceptor } from './app/components/loading.interceptor';
 import { LoadingService } from './app/components/loading';
 import { AuthService } from './app/services/auth';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+
 
 
 function initializeAuth(authService: AuthService) {
@@ -21,6 +23,8 @@ bootstrapApplication(AppComponent, {
   providers: [
     appConfig,
     importProvidersFrom(HttpClientModule),
+        importProvidersFrom(NgbModule),
+
     LoadingService,
     {
       provide: HTTP_INTERCEPTORS,

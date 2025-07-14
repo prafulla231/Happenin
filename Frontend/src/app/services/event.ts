@@ -42,7 +42,7 @@ export class EventService {
   getPaginatedEvents(page: number = 1, limit: number =10): Observable<any> {
   const url = `${environment.apiBaseUrl}/events/paginatedEvents?page=${page}&limit=${limit}`;
   return this.http.get<any>(url, {
-    headers: this.getAuthHeaders()
+    // headers: this.getAuthHeaders()
   });
 }
 

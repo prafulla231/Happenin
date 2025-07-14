@@ -72,46 +72,46 @@ export const getEvents = async (req, res) => {
 };
 
 /*pagination */
-// export const getPaginatedEvents = async (req, res) => {
-//   try {
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 10;
-//     const skip = (page - 1) * limit;
+export const getPaginatedEvents = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-//     console.log('🔄 Pagination Request Received');
-//     console.log(`➡ Page: ${page}, Limit: ${limit}, Skip: ${skip}`);
+    console.log('🔄 Pagination Request Received');
+    console.log(`➡ Page: ${page}, Limit: ${limit}, Skip: ${skip}`);
 
-//     const filter = { isDeleted: false };
-//     console.log('🔍 Applying Filter:', filter);
+    const filter = { isDeleted: false };
+    console.log('🔍 Applying Filter:', filter);
 
-//     const events = await Event.find(filter)
-//       .skip(skip)
-//       .limit(limit)
-//       .populate('createdBy', 'name email role');
+    const events = await Event.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .populate('createdBy', 'name email role');
 
-//     console.log(`✅ Events Fetched: ${events.length}`);
+    console.log(`✅ Events Fetched: ${events.length}`);
 
-//     const total = await Event.countDocuments(filter);
-//     console.log(`📊 Total Events Matching Filter: ${total}`);
+    const total = await Event.countDocuments(filter);
+    console.log(`📊 Total Events Matching Filter: ${total}`);
 
-//     const pagination = {
-//       totalItems: total,
-//       currentPage: page,
-//       totalPages: Math.ceil(total / limit),
-//       perPage: limit,
-//     };
+    const pagination = {
+      totalItems: total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      perPage: limit,
+    };
 
-//     console.log('📦 Pagination Metadata:', pagination);
+    console.log('📦 Pagination Metadata:', pagination);
 
-//     return apiResponse(res, 200, 'Paginated events fetched successfully', {
-//       events,
-//       pagination
-//     });
-//   } catch (error) {
-//     console.error('❌ Get Paginated Events error:', error.message);
-//     return apiError(res, 500, 'Server error while fetching paginated events', error);
-//   }
-// };
+    return apiResponse(res, 200, 'Paginated events fetched successfully', {
+      events,
+      pagination
+    });
+  } catch (error) {
+    console.error('❌ Get Paginated Events error:', error.message);
+    return apiError(res, 500, 'Server error while fetching paginated events', error);
+  }
+};
 
 
 export const getUpcomingEvents = async (req, res) => {
