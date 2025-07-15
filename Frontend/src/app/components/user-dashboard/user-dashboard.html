@@ -7,7 +7,7 @@
   [buttons]="headerButtons"
   (buttonClick)="handleHeaderAction($event)">
 </app-header>
-<app-event-filter></app-event-filter>
+<!-- <app-event-filter></app-event-filter> -->
 
 <section class="filters-section">
   <div class="filters-container">
@@ -31,7 +31,7 @@
       placeholder="Search events..."
       [(ngModel)]="searchQuery"
       (input)="onSearchChange()"
-      (keyup.enter)="applyFilters()"
+      (keyup.enter)="onSearchChange()"
       #searchInput
     />
     <button
@@ -58,9 +58,9 @@
               <span class="label-icon">🏷️</span>
               Category
             </label>
-            <select class="filter-select" [(ngModel)]="selectedCategory" (change)="applyFilters()">
+            <select class="filter-select" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
               <option value="">All Categories</option>
-              <option *ngFor="let category of availableCategories" [value]="category">
+              <option *ngFor="let category of categories" [value]="category">
                 {{ category }}
               </option>
             </select>
@@ -72,12 +72,16 @@
               <span class="label-icon">🏙️</span>
               Location
             </label>
-            <select class="filter-select" [(ngModel)]="selectedCity" (change)="applyFilters()">
-              <option value="">All Cities</option>
-              <option *ngFor="let city of availableCities" [value]="city">
-                {{ city }}
-              </option>
-            </select>
+
+<select class="filter-select"
+        [(ngModel)]="selectedCity"
+        (change)="onFilterChange()">
+  <option value="">All Cities</option>
+  <option *ngFor="let city of availableCiti" [value]="city">
+    {{ city }}
+  </option>
+</select>
+
           </div>
 
           <!-- Date Range Filter -->
@@ -92,7 +96,7 @@
                 class="date-input"
                 placeholder="From"
                 [(ngModel)]="dateFrom"
-                (change)="applyFilters()"
+                (change)="onFilterChange()"
               />
               <span class="date-separator">to</span>
               <input
@@ -100,7 +104,7 @@
                 class="date-input"
                 placeholder="To"
                 [(ngModel)]="dateTo"
-                (change)="applyFilters()"
+                (change)="onFilterChange()"
               />
             </div>
           </div>
@@ -124,33 +128,53 @@
         <span class="filter-tag" *ngIf="selectedCategory">
           <span class="tag-icon">🏷️</span>
           {{ selectedCategory }}
-          <button class="tag-remove" (click)="selectedCategory = ''; applyFilters()">✕</button>
+          <button class="tag-remove" (click)="selectedCategory = ''; onSearchChange()">✕</button>
         </span>
         <span class="filter-tag" *ngIf="selectedCity">
           <span class="tag-icon">🏙️</span>
           {{ selectedCity }}
-          <button class="tag-remove" (click)="selectedCity = ''; applyFilters()">✕</button>
+          <button class="tag-remove" (click)="selectedCity = ''; onSearchChange()">✕</button>
         </span>
         <span class="filter-tag" *ngIf="dateFrom || dateTo">
           <span class="tag-icon">📅</span>
           {{ formatDateRange() }}
-          <button class="tag-remove" (click)="dateFrom = ''; dateTo = ''; applyFilters()">✕</button>
+          <button class="tag-remove" (click)="dateFrom = ''; dateTo = ''; onSearchChange()">✕</button>
         </span>
         <span class="filter-tag" *ngIf="selectedPriceRange">
           <span class="tag-icon">💰</span>
           {{ formatPriceRange() }}
-          <button class="tag-remove" (click)="selectedPriceRange = ''; applyFilters()">✕</button>
+          <button class="tag-remove" (click)="selectedPriceRange = ''; onSearchChange()">✕</button>
         </span>
       </div>
     </div>
 
     <!-- Results Count -->
-    <div class="results-info">
+    <!-- <div class="results-info">
   <span class="results-count">
     <span *ngIf="searchQuery && searchQuery.trim()" class="search-indicator">
       🔍 Search results for "{{ searchQuery }}":
     </span>
     {{ paginatedEvents.length }} {{ paginatedEvents.length === 1 ? 'event' : 'events' }} found
+    <span *ngIf="totalPages > 1" class="page-info">
+      (Page {{ currentPage }} of {{ totalPages }})
+    </span>
+  </span>
+  <div class="sort-controls">
+    <label class="sort-label">Sort by:</label>
+    <select class="sort-select" [(ngModel)]="sortBy" (change)="applySorting()">
+      <option value="date">Date</option>
+      <option value="title">Title</option>
+      <option value="price">Price</option>
+      <option value="category">Category</option>
+    </select>
+  </div>
+</div> -->
+<div class="results-info">
+  <span class="results-count">
+    <span *ngIf="searchQuery && searchQuery.trim()" class="search-indicator">
+      🔍 Search results for "{{ searchQuery }}":
+    </span>
+    {{ events.length }} {{ events.length === 1 ? 'event' : 'events' }} found
     <span *ngIf="totalPages > 1" class="page-info">
       (Page {{ currentPage }} of {{ totalPages }})
     </span>
@@ -178,7 +202,7 @@
   </div>
 
   <!-- No Results Message -->
-  <div *ngIf="paginatedEvents.length === 0" class="no-results">
+  <div *ngIf="events.length === 0" class="no-results">
     <div class="no-results-icon">🔍</div>
     <h3 class="no-results-title">No events found</h3>
     <p class="no-results-message">
@@ -191,9 +215,9 @@
   </div>
 
   <!-- Events Grid - Updated to use paginatedEvents -->
-  <div class="events-grid" *ngIf="paginatedEvents.length > 0">
+  <div class="events-grid" *ngIf="events.length > 0">
     <div
-      *ngFor="let event of paginatedEvents"
+      *ngFor="let event of events"
       class="event-card"
       [class.registered-card]="isRegistered(event._id)"
     >

@@ -1,245 +1,283 @@
-  // user-dashboard.ts
-  import { Component, OnDestroy } from '@angular/core';
-  import { CommonModule } from '@angular/common';
-  import { FormsModule, ReactiveFormsModule,  } from '@angular/forms';
-  import { HttpClient } from '@angular/common/http';
-  import { RouterModule } from '@angular/router';
-  import jsPDF from 'jspdf';
-  import { LoadingService } from '../loading';
-  import { LocationService } from '../../services/location';
-  import { ApprovalService } from '../../services/approval';
-  import { AuthService } from '../../services/auth';
-  import { EventService } from '../../services/event';
-  import { environment } from '../../../environment';
-  import { EmailService } from '../../services/email.service';
-  import { Router } from '@angular/router';
-  import { Contact } from '../contact/contact';
-  import { HeaderComponent, HeaderButton } from '../header/header';
-  import { FooterComponent } from '../footer/footer';
-  import{CustomAlertComponent} from '../custom-alert/custom-alert'
-  import { PaginationComponent } from '../../common/pagination/pagination';
-import { EventFilter } from '../../common/event-filter/event-filter';
+// user-dashboard.ts
+import { Component, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
+import jsPDF from 'jspdf';
+import { LoadingService } from '../loading';
+import { LocationService } from '../../services/location';
+import { ApprovalService } from '../../services/approval';
+import { AuthService } from '../../services/auth';
+import { EventService } from '../../services/event';
+import { environment } from '../../../environment';
+import { EmailService } from '../../services/email.service';
+import { Router } from '@angular/router';
+import { Contact } from '../contact/contact';
+import { HeaderComponent, HeaderButton } from '../header/header';
+import { FooterComponent } from '../footer/footer';
+import { CustomAlertComponent } from '../custom-alert/custom-alert'
+import { PaginationComponent } from '../../common/pagination/pagination';
+// import { EventFilter } from '../../common/event-filter/event-filter';
 
 
-  export interface Event {
-    _id: string;
-    title: string;
-    description: string;
-    date: string;
-    timeSlot: string;
-    duration: string;
-    city: string;
+export interface Event {
+  _id: string;
+  title: string;
+  description: string;
+  date: string;
+  timeSlot: string;
+  duration: string;
+  city: string;
 
-    location: string;
-    category: string;
-    price: number;
-    maxRegistrations: number;
-    createdBy: string;
-    artist?: string;
-    organization?: string;
+  location: string;
+  category: string;
+  price: number;
+  maxRegistrations: number;
+  createdBy: string;
+  artist?: string;
+  organization?: string;
+}
+
+export interface CustomAlert {
+  show: boolean;
+  type: 'success' | 'error' | 'warning' | 'info' | 'confirm';
+  title: string;
+  message: string;
+  confirmAction?: () => void;
+  cancelAction?: () => void;
+  showCancel?: boolean;
+  autoClose?: boolean;
+}
+
+
+@Component({
+  selector: 'app-user-dashboard',
+  standalone: true,
+  // imports: [CommonModule, RouterModule, FormsModule,ReactiveFormsModule, HeaderComponent, FooterComponent, CustomAlertComponent,PaginationComponent,EventFilter],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, HeaderComponent, FooterComponent, CustomAlertComponent, PaginationComponent],
+  templateUrl: './user-dashboard.html',
+  styleUrls: ['./user-dashboard.scss']
+})
+
+
+export class UserDashboardComponent implements OnDestroy {
+  events: Event[] = [];
+  filteredEvents: Event[] = [];
+  userId: string | null = null;
+  userName: string | null = null;
+  registeredEvents: Event[] = [];
+  selectedEvent: Event | null = null;
+  showEventDetails: boolean = false;
+  userEmail: string | null = null;
+  availableCiti: string[] = [
+    "Mumbai",
+    "Pune",
+    "Nagpur",
+    "Nashik",
+    "Thane",
+    "Ahmedabad",
+    "Surat",
+    "Vadodara",
+    "Rajkot",
+    "Bhavnagar",
+    "Bengaluru",
+    "Mysuru",
+    "Hubli",
+    "Mangaluru",
+    "Belagavi",
+    "Chennai",
+    "Coimbatore",
+    "Madurai",
+    "Tiruchirappalli",
+    "Jaipur",
+    "Udaipur",
+    "Jodhpur",
+    "Ajmer",
+    "Kota",
+    "New Delhi",
+    "Central Delhi",
+    "North Delhi",
+    "South Delhi",
+    "Lucknow",
+    "Kanpur",
+    "Varanasi",
+    "Agra",
+    "Noida"
+  ];
+
+  private searchTimeout: any;
+
+  //  userName = 'John Doe';
+  //  Math = Math;
+
+  get displayUserName(): string {
+    return this.userName || 'Guest';
   }
 
-  export interface CustomAlert {
-    show: boolean;
-    type: 'success' | 'error' | 'warning' | 'info' | 'confirm';
-    title: string;
-    message: string;
-    confirmAction?: () => void;
-    cancelAction?: () => void;
-    showCancel?: boolean;
-    autoClose?: boolean;
+  headerButtons: HeaderButton[] = [
+    { text: 'Available Events', action: 'scrollToAvailableEvents' },
+    { text: 'My Events', action: 'scrollToRegisteredEvents' },
+    { text: 'Contact', action: 'openContact' },
+    { text: 'Logout', action: 'logout', style: 'primary' }
+  ];
+
+  handleHeaderAction(action: string): void {
+    switch (action) {
+      case 'scrollToAvailableEvents':
+        this.scrollToAvailableEvents();
+        break;
+      case 'scrollToRegisteredEvents':
+        this.scrollToRegisteredEvents();
+        break;
+      case 'openContact':
+        this.openContact();
+        break;
+      case 'logout':
+        this.logout();
+        break;
+    }
   }
 
 
-  @Component({
-    selector: 'app-user-dashboard',
-    standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule,ReactiveFormsModule, HeaderComponent, FooterComponent, CustomAlertComponent,PaginationComponent,EventFilter],
-    templateUrl: './user-dashboard.html',
-    styleUrls: ['./user-dashboard.scss']
-  })
+  // Custom Alert System
+  customAlert: CustomAlert = {
+    show: false,
+    type: 'info',
+    title: '',
+    message: '',
+    showCancel: false
+  };
 
+  // Filters
+  searchQuery = '';
+  selectedCategory = '';
+  selectedCity = '';
+  dateFrom = '';
+  dateTo = '';
+  selectedPriceRange = '';
+  sortBy = 'date';
 
-  export class UserDashboardComponent implements OnDestroy{
-    events: Event[] = [];
-    filteredEvents: Event[] = [];
-    userId: string | null = null;
-    userName: string | null = null;
-    registeredEvents: Event[] = [];
-    selectedEvent: Event | null = null;
-    showEventDetails: boolean = false;
-    userEmail: string | null = null;
+  availableCategories: string[] = [];
+  //availableCities: string[] = [];
+  isMobileMenuOpen = false;
 
-    private searchTimeout: any;
+  categories: string[] = ['Music', 'Sports', 'Workshop', 'Dance', 'Theatre', 'Technical', 'Comedy', 'Arts', 'Exhibition', 'other'];
 
-    //  userName = 'John Doe';
-    //  Math = Math;
-
-    get displayUserName(): string {
-      return this.userName || 'Guest';
-    }
-
-    headerButtons: HeaderButton[] = [
-      { text: 'Available Events', action: 'scrollToAvailableEvents' },
-      { text: 'My Events', action: 'scrollToRegisteredEvents' },
-      { text: 'Contact', action: 'openContact' },
-      { text: 'Logout', action: 'logout', style: 'primary' }
-    ];
-
-    handleHeaderAction(action: string): void {
-      switch (action) {
-        case 'scrollToAvailableEvents':
-          this.scrollToAvailableEvents();
-          break;
-        case 'scrollToRegisteredEvents':
-          this.scrollToRegisteredEvents();
-          break;
-        case 'openContact':
-          this.openContact();
-          break;
-        case 'logout':
-          this.logout();
-          break;
-      }
-    }
-
-
-    // Custom Alert System
-    customAlert: CustomAlert = {
-      show: false,
-      type: 'info',
-      title: '',
-      message: '',
-      showCancel: false
-    };
-
-    // Filters
-    searchQuery = '';
-    selectedCategory = '';
-    selectedCity = '';
-    dateFrom = '';
-    dateTo = '';
-    selectedPriceRange = '';
-    sortBy = 'date';
-
-    availableCategories: string[] = [];
-    availableCities: string[] = [];
-    isMobileMenuOpen = false;
-
-    // Pagination properties
+  // Pagination properties
   paginatedEvents: Event[] = [];
   currentPage = 1;
   totalPages = 0;
   eventsPerPage = 6; // Can be passed as `limit`
   isLoading = false;
 
-    constructor(
-      private http: HttpClient,
-      private router: Router,
-      private loadingService: LoadingService,
-      private authService: AuthService,
-      private eventService: EventService,
-      private locationService: LocationService,
-      private ApprovalService: ApprovalService,
-      private emailService: EmailService,
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private loadingService: LoadingService,
+    private authService: AuthService,
+    private eventService: EventService,
+    private locationService: LocationService,
+    private ApprovalService: ApprovalService,
+    private emailService: EmailService,
 
-    ) {
-      this.showFilters = false;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      this.decodeToken();
-      // this.loadAllEvents();
-      this.fetchEvents(this.currentPage)
-      this.loadRegisteredEvents();
+  ) {
+    this.showFilters = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.decodeToken();
+    // this.loadAllEvents();
+    this.fetchEvents(this.currentPage)
+    this.loadRegisteredEvents();
+  }
+  showFilters: boolean = false;
+  // Custom Alert Methods
+  showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string, autoClose: boolean = true, duration: number = 2000) {
+    this.customAlert = {
+      show: true,
+      type,
+      title,
+      message,
+      showCancel: false,
+      autoClose: autoClose
+
+    };
+
+    // Auto-close after specified duration
+    if (autoClose) {
+      setTimeout(() => {
+        this.closeAlert();
+      }, duration);
     }
-    showFilters: boolean = false;
-    // Custom Alert Methods
-    showAlert(type: 'success' | 'error' | 'warning' | 'info', title: string, message: string, autoClose: boolean = true, duration: number = 2000) {
-      this.customAlert = {
-        show: true,
-        type,
-        title,
-        message,
-        showCancel: false,
-        autoClose: autoClose
+  }
 
-      };
 
-      // Auto-close after specified duration
-      if (autoClose) {
-        setTimeout(() => {
-          this.closeAlert();
-        }, duration);
-      }
+  showConfirmation(title: string, message: string, confirmAction: () => void, cancelAction?: () => void) {
+    this.customAlert = {
+      show: true,
+      type: 'confirm',
+      title,
+      message,
+      confirmAction,
+      cancelAction,
+      showCancel: true
+
+    };
+  }
+
+
+
+  copyEventToClipboard() {
+    if (!this.selectedEvent) return;
+
+    const event = this.selectedEvent;
+    const details =
+      `🎉 YOU'RE INVITED! 🎉
+              📌 ${event.title.toUpperCase()} (${event.category || 'Event'})
+              📝 ${event.description}
+
+              📅 DATE: ${new Date(event.date).toDateString()}
+              ⏰ TIME: ${event.timeSlot}
+              🕒 DURATION: ${event.duration}
+              📍 LOCATION: ${event.location}
+              💰 ENTRY FEE: ₹${event.price}
+              👥 MAX ATTENDEES: ${event.maxRegistrations}
+              ${event.artist ? '🎭 ARTIST: ' + event.artist : ''}
+              ${event.organization ? '🏢 ORGANIZED BY: ' + event.organization : ''}
+
+              ✨ DON'T MISS OUT ON THIS AMAZING EVENT!
+              👉 JOIN ME FOR AN UNFORGETTABLE EXPERIENCE!`;
+
+
+    navigator.clipboard.writeText(details).then(() => {
+      // alert('Event details copied to clipboard and ready to share!');
+      this.showAlert('success', 'Event copied', 'Event details copied to clipboard and ready to share!');
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+    });
+  }
+
+
+  handleAlertConfirm() {
+    if (this.customAlert.confirmAction) {
+      this.customAlert.confirmAction();
     }
+    this.closeAlert();
+  }
 
-
-    showConfirmation(title: string, message: string, confirmAction: () => void, cancelAction?: () => void) {
-      this.customAlert = {
-        show: true,
-        type: 'confirm',
-        title,
-        message,
-        confirmAction,
-        cancelAction,
-        showCancel: true
-
-      };
+  handleAlertCancel() {
+    if (this.customAlert.cancelAction) {
+      this.customAlert.cancelAction();
     }
+    this.closeAlert();
+  }
 
+  closeAlert() {
+    this.customAlert.show = false;
+    this.customAlert.confirmAction = undefined;
+    this.customAlert.cancelAction = undefined;
+  }
 
-
-    copyEventToClipboard() {
-      if (!this.selectedEvent) return;
-
-      const event = this.selectedEvent;
-      const details =
-                          `🎉 YOU'RE INVITED! 🎉
-            📌 ${event.title.toUpperCase()} (${event.category || 'Event'})
-            📝 ${event.description}
-
-            📅 DATE: ${new Date(event.date).toDateString()}
-            ⏰ TIME: ${event.timeSlot}
-            🕒 DURATION: ${event.duration}
-            📍 LOCATION: ${event.location}
-            💰 ENTRY FEE: ₹${event.price}
-            👥 MAX ATTENDEES: ${event.maxRegistrations}
-            ${event.artist ? '🎭 ARTIST: ' + event.artist : ''}
-            ${event.organization ? '🏢 ORGANIZED BY: ' + event.organization : ''}
-
-            ✨ DON'T MISS OUT ON THIS AMAZING EVENT!
-            👉 JOIN ME FOR AN UNFORGETTABLE EXPERIENCE!`;
-
-
-      navigator.clipboard.writeText(details).then(() => {
-        // alert('Event details copied to clipboard and ready to share!');
-        this.showAlert('success', 'Event copied', 'Event details copied to clipboard and ready to share!');
-      }).catch(err => {
-        console.error('Failed to copy: ', err);
-      });
-    }
-
-
-    handleAlertConfirm() {
-      if (this.customAlert.confirmAction) {
-        this.customAlert.confirmAction();
-      }
-      this.closeAlert();
-    }
-
-    handleAlertCancel() {
-      if (this.customAlert.cancelAction) {
-        this.customAlert.cancelAction();
-      }
-      this.closeAlert();
-    }
-
-    closeAlert() {
-      this.customAlert.show = false;
-      this.customAlert.confirmAction = undefined;
-      this.customAlert.cancelAction = undefined;
-    }
-
-    onConfirmAction() {
+  onConfirmAction() {
     if (this.customAlert.confirmAction) {
       this.customAlert.confirmAction();
     }
@@ -253,9 +291,9 @@ import { EventFilter } from '../../common/event-filter/event-filter';
     this.closeAlert();
   }
 
-    getMaxValue(a: number, b: number): number {
-      return Math.min(a, b);
-    }
+  getMaxValue(a: number, b: number): number {
+    return Math.min(a, b);
+  }
 
 
 
@@ -271,11 +309,11 @@ import { EventFilter } from '../../common/event-filter/event-filter';
 
 
 
-    toggleFilters(): void {
-      this.showFilters = !this.showFilters;
-    }
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+  }
 
-    openContact() {
+  openContact() {
     this.router.navigate(['/contact']);
   }
 
@@ -300,52 +338,101 @@ import { EventFilter } from '../../common/event-filter/event-filter';
   // }
 
 
-  fetchEvents(page: number) {
+  // fetchEvents(page: number) {
+  //   this.isLoading = true;
+
+  // //     const filters = {
+  // //   search: this.searchQuery.trim(),
+  // //   category: this.selectedCategory,
+  // //   city: this.selectedCity,
+  // //   fromDate: this.dateFrom,
+  // //   toDate: this.dateTo,
+  // //   priceRange: this.selectedPriceRange,
+  // //   sortBy: this.sortBy
+  // // };
+
+  //   this.eventService.getPaginatedEvents(page, this.eventsPerPage).subscribe({
+  //     next: (response) => {
+  //       this.events = response.data.events;
+  //       this.paginatedEvents = response.data.events;
+  //       console.log('Fetched events:', this.paginatedEvents);
+  //       this.filteredEvents = [...this.events]
+  //       console.log('Filtered events:', this.filteredEvents);
+  //       const pagination = response.data.pagination;
+  //       this.extractFilterOptions();
+  //   this.applySorting();
+
+
+  //       this.currentPage = pagination.currentPage;
+  //       this.totalPages = pagination.totalPages;
+  //       this.eventsPerPage = pagination.perPage;
+  //       console.log('Current Page:', this.currentPage);
+  //       console.log('Total Pages:', this.totalPages);
+  //       console.log('Events Per Page:', this.eventsPerPage);
+  //     },
+  //     error: (error) => {
+  //       console.error('Error fetching events:', error);
+  //     },
+  //     complete: () => {
+  //       this.isLoading = false;
+  //     }
+  //   });
+  // }
+  loadRegisteredEvents() {
+    if (!this.userId) return;
+    this.eventService.getRegisteredEvents(this.userId).subscribe({
+      next: (res) => {
+        this.registeredEvents = res;
+      },
+      error: (err) => {
+        console.error('Error loading registered events', err);
+        this.showAlert('error', 'Loading Failed', 'Failed to load your registered events.');
+      }
+    });
+  }
+
+  fetchEvents(page: number = 1): void {
     this.isLoading = true;
-
-      const filters = {
-    search: this.searchQuery.trim(),
-    category: this.selectedCategory,
-    city: this.selectedCity,
-    fromDate: this.dateFrom,
-    toDate: this.dateTo,
-    priceRange: this.selectedPriceRange,
-    sortBy: this.sortBy
-  };
-
-    this.eventService.getPaginatedEvents(page, this.eventsPerPage).subscribe({
-      next: (response) => {
+    const filters: any = {};
+    if (this.searchQuery?.trim()) {
+      filters.search = this.searchQuery.trim();
+    }
+    if (this.selectedCategory) {
+      filters.category = this.selectedCategory;
+    }
+    if (this.selectedCity) {
+      filters.city = this.selectedCity;
+    }
+    if (this.dateFrom) {
+      filters.fromDate = this.dateFrom;
+    }
+    if (this.dateTo) {
+      filters.toDate = this.dateTo;
+    }
+    if (this.selectedPriceRange) {
+      filters.priceRange = this.selectedPriceRange;
+    }
+    this.eventService.getPaginatedEvents(page, this.eventsPerPage, filters).subscribe({
+      next: (response) => { 
+        this.events = response.data.events;
         this.paginatedEvents = response.data.events;
-        console.log('Fetched events:', this.paginatedEvents);
+        this.filteredEvents = [...this.events];
+        this.applySorting();
         const pagination = response.data.pagination;
-
         this.currentPage = pagination.currentPage;
         this.totalPages = pagination.totalPages;
         this.eventsPerPage = pagination.perPage;
-        console.log('Current Page:', this.currentPage);
-        console.log('Total Pages:', this.totalPages);
-        console.log('Events Per Page:', this.eventsPerPage);
       },
       error: (error) => {
-        console.error('Error fetching events:', error);
+        console.error('❌ Error fetching events:', error);
+        this.showAlert('error', 'Load Failed', 'Failed to load events');
       },
       complete: () => {
         this.isLoading = false;
       }
     });
   }
-    loadRegisteredEvents() {
-      if (!this.userId) return;
-      this.eventService.getRegisteredEvents(this.userId).subscribe({
-        next: (res) => {
-          this.registeredEvents = res;
-        },
-        error: (err) => {
-          console.error('Error loading registered events', err);
-          this.showAlert('error', 'Loading Failed', 'Failed to load your registered events.');
-        }
-      });
-    }
+
 
   registerForEvent(eventId: string) {
     // Validate that we have a user ID
@@ -449,60 +536,60 @@ import { EventFilter } from '../../common/event-filter/event-filter';
 
 
 
-    deregister(userId: string, eventId: string) {
-      const event = this.registeredEvents.find(e => e._id === eventId);
-      const eventTitle = event ? event.title : 'this event';
+  deregister(userId: string, eventId: string) {
+    const event = this.registeredEvents.find(e => e._id === eventId);
+    const eventTitle = event ? event.title : 'this event';
 
-      this.showConfirmation(
-        'Confirm Deregistration',
-        `Are you sure you want to deregister from "${eventTitle}"? This action cannot be undone.`,
-        () => {
-          this.loadingService.show();
+    this.showConfirmation(
+      'Confirm Deregistration',
+      `Are you sure you want to deregister from "${eventTitle}"? This action cannot be undone.`,
+      () => {
+        this.loadingService.show();
 
-          this.eventService.deregisterFromEvent(userId, eventId).subscribe({
-            next: () => {
-              this.loadRegisteredEvents();
-              this.loadingService.hide();
-              this.showAlert('success', 'Deregistration Successful', `You have been deregistered from "${eventTitle}".`);
-            },
-            error: (err) => {
-              console.error('Deregistration failed', err);
-              this.loadingService.hide();
-              this.showAlert('error', 'Deregistration Failed', 'Failed to deregister from the event. Please try again.');
-            }
-          });
-        },
-        () => {
-          this.showAlert('info', 'Deregistration Cancelled', 'You remain registered for the event.');
-        }
-      );
-    }
-
-
-    extractFilterOptions() {
-      this.availableCategories = [...new Set(
-        this.events.map(e => e.category).filter(Boolean)
-      )].sort();
-
-      this.availableCities = [...new Set(
-        this.events.map(e => this.extractCityFromLocation(e.city)).filter(Boolean)
-      )].sort();
-    }
-
-    extractCityFromLocation(location: string): string {
-      // console.log('Extracting city from location:', location);
-      if (!location) return '';
-      const parts = location.split(',').map(part => part.trim());
-      if (parts.length >= 2) {
-        return parts[parts.length - 1];
-      } else {
-        return parts[0];
+        this.eventService.deregisterFromEvent(userId, eventId).subscribe({
+          next: () => {
+            this.loadRegisteredEvents();
+            this.loadingService.hide();
+            this.showAlert('success', 'Deregistration Successful', `You have been deregistered from "${eventTitle}".`);
+          },
+          error: (err) => {
+            console.error('Deregistration failed', err);
+            this.loadingService.hide();
+            this.showAlert('error', 'Deregistration Failed', 'Failed to deregister from the event. Please try again.');
+          }
+        });
+      },
+      () => {
+        this.showAlert('info', 'Deregistration Cancelled', 'You remain registered for the event.');
       }
+    );
+  }
+
+
+  extractFilterOptions() {
+    this.availableCategories = [...new Set(
+      this.events.map(e => e.category).filter(Boolean)
+    )].sort();
+
+    this.availableCiti = [...new Set(
+      this.events.map(e => this.extractCityFromLocation(e.city)).filter(Boolean)
+    )].sort();
+  }
+
+  extractCityFromLocation(location: string): string {
+    // console.log('Extracting city from location:', location);
+    if (!location) return '';
+    const parts = location.split(',').map(part => part.trim());
+    if (parts.length >= 2) {
+      return parts[parts.length - 1];
+    } else {
+      return parts[0];
     }
+  }
 
 
 
-    decodeToken() {
+  decodeToken() {
     // console.log('=== TOKEN DECODE START ===');
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     // console.log('Token found:', !!token);
@@ -542,94 +629,95 @@ import { EventFilter } from '../../common/event-filter/event-filter';
   }
 
 
-    isRegistered(eventId: string): boolean {
-      return this.registeredEvents.some(e => e._id === eventId);
-    }
+  isRegistered(eventId: string): boolean {
+    return this.registeredEvents.some(e => e._id === eventId);
+  }
 
-    // Filter logic
-    onSearchChange() {
-      if (this.searchTimeout) {
+  // Filter logic
+  onSearchChange() {
+    if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
     }
 
     // Set new timeout for debounced search
     this.searchTimeout = setTimeout(() => {
-      this.applyFilters();
+      this.currentPage = 1; // Reset to first page when searching
+      this.fetchEvents(1);   // Fetch from server with search filter
     }, 300); // 300ms delay
-    }
+  }
 
-    ngOnDestroy() {
+  ngOnDestroy() {
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
     }
   }
 
-    applyFilters() {
-      let filtered = [...this.events];
+  //   applyFilters() {
+  //     let filtered = [...this.paginatedEvents];
 
-      // Enhanced search with trimming and better matching
-      if (this.searchQuery && this.searchQuery.trim()) {
-        const query = this.searchQuery.toLowerCase().trim();
-        filtered = filtered.filter(e => {
-          const searchableText = [
-            e.title,
-            e.description,
-            e.artist || '',
-            e.organization || '',
-            e.category || '',
-            e.city
-          ].join(' ').toLowerCase();
+  //     // Enhanced search with trimming and better matching
+  //     if (this.searchQuery && this.searchQuery.trim()) {
+  //       const query = this.searchQuery.toLowerCase().trim();
+  //       filtered = filtered.filter(e => {
+  //         const searchableText = [
+  //           e.title,
+  //           e.description,
+  //           e.artist || '',
+  //           e.organization || '',
+  //           e.category || '',
+  //           e.city
+  //         ].join(' ').toLowerCase();
 
-          return searchableText.includes(query);
-        });
-      }
+  //         return searchableText.includes(query);
+  //       });
+  //     }
 
-    if (this.selectedCategory) {
-      filtered = filtered.filter(e => e.category === this.selectedCategory);
+  //   if (this.selectedCategory) {
+  //     filtered = filtered.filter(e => e.category === this.selectedCategory);
+  //   }
+
+  //   if (this.selectedCity) {
+  //     filtered = filtered.filter(e => this.extractCityFromLocation(e.city) === this.selectedCity);
+  //   }
+
+  //   if (this.dateFrom) {
+  //     const fromDate = new Date(this.dateFrom);
+  //     filtered = filtered.filter(e => new Date(e.date) >= fromDate);
+  //   }
+
+  //   if (this.dateTo) {
+  //     const toDate = new Date(this.dateTo);
+  //     filtered = filtered.filter(e => new Date(e.date) <= toDate);
+  //   }
+
+  //   if (this.selectedPriceRange) {
+  //     filtered = this.applyPriceFilter(filtered);
+  //   }
+
+  //   this.filteredEvents = filtered;
+  //   this.applySorting();
+
+  //   // Reset to first page when filters change
+  //   this.currentPage = 1;
+  //   // this.calculatePagination();
+  // }
+
+  applyPriceFilter(events: Event[]): Event[] {
+    switch (this.selectedPriceRange) {
+      case '0-500':
+        return events.filter(e => e.price <= 500);
+      case '500-1000':
+        return events.filter(e => e.price > 500 && e.price <= 1000);
+      case '1000-2000':
+        return events.filter(e => e.price > 1000 && e.price <= 2000);
+      case '2000+':
+        return events.filter(e => e.price > 2000);
+      default:
+        return events;
     }
-
-    if (this.selectedCity) {
-      filtered = filtered.filter(e => this.extractCityFromLocation(e.city) === this.selectedCity);
-    }
-
-    if (this.dateFrom) {
-      const fromDate = new Date(this.dateFrom);
-      filtered = filtered.filter(e => new Date(e.date) >= fromDate);
-    }
-
-    if (this.dateTo) {
-      const toDate = new Date(this.dateTo);
-      filtered = filtered.filter(e => new Date(e.date) <= toDate);
-    }
-
-    if (this.selectedPriceRange) {
-      filtered = this.applyPriceFilter(filtered);
-    }
-
-    this.filteredEvents = filtered;
-    this.applySorting();
-
-    // Reset to first page when filters change
-    this.currentPage = 1;
-    // this.calculatePagination();
   }
 
-    applyPriceFilter(events: Event[]): Event[] {
-      switch (this.selectedPriceRange) {
-        case '0-500':
-          return events.filter(e => e.price <= 500);
-        case '500-1000':
-          return events.filter(e => e.price > 500 && e.price <= 1000);
-        case '1000-2000':
-          return events.filter(e => e.price > 1000 && e.price <= 2000);
-        case '2000+':
-          return events.filter(e => e.price > 2000);
-        default:
-          return events;
-      }
-    }
-
-    applySorting() {
+  applySorting() {
     this.filteredEvents.sort((a, b) => {
       switch (this.sortBy) {
         case 'date': return new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -643,241 +731,245 @@ import { EventFilter } from '../../common/event-filter/event-filter';
     // Recalculate pagination after sorting
     // this.calculatePagination();
   }
+  onFilterChange() {
+    this.currentPage = 1; // Reset to first page
+    this.fetchEvents(1);   // Fetch from server with new filters
+  }
+  clearFilters() {
+    this.searchQuery = '';
+    this.selectedCategory = '';
+    this.selectedCity = '';
+    this.dateFrom = '';
+    this.dateTo = '';
+    this.selectedPriceRange = '';
+    this.sortBy = 'date';
+    this.onFilterChange(); // Use server-side filtering
+    this.showAlert('info', 'Filters Cleared', 'All filters have been reset.');
+  }
 
-    clearFilters() {
-      this.searchQuery = '';
-      this.selectedCategory = '';
-      this.selectedCity = '';
-      this.dateFrom = '';
-      this.dateTo = '';
-      this.selectedPriceRange = '';
-      this.sortBy = 'date';
-      this.applyFilters();
-      this.showAlert('info', 'Filters Cleared', 'All filters have been reset.');
+  clearSearch() {
+    this.clearFilters();
+
+    // Clear any pending search timeout
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
     }
 
-    clearSearch() {
-      this.searchQuery = '';
+    this.currentPage = 1; // Reset to first page
+    this.fetchEvents(1);  // Fetch fresh data from server
+  }
 
-      // Clear any pending search timeout
-      if (this.searchTimeout) {
-        clearTimeout(this.searchTimeout);
+
+  //  debugSearch() {
+  //   console.log('Search Debug Info:');
+  //   console.log('Search Query:', this.searchQuery);
+  //   console.log('All Events Count:', this.events.length);
+  //   console.log('Filtered Events Count:', this.filteredEvents.length);
+  //   console.log('Paginated Events Count:', this.paginatedEvents.length);
+  //   console.log('Current Page:', this.currentPage);
+  //   console.log('Total Pages:', this.totalPages);
+  // }
+
+  hasActiveFilters(): boolean {
+    return !!(this.searchQuery || this.selectedCategory || this.selectedCity || this.dateFrom || this.dateTo || this.selectedPriceRange);
+  }
+
+  formatDateRange(): string {
+    return this.dateFrom && this.dateTo
+      ? `${this.formatDate(this.dateFrom)} - ${this.formatDate(this.dateTo)}`
+      : this.dateFrom
+        ? `From ${this.formatDate(this.dateFrom)}`
+        : this.dateTo
+          ? `Until ${this.formatDate(this.dateTo)}`
+          : '';
+  }
+
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  formatPriceRange(): string {
+    switch (this.selectedPriceRange) {
+      case '0-500': return 'Free - ₹500';
+      case '500-1000': return '₹500 - ₹1000';
+      case '1000-2000': return '₹1000 - ₹2000';
+      case '2000+': return '₹2000+';
+      default: return '';
+    }
+  }
+
+  showEventDetail(event: Event) {
+    this.selectedEvent = event;
+    this.showEventDetails = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeEventDetails() {
+    this.showEventDetails = false;
+    this.selectedEvent = null;
+    document.body.style.overflow = 'auto';
+  }
+
+  downloadTicket(event: Event) {
+    this.showConfirmation(
+      'Download Ticket',
+      `Generate and download ticket for "${event.title}"?`,
+      () => {
+        this.generateTicketPDF(event);
       }
+    );
+  }
 
-      this.applyFilters();
-    }
+  private generateTicketPDF(event: Event) {
+    this.loadingService.show();
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
+      const margin = 20;
+      const contentWidth = pageWidth - (margin * 2);
 
+      // Header Background
+      doc.setFillColor(102, 126, 234);
+      doc.rect(0, 0, pageWidth, 60, 'F');
 
-    //  debugSearch() {
-    //   console.log('Search Debug Info:');
-    //   console.log('Search Query:', this.searchQuery);
-    //   console.log('All Events Count:', this.events.length);
-    //   console.log('Filtered Events Count:', this.filteredEvents.length);
-    //   console.log('Paginated Events Count:', this.paginatedEvents.length);
-    //   console.log('Current Page:', this.currentPage);
-    //   console.log('Total Pages:', this.totalPages);
-    // }
+      // Header Text
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.setFont('helvetica', 'bold');
+      doc.text('EVENT TICKET', pageWidth / 2, 30, { align: 'center' });
 
-    hasActiveFilters(): boolean {
-      return !!(this.searchQuery || this.selectedCategory || this.selectedCity || this.dateFrom || this.dateTo || this.selectedPriceRange);
-    }
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Official Entry Pass', pageWidth / 2, 45, { align: 'center' });
 
-    formatDateRange(): string {
-      return this.dateFrom && this.dateTo
-        ? `${this.formatDate(this.dateFrom)} - ${this.formatDate(this.dateTo)}`
-        : this.dateFrom
-          ? `From ${this.formatDate(this.dateFrom)}`
-          : this.dateTo
-            ? `Until ${this.formatDate(this.dateTo)}`
-            : '';
-    }
+      // Reset text color for content
+      doc.setTextColor(0, 0, 0);
 
-    formatDate(date: string): string {
-      return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
+      // Start content below header with more spacing
+      let yPosition = 80;
+      const lineHeight = 8;
+      const sectionSpacing = 15;
 
-    formatPriceRange(): string {
-      switch (this.selectedPriceRange) {
-        case '0-500': return 'Free - ₹500';
-        case '500-1000': return '₹500 - ₹1000';
-        case '1000-2000': return '₹1000 - ₹2000';
-        case '2000+': return '₹2000+';
-        default: return '';
-      }
-    }
+      // Event details with better formatting
+      const details = [
+        { label: 'Event Name', value: event.title },
+        { label: 'Description', value: event.description },
+        { label: 'Date', value: this.formatDate(event.date) },
+        { label: 'Time', value: event.timeSlot },
+        { label: 'Duration', value: event.duration },
+        { label: 'Location', value: event.location },
+        { label: 'Category', value: event.category || 'General' },
+        { label: 'Price', value: `${event.price}` },
+        { label: 'Ticket Holder', value: this.userName || 'Guest' }
+      ];
 
-    showEventDetail(event: Event) {
-      this.selectedEvent = event;
-      this.showEventDetails = true;
-      document.body.style.overflow = 'hidden';
-    }
-
-    closeEventDetails() {
-      this.showEventDetails = false;
-      this.selectedEvent = null;
-      document.body.style.overflow = 'auto';
-    }
-
-    downloadTicket(event: Event) {
-      this.showConfirmation(
-        'Download Ticket',
-        `Generate and download ticket for "${event.title}"?`,
-        () => {
-          this.generateTicketPDF(event);
-        }
-      );
-    }
-
-    private generateTicketPDF(event: Event) {
-      this.loadingService.show();
-      try {
-        const doc = new jsPDF();
-        const pageWidth = doc.internal.pageSize.width;
-        const pageHeight = doc.internal.pageSize.height;
-        const margin = 20;
-        const contentWidth = pageWidth - (margin * 2);
-
-        // Header Background
-        doc.setFillColor(102, 126, 234);
-        doc.rect(0, 0, pageWidth, 60, 'F');
-
-        // Header Text
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(24);
-        doc.setFont('helvetica', 'bold');
-        doc.text('EVENT TICKET', pageWidth / 2, 30, { align: 'center' });
-
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Official Entry Pass', pageWidth / 2, 45, { align: 'center' });
-
-        // Reset text color for content
-        doc.setTextColor(0, 0, 0);
-
-        // Start content below header with more spacing
-        let yPosition = 80;
-        const lineHeight = 8;
-        const sectionSpacing = 15;
-
-        // Event details with better formatting
-        const details = [
-          { label: 'Event Name', value: event.title },
-          { label: 'Description', value: event.description },
-          { label: 'Date', value: this.formatDate(event.date) },
-          { label: 'Time', value: event.timeSlot },
-          { label: 'Duration', value: event.duration },
-          { label: 'Location', value: event.location },
-          { label: 'Category', value: event.category || 'General' },
-          { label: 'Price', value: `${event.price}` },
-          { label: 'Ticket Holder', value: this.userName || 'Guest' }
-        ];
-
-        details.forEach((detail, index) => {
-          // Check if we need a new page
-          if (yPosition > pageHeight - 40) {
-            doc.addPage();
-            yPosition = 30;
-          }
-
-          // Label
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(11);
-          doc.text(`${detail.label}:`, margin, yPosition);
-
-          // Value with text wrapping
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(10);
-
-          const labelWidth = 60;
-          const valueX = margin + labelWidth;
-          const maxValueWidth = contentWidth - labelWidth;
-
-          // Handle long text with proper wrapping
-          const splitText = doc.splitTextToSize(detail.value, maxValueWidth);
-          doc.text(splitText, valueX, yPosition);
-
-          // Calculate next position based on wrapped text
-          const textHeight = Array.isArray(splitText) ? splitText.length * lineHeight : lineHeight;
-          yPosition += Math.max(textHeight, lineHeight) + 5;
-        });
-
-        // Add some spacing before footer
-        yPosition += sectionSpacing;
-
-        // Separator line
-        if (yPosition > pageHeight - 60) {
+      details.forEach((detail, index) => {
+        // Check if we need a new page
+        if (yPosition > pageHeight - 40) {
           doc.addPage();
           yPosition = 30;
         }
 
-        doc.setDrawColor(102, 126, 234);
-        doc.setLineWidth(0.5);
-        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+        // Label
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text(`${detail.label}:`, margin, yPosition);
 
-        // Footer
-        yPosition += 15;
-        doc.setFontSize(9);
-        doc.setTextColor(100, 100, 100);
+        // Value with text wrapping
         doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
 
-        const footerText1 = 'This is an official ticket. Please present this ticket at the event entrance.';
-        doc.text(footerText1, pageWidth / 2, yPosition, { align: 'center' });
+        const labelWidth = 60;
+        const valueX = margin + labelWidth;
+        const maxValueWidth = contentWidth - labelWidth;
 
-        yPosition += 10;
-        const footerText2 = `Generated on: ${new Date().toLocaleString()}`;
-        doc.text(footerText2, pageWidth / 2, yPosition, { align: 'center' });
+        // Handle long text with proper wrapping
+        const splitText = doc.splitTextToSize(detail.value, maxValueWidth);
+        doc.text(splitText, valueX, yPosition);
 
-        // Add ticket ID for authenticity
-        yPosition += 10;
-        const ticketId = `Ticket ID: ${Date.now()}-${event._id.slice(-6)}`;
-        doc.text(ticketId, pageWidth / 2, yPosition, { align: 'center' });
+        // Calculate next position based on wrapped text
+        const textHeight = Array.isArray(splitText) ? splitText.length * lineHeight : lineHeight;
+        yPosition += Math.max(textHeight, lineHeight) + 5;
+      });
 
-        // Generate filename
-        const fileName = `ticket-${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+      // Add some spacing before footer
+      yPosition += sectionSpacing;
 
-        // Save the PDF
-        doc.save(fileName);
-
-        this.loadingService.hide();
-        this.showAlert('success', 'Ticket Downloaded', `Your ticket for "${event.title}" has been downloaded successfully!`);
-
-      } catch (error) {
-        console.error('Error generating ticket PDF:', error);
-        this.loadingService.hide();
-        this.showAlert('error', 'Download Failed', 'Failed to generate the ticket. Please try again.');
+      // Separator line
+      if (yPosition > pageHeight - 60) {
+        doc.addPage();
+        yPosition = 30;
       }
-    }
 
-    scrollToRegisteredEvents() {
-      const registeredSection = document.querySelector('.registered-section');
-      if (registeredSection) {
-        registeredSection.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    }
-    scrollToAvailableEvents() {
-      const availableSection = document.querySelector('.events-section');
-      if (availableSection) {
-        availableSection.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    }
+      doc.setDrawColor(102, 126, 234);
+      doc.setLineWidth(0.5);
+      doc.line(margin, yPosition, pageWidth - margin, yPosition);
 
-    logout() {
-      this.showConfirmation(
-        'Confirm Logout',
-        'Are you sure you want to logout? You will need to login again to access your dashboard.',
-        () => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          sessionStorage.clear();
-          window.location.href = '/';
-        }
-      );
-    }
+      // Footer
+      yPosition += 15;
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont('helvetica', 'normal');
 
+      const footerText1 = 'This is an official ticket. Please present this ticket at the event entrance.';
+      doc.text(footerText1, pageWidth / 2, yPosition, { align: 'center' });
+
+      yPosition += 10;
+      const footerText2 = `Generated on: ${new Date().toLocaleString()}`;
+      doc.text(footerText2, pageWidth / 2, yPosition, { align: 'center' });
+
+      // Add ticket ID for authenticity
+      yPosition += 10;
+      const ticketId = `Ticket ID: ${Date.now()}-${event._id.slice(-6)}`;
+      doc.text(ticketId, pageWidth / 2, yPosition, { align: 'center' });
+
+      // Generate filename
+      const fileName = `ticket-${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+
+      // Save the PDF
+      doc.save(fileName);
+
+      this.loadingService.hide();
+      this.showAlert('success', 'Ticket Downloaded', `Your ticket for "${event.title}" has been downloaded successfully!`);
+
+    } catch (error) {
+      console.error('Error generating ticket PDF:', error);
+      this.loadingService.hide();
+      this.showAlert('error', 'Download Failed', 'Failed to generate the ticket. Please try again.');
+    }
   }
+
+  scrollToRegisteredEvents() {
+    const registeredSection = document.querySelector('.registered-section');
+    if (registeredSection) {
+      registeredSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }
+  scrollToAvailableEvents() {
+    const availableSection = document.querySelector('.events-section');
+    if (availableSection) {
+      availableSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }
+
+  logout() {
+    this.showConfirmation(
+      'Confirm Logout',
+      'Are you sure you want to logout? You will need to login again to access your dashboard.',
+      () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.clear();
+        window.location.href = '/';
+      }
+    );
+  }
+
+}

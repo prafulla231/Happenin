@@ -4,7 +4,7 @@ import { apiResponse } from '../utils/apiResponse.js';
 import { apiError } from '../utils/apiError.js';
 import mongoose from 'mongoose';
 import { Approval } from '../models/approval.js';
-
+import {Location} from '../models/locationModel.js';
 // CREATE EVENT
 export const createApproval = async (req, res) => {
   try {
@@ -72,46 +72,125 @@ export const getEvents = async (req, res) => {
 };
 
 /*pagination */
-export const getPaginatedEvents = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+// 📁 controllers/eventController.js
 
-    console.log('🔄 Pagination Request Received');
-    console.log(`➡ Page: ${page}, Limit: ${limit}, Skip: ${skip}`);
+// export const getPaginatedEvents = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const skip = (page - 1) * limit;
 
-    const filter = { isDeleted: false };
-    console.log('🔍 Applying Filter:', filter);
+//     const filter = { isDeleted: false };
 
-    const events = await Event.find(filter)
-      .skip(skip)
-      .limit(limit)
-      .populate('createdBy', 'name email role');
+//     if (req.query.search) {
+//       filter.title = { $regex: req.query.search, $options: 'i' };
+//     }
 
-    console.log(`✅ Events Fetched: ${events.length}`);
+//     if (req.query.category) {
+//       filter.category = req.query.category;
+//     }
 
-    const total = await Event.countDocuments(filter);
-    console.log(`📊 Total Events Matching Filter: ${total}`);
+//     if (req.query.city) {
+//       filter.location = req.query.city;
+//     }
 
-    const pagination = {
-      totalItems: total,
-      currentPage: page,
-      totalPages: Math.ceil(total / limit),
-      perPage: limit,
-    };
+//     if (req.query.fromDate || req.query.toDate) {
+//       filter.date = {};
+//       if (req.query.fromDate) filter.date.$gte = new Date(req.query.fromDate);
+//       if (req.query.toDate) filter.date.$lte = new Date(req.query.toDate);
+//     }
 
-    console.log('📦 Pagination Metadata:', pagination);
+//     if (req.query.priceRange) {
+//       const [min, max] = req.query.priceRange.split('-').map(Number);
+//       filter.price = { $gte: min, $lte: max };
+//     }
 
-    return apiResponse(res, 200, 'Paginated events fetched successfully', {
-      events,
-      pagination
-    });
-  } catch (error) {
-    console.error('❌ Get Paginated Events error:', error.message);
-    return apiError(res, 500, 'Server error while fetching paginated events', error);
-  }
-};
+//     const events = await Event.find(filter)
+//       .skip(skip)
+//       .limit(limit)
+//       .populate('createdBy', 'name email role');
+
+//     const total = await Event.countDocuments(filter);
+
+//     const pagination = {
+//       totalItems: total,
+//       currentPage: page,
+//       totalPages: Math.ceil(total / limit),
+//       perPage: limit,
+//     };
+
+//     return apiResponse(res, 200, 'Paginated events fetched successfully', {
+//       events,
+//       pagination,
+//     });
+//   } catch (error) {
+//     console.error('❌ Get Paginated Events error:', error.message);
+//     return apiError(res, 500, 'Server error while fetching paginated events', error);
+//   }
+// };
+// export const getPaginatedEvents = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const skip = (page - 1) * limit;
+
+//     const filter = { isDeleted: false };
+
+//     console.log('🛬 API HIT: /paginatedEvents');
+//     console.log('📨 Query Params:', req.query);
+
+//     if (req.query.search) {
+//       filter.title = { $regex: req.query.search, $options: 'i' };
+//     }
+
+//     if (req.query.category) {
+//       filter.category = req.query.category;
+//     }
+
+//     if (req.query.city) {
+//       filter.location = req.query.city;
+//     }
+
+//     if (req.query.fromDate || req.query.toDate) {
+//       filter.date = {};
+//       if (req.query.fromDate) filter.date.$gte = new Date(req.query.fromDate);
+//       if (req.query.toDate) filter.date.$lte = new Date(req.query.toDate);
+//     }
+
+//     if (req.query.priceRange) {
+//       const [min, max] = req.query.priceRange.split('-').map(Number);
+//       filter.price = { $gte: min, $lte: max };
+//     }
+
+//     console.log('🔍 Final Filter Used:', filter);
+
+//     const events = await Approval.find(filter)
+//       .skip(skip)
+//       .limit(limit)
+//       .populate('createdBy', 'name email role');
+
+//     const total = await Approval.countDocuments(filter);
+
+//     console.log(`✅ ${events.length} Events Fetched`);
+//     console.log(`📊 Total Matching Events: ${total}`);
+
+//     const pagination = {
+//       totalItems: total,
+//       currentPage: page,
+//       totalPages: Math.ceil(total / limit),
+//       perPage: limit,
+//     };
+
+//     return apiResponse(res, 200, 'Paginated events fetched successfully', {
+//       events,
+//       pagination
+//     });
+//   } catch (error) {
+//     console.error('❌ Get Paginated Events Error:', error);
+//     return apiError(res, 500, 'Server error while fetching paginated events', error);
+//   }
+// };
+
 
 
 export const getUpcomingEvents = async (req, res) => {
@@ -128,6 +207,82 @@ export const getUpcomingEvents = async (req, res) => {
     return apiError(res, 500, 'Server error while fetching upcoming events', error);
   }
 };
+
+export const getPaginatedEvents = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = { isDeleted: false };
+
+   
+
+    // Search by title
+    if (req.query.search) {
+      filter.title = { $regex: req.query.search, $options: 'i' };
+    }
+
+    // Filter by category
+    if (req.query.category) {
+      filter.category = req.query.category;
+    }
+
+    // 🔥 Filter by city by first mapping to placeNames
+    if (req.query.city) {
+      const matchingLocations = await Location.find({ city: req.query.city }).select('placeName');
+      const placeNames = matchingLocations.map(loc => loc.placeName);
+
+     
+      if (placeNames.length > 0) {
+        filter.location = { $in: placeNames };
+      } else {
+        // Ensure query returns no events
+        filter.location = '__NO_MATCH__';
+      }
+    }
+
+    // Filter by date range
+    if (req.query.fromDate || req.query.toDate) {
+      filter.date = {};
+      if (req.query.fromDate) filter.date.$gte = new Date(req.query.fromDate);
+      if (req.query.toDate) filter.date.$lte = new Date(req.query.toDate);
+    }
+
+    // Filter by price range
+    if (req.query.priceRange) {
+      const [min, max] = req.query.priceRange.split('-').map(Number);
+      filter.price = { $gte: min, $lte: max };
+    }
+
+
+    // Get paginated events
+    const events = await Event.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .populate('createdBy', 'name email role');
+
+    const total = await Event.countDocuments(filter);
+
+    const pagination = {
+      totalItems: total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      perPage: limit,
+    };
+
+
+    return apiResponse(res, 200, 'Paginated events fetched successfully', {
+      events,
+      pagination
+    });
+
+  } catch (error) {
+    console.error('❌ Get Paginated Events Error:', error);
+    return apiError(res, 500, 'Server error while fetching paginated events', error);
+  }
+};
+
 
 // GET EVENTS BY USER ID (only not deleted)
 export const getEventById = async (req, res) => {

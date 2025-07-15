@@ -13,6 +13,19 @@
   margin: 0;
 }
 
+.filter-select {
+  /* Limit dropdown height to show ~5 options */
+  max-height: 120px; /* Adjust based on your option height */
+  overflow-y: auto;
+}
+
+/* Alternative approach using size attribute with custom styling */
+.filter-select[size] {
+  height: auto;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
 /* Header Styles */
 .dashboard-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environment';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders , HttpParams  } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Event } from '../components/user-dashboard/user-dashboard';
 import { RegisteredUser } from '../components/organizer-dashboard/organizer-dashboard';
@@ -39,12 +39,33 @@ export class EventService {
     );
   }
 
-  getPaginatedEvents(page: number = 1, limit: number =10): Observable<any> {
-  const url = `${environment.apiBaseUrl}/events/paginatedEvents?page=${page}&limit=${limit}`;
+//   getPaginatedEvents(page: number = 1, limit: number =10): Observable<any> {
+//   const url = `${environment.apiBaseUrl}/events/paginatedEvents?page=${page}&limit=${limit}`;
+//   return this.http.get<any>(url, {
+//     // headers: this.getAuthHeaders()
+//   });
+// }
+
+getPaginatedEvents(page: number = 1, limit: number = 10, filters: any = {}): Observable<any> {
+  let params = new HttpParams()
+    .set('page', page)
+    .set('limit', limit);
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) {
+      params = params.set(key, String(value));
+
+    }
+  });
+
+  const url = `${environment.apiBaseUrl}/events/paginatedEvents`;
+
   return this.http.get<any>(url, {
-    // headers: this.getAuthHeaders()
+    headers: this.getAuthHeaders(),
+    params
   });
 }
+
 
   getUpcomingEvents(): Observable<Event[]> {
     const url = `${environment.apiBaseUrl}${environment.apis.getUpcomingEvent}`;

@@ -10,7 +10,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
   styleUrls: ['./footer.scss']
 })
 export class FooterComponent {
-   brandName: string = "cvjgv'";
+   brandName: string = "Happenin'";
  contactEmail: string = 'happenin.events.app@gmail.com';
   @Input() showSocials: boolean = false;
   @Input() customMessage: string = '';
