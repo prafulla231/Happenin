@@ -3390,3 +3390,233 @@ $admin-gradient-button: linear-gradient(135deg, $admin-primary-purple 0%, #8b5cf
 .admin-event-card:nth-child(odd) {
   animation-delay: 0.2s;
 }
+
+// Variables
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$button-gradient: linear-gradient(45deg, #667eea, #764ba2);
+$card-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+$card-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.3);
+$button-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+$button-shadow-hover: 0 6px 20px rgba(102, 126, 234, 0.4);
+
+// Colors
+$upcoming-color: #4CAF50;
+$expired-color: #f44336;
+$waiting-color: #FF9800;
+$analytics-color: #2196F3;
+
+// Mixins
+@mixin card-hover-effect {
+  transform: translateY(-10px);
+  box-shadow: $card-shadow-hover;
+}
+
+@mixin button-hover-effect {
+  transform: translateY(-2px);
+  box-shadow: $button-shadow-hover;
+}
+
+@mixin card-border($color) {
+  border-top: 4px solid $color;
+}
+
+// Base styles
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  
+  .dashboard-title {
+    text-align: center;
+    color: white;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-weight: 600;
+  }
+}
+
+// Cards Grid
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+}
+
+// Dashboard Card
+.dashboard-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: $card-shadow;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  
+  &:hover {
+    @include card-hover-effect;
+    
+    .card-image {
+      transform: scale(1.05);
+    }
+  }
+  
+  &:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+  }
+  
+  &:active {
+    transform: translateY(-5px) scale(0.98);
+  }
+  
+  // Card variants
+  &.upcoming-events {
+    @include card-border($upcoming-color);
+    
+    .card-icon {
+      color: $upcoming-color;
+    }
+  }
+  
+  &.expired-events {
+    @include card-border($expired-color);
+    
+    .card-icon {
+      color: $expired-color;
+    }
+  }
+  
+  &.waiting-approval {
+    @include card-border($waiting-color);
+    
+    .card-icon {
+      color: $waiting-color;
+    }
+  }
+  
+  &.analytics {
+    @include card-border($analytics-color);
+    
+    .card-icon {
+      color: $analytics-color;
+    }
+  }
+}
+
+// Card Image
+.card-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+// Card Icon
+.card-icon {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+// Card Content
+.card-content {
+  padding: 1.5rem;
+  text-align: center;
+  
+  .card-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+  
+  .card-description {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+}
+
+// Card Button
+.card-button {
+  background: $button-gradient;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: $button-shadow;
+  
+  &:hover {
+    @include button-hover-effect;
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+    
+    .dashboard-title {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+    }
+  }
+  
+  .cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 0.5rem;
+  }
+  
+  .card-content {
+    padding: 1rem;
+    
+    .card-title {
+      font-size: 1.2rem;
+    }
+    
+    .card-description {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    .dashboard-title {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+  }
+  
+  .card-button {
+    padding: 10px 25px;
+    font-size: 0.9rem;
+  }
+}

@@ -6,8 +6,8 @@ import * as echarts from 'echarts';
 import { LoadingService } from '../loading';
 import { EventService } from '../../services/event';
 import { LocationService } from '../../services/location';
-import { HeaderComponent, HeaderButton } from '../header/header';
-import { FooterComponent } from '../footer/footer';
+import { HeaderComponent, HeaderButton } from '../../common/header/header';
+import { FooterComponent } from '../../common/footer/footer';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AdminAnalytics } from '../../interfaces/analytics.interface';
 
@@ -27,10 +27,9 @@ export interface AnalyticsData {
   standalone: true,
   imports: [CommonModule, RouterModule, HeaderComponent, FooterComponent],
   templateUrl: './admin-analytics.html',
-  styleUrls: ['./admin-analytics.scss']
+  styleUrls: ['./admin-analytics.scss'],
 })
 export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
-
   analyticsData: AnalyticsData = {
     totalEvents: 0,
     upcomingEvents: 0,
@@ -39,7 +38,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
     eventsByCategory: {},
     eventsByMonth: {},
     registrationsByEvent: [],
-    revenueByEvent: []
+    revenueByEvent: [],
   };
 
   private charts: { [key: string]: echarts.ECharts } = {};
@@ -54,12 +53,12 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
     // { text: 'Expired Events', action: 'viewExpiredEvents' },
     { text: 'Export Data', action: 'exportData', style: 'primary' },
     { text: 'Refresh', action: 'refresh', style: 'primary' },
-    { text: 'Logout', action: 'logout', style: 'primary' }
+    { text: 'Logout', action: 'logout', style: 'primary' },
   ];
 
   constructor(
     private http: HttpClient,
-     private AnalyticsService: AnalyticsService,
+    private AnalyticsService: AnalyticsService,
     private router: Router,
     private loadingService: LoadingService,
     private eventService: EventService,
@@ -83,7 +82,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     // Dispose all charts
-    Object.values(this.charts).forEach(chart => {
+    Object.values(this.charts).forEach((chart) => {
       if (chart && !chart.isDisposed()) {
         chart.dispose();
       }
@@ -123,7 +122,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private setupResizeObserver(): void {
     this.resizeObserver = new ResizeObserver(() => {
-      Object.values(this.charts).forEach(chart => {
+      Object.values(this.charts).forEach((chart) => {
         if (chart && !chart.isDisposed()) {
           chart.resize();
         }
@@ -168,26 +167,24 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
   }*/
 
   loadAnalyticsData(): void {
-  this.loadingService.show();
+    this.loadingService.show();
 
-  this.AnalyticsService.getAdminAnalytics().subscribe({
-    next: (data: AdminAnalytics) => {
-      this.analyticsData = data;
-      this.dataLoaded = true;
-      if (this.viewInitialized) this.initializeChartsWhenReady();
-      this.loadingService.hide();
-    },
-    error: (err) => {
-      console.error('Error loading analytics data:', err.message);
-      this.loadingService.hide();
-      if (err.message.includes('401') || err.message.includes('403')) {
-        this.logout();
-      }
-    }
-  });
-}
-
-
+    this.AnalyticsService.getAdminAnalytics().subscribe({
+      next: (data: AdminAnalytics) => {
+        this.analyticsData = data;
+        this.dataLoaded = true;
+        if (this.viewInitialized) this.initializeChartsWhenReady();
+        this.loadingService.hide();
+      },
+      error: (err) => {
+        console.error('Error loading analytics data:', err.message);
+        this.loadingService.hide();
+        if (err.message.includes('401') || err.message.includes('403')) {
+          this.logout();
+        }
+      },
+    });
+  }
 
   private initializeChartsWhenReady(): void {
     // Wait a bit for DOM to be fully ready
@@ -239,7 +236,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private disposeAllCharts(): void {
-    Object.values(this.charts).forEach(chart => {
+    Object.values(this.charts).forEach((chart) => {
       if (chart && !chart.isDisposed()) {
         chart.dispose();
       }
@@ -261,7 +258,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
       title: {
         text: 'Key Performance Indicators',
         left: 'center',
-        textStyle: { color: '#333', fontSize: 18, fontWeight: 'bold' }
+        textStyle: { color: '#333', fontSize: 18, fontWeight: 'bold' },
       },
       tooltip: { trigger: 'item' },
       series: [
@@ -270,8 +267,10 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
           center: ['25%', '60%'],
           radius: '50%',
           detail: { formatter: '{value}' },
-          data: [{ value: this.analyticsData.totalEvents, name: 'Total Events' }],
-          axisLine: { lineStyle: { color: [[1, '#4CAF50']] } }
+          data: [
+            { value: this.analyticsData.totalEvents, name: 'Total Events' },
+          ],
+          axisLine: { lineStyle: { color: [[1, '#4CAF50']] } },
         },
         {
           type: 'gauge',
@@ -279,10 +278,15 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
           radius: '50%',
           max: Math.max(this.analyticsData.totalRegistrations, 100),
           detail: { formatter: '{value}' },
-          data: [{ value: this.analyticsData.totalRegistrations, name: 'Registrations' }],
-          axisLine: { lineStyle: { color: [[1, '#2196F3']] } }
-        }
-      ]
+          data: [
+            {
+              value: this.analyticsData.totalRegistrations,
+              name: 'Registrations',
+            },
+          ],
+          axisLine: { lineStyle: { color: [[1, '#2196F3']] } },
+        },
+      ],
     };
 
     myChart.setOption(option);
@@ -299,25 +303,27 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
     const myChart = echarts.init(chartDom);
     this.charts['category'] = myChart;
 
-    const data = Object.entries(this.analyticsData.eventsByCategory).map(([name, value]) => ({
-      name,
-      value
-    }));
+    const data = Object.entries(this.analyticsData.eventsByCategory).map(
+      ([name, value]) => ({
+        name,
+        value,
+      })
+    );
 
     const option = {
       title: {
         text: 'Event Categories Distribution',
         left: 'center',
-        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
+        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' },
       },
       tooltip: {
         trigger: 'item',
-        formatter: '{a} <br/>{b}: {c} ({d}%)'
+        formatter: '{a} <br/>{b}: {c} ({d}%)',
       },
       legend: {
         orient: 'vertical',
         left: 'left',
-        top: 'middle'
+        top: 'middle',
       },
       series: [
         {
@@ -330,13 +336,13 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
             itemStyle: {
               shadowBlur: 10,
               shadowOffsetX: 0,
-              shadowColor: 'rgba(0, 0, 0, 0.5)'
-            }
+              shadowColor: 'rgba(0, 0, 0, 0.5)',
+            },
           },
           animationType: 'scale',
-          animationEasing: 'elasticOut'
-        }
-      ]
+          animationEasing: 'elasticOut',
+        },
+      ],
     };
 
     myChart.setOption(option);
@@ -355,34 +361,48 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Sort months chronologically
     const monthOrder = [
-      'Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025',
-      'Jul 2024', 'Aug 2024', 'Sep 2024', 'Oct 2024', 'Nov 2024', 'Dec 2024'
+      'Jan 2025',
+      'Feb 2025',
+      'Mar 2025',
+      'Apr 2025',
+      'May 2025',
+      'Jun 2025',
+      'Jul 2024',
+      'Aug 2024',
+      'Sep 2024',
+      'Oct 2024',
+      'Nov 2024',
+      'Dec 2024',
     ];
 
-    const months = monthOrder.filter(month => this.analyticsData.eventsByMonth.hasOwnProperty(month));
-    const eventCounts = months.map(month => this.analyticsData.eventsByMonth[month] || 0);
+    const months = monthOrder.filter((month) =>
+      this.analyticsData.eventsByMonth.hasOwnProperty(month)
+    );
+    const eventCounts = months.map(
+      (month) => this.analyticsData.eventsByMonth[month] || 0
+    );
 
     const option = {
       title: {
         text: 'Monthly Event Trends',
         left: 'center',
-        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
+        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' },
       },
       tooltip: {
         trigger: 'axis',
-        formatter: function(params: any) {
+        formatter: function (params: any) {
           return `${params[0].name}<br/>Events: ${params[0].value}`;
-        }
+        },
       },
       xAxis: {
         type: 'category',
         data: months,
         axisPointer: { type: 'shadow' },
-        axisLabel: { rotate: 45 }
+        axisLabel: { rotate: 45 },
       },
       yAxis: {
         type: 'value',
-        name: 'Number of Events'
+        name: 'Number of Events',
       },
       series: [
         {
@@ -394,12 +414,12 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: 'rgba(76, 175, 80, 0.3)' },
-              { offset: 1, color: 'rgba(76, 175, 80, 0.1)' }
-            ])
+              { offset: 1, color: 'rgba(76, 175, 80, 0.1)' },
+            ]),
           },
-          smooth: true
-        }
-      ]
+          smooth: true,
+        },
+      ],
     };
 
     myChart.setOption(option);
@@ -418,7 +438,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Get events with registrations > 0, sorted by registrations
     const eventsWithRegistrations = this.analyticsData.registrationsByEvent
-      .filter(item => item.registrations > 0)
+      .filter((item) => item.registrations > 0)
       .sort((a, b) => b.registrations - a.registrations)
       .slice(0, 10);
 
@@ -429,47 +449,52 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
           text: 'Top Events by Registrations',
           subtext: 'No registrations data available',
           left: 'center',
-          textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
-        }
+          textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' },
+        },
       };
       myChart.setOption(option);
       this.setupChartResize('registrations');
       return;
     }
 
-    const eventTitles = eventsWithRegistrations.map(item =>
-      item.eventTitle.length > 25 ? item.eventTitle.substring(0, 25) + '...' : item.eventTitle
+    const eventTitles = eventsWithRegistrations.map((item) =>
+      item.eventTitle.length > 25
+        ? item.eventTitle.substring(0, 25) + '...'
+        : item.eventTitle
     );
-    const registrations = eventsWithRegistrations.map(item => item.registrations);
+    const registrations = eventsWithRegistrations.map(
+      (item) => item.registrations
+    );
 
     const option = {
       title: {
         text: 'Top Events by Registrations',
         left: 'center',
-        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
+        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' },
       },
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
-        formatter: function(params: any) {
-          const originalTitle = eventsWithRegistrations[params[0].dataIndex].eventTitle;
+        formatter: function (params: any) {
+          const originalTitle =
+            eventsWithRegistrations[params[0].dataIndex].eventTitle;
           return `${originalTitle}<br/>Registrations: ${params[0].value}`;
-        }
+        },
       },
       grid: {
         left: '15%',
         right: '10%',
         top: '15%',
-        bottom: '10%'
+        bottom: '10%',
       },
       yAxis: {
         type: 'category',
         data: eventTitles,
-        axisLabel: { fontSize: 10 }
+        axisLabel: { fontSize: 10 },
       },
       xAxis: {
         type: 'value',
-        name: 'Registrations'
+        name: 'Registrations',
       },
       series: [
         {
@@ -478,12 +503,12 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
           itemStyle: {
             color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [
               { offset: 0, color: '#2196F3' },
-              { offset: 1, color: '#21CBF3' }
-            ])
+              { offset: 1, color: '#21CBF3' },
+            ]),
           },
-          barWidth: '60%'
-        }
-      ]
+          barWidth: '60%',
+        },
+      ],
     };
 
     myChart.setOption(option);
@@ -502,7 +527,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Get events with revenue > 0, sorted by revenue
     const eventsWithRevenue = this.analyticsData.revenueByEvent
-      .filter(item => item.revenue > 0)
+      .filter((item) => item.revenue > 0)
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 10);
 
@@ -513,55 +538,58 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
           text: 'Top Events by Revenue',
           subtext: 'No revenue data available',
           left: 'center',
-          textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
-        }
+          textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' },
+        },
       };
       myChart.setOption(option);
       this.setupChartResize('revenue');
       return;
     }
 
-    const eventTitles = eventsWithRevenue.map(item =>
-      item.eventTitle.length > 20 ? item.eventTitle.substring(0, 20) + '...' : item.eventTitle
+    const eventTitles = eventsWithRevenue.map((item) =>
+      item.eventTitle.length > 20
+        ? item.eventTitle.substring(0, 20) + '...'
+        : item.eventTitle
     );
-    const revenues = eventsWithRevenue.map(item => item.revenue);
+    const revenues = eventsWithRevenue.map((item) => item.revenue);
 
     const option = {
       title: {
         text: 'Top Events by Revenue',
         left: 'center',
-        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
+        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' },
       },
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
-        formatter: function(params: any) {
-          const originalTitle = eventsWithRevenue[params[0].dataIndex].eventTitle;
+        formatter: function (params: any) {
+          const originalTitle =
+            eventsWithRevenue[params[0].dataIndex].eventTitle;
           return `${originalTitle}<br/>Revenue: ₹${params[0].value.toLocaleString()}`;
-        }
+        },
       },
       grid: {
         left: '10%',
         right: '10%',
         top: '15%',
-        bottom: '15%'
+        bottom: '15%',
       },
       xAxis: {
         type: 'category',
         data: eventTitles,
-        axisLabel: { rotate: 45, fontSize: 10 }
+        axisLabel: { rotate: 45, fontSize: 10 },
       },
       yAxis: {
         type: 'value',
         name: 'Revenue (₹)',
         axisLabel: {
-          formatter: function(value: number) {
+          formatter: function (value: number) {
             if (value >= 1000) {
               return '₹' + (value / 1000).toFixed(1) + 'K';
             }
             return '₹' + value;
-          }
-        }
+          },
+        },
       },
       series: [
         {
@@ -570,12 +598,12 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
           itemStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: '#FF9800' },
-              { offset: 1, color: '#F57C00' }
-            ])
+              { offset: 1, color: '#F57C00' },
+            ]),
           },
-          barWidth: '60%'
-        }
-      ]
+          barWidth: '60%',
+        },
+      ],
     };
 
     myChart.setOption(option);
@@ -594,22 +622,22 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const data = [
       { name: 'Upcoming Events', value: this.analyticsData.upcomingEvents },
-      { name: 'Expired Events', value: this.analyticsData.expiredEvents }
+      { name: 'Expired Events', value: this.analyticsData.expiredEvents },
     ];
 
     const option = {
       title: {
         text: 'Event Status Overview',
         left: 'center',
-        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' }
+        textStyle: { color: '#333', fontSize: 16, fontWeight: 'bold' },
       },
       tooltip: {
         trigger: 'item',
-        formatter: '{a} <br/>{b}: {c} ({d}%)'
+        formatter: '{a} <br/>{b}: {c} ({d}%)',
       },
       legend: {
         bottom: '5%',
-        left: 'center'
+        left: 'center',
       },
       series: [
         {
@@ -621,15 +649,15 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
           itemStyle: {
             borderRadius: 10,
             borderColor: '#fff',
-            borderWidth: 2
+            borderWidth: 2,
           },
           label: {
             show: true,
-            formatter: '{b}: {d}%'
+            formatter: '{b}: {d}%',
           },
-          color: ['#4CAF50', '#FF5722']
-        }
-      ]
+          color: ['#4CAF50', '#FF5722'],
+        },
+      ],
     };
 
     myChart.setOption(option);
@@ -658,7 +686,9 @@ export class AnalyticsComponent implements OnInit, OnDestroy, AfterViewInit {
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `analytics-data-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `analytics-data-${
+      new Date().toISOString().split('T')[0]
+    }.json`;
     link.click();
     URL.revokeObjectURL(url);
   }

@@ -1424,20 +1424,19 @@
 }
 
 .register-btn {
-  flex: 1;
-  background: linear-gradient(145deg, #667eea, #764ba2);
+   background: linear-gradient(145deg, #667eea, #764ba2);
   color: white;
   border: none;
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3);
 
   // 3D Effect
   box-shadow:
