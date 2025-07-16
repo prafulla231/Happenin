@@ -7,20 +7,24 @@ import { Subject, takeUntil } from 'rxjs';
 // import { AnalyticsService } from '../../services/analytics.service';
 import { EventAnalytics } from '../../interfaces/analytics.interface';
 import { RouterModule, Router } from '@angular/router';
-import { HeaderComponent, HeaderButton } from '../header/header';
-import { FooterComponent } from '../footer/footer';
+import { HeaderComponent, HeaderButton } from '../../common/header/header';
+import { FooterComponent } from '../../common/footer/footer';
 import { AnalyticsService } from '../../services/analytics.service';
-
 
 @Component({
   selector: 'app-organizer-analytics',
   standalone: true,
-  imports: [CommonModule, NgChartsModule, HeaderComponent, FooterComponent, RouterModule],
+  imports: [
+    CommonModule,
+    NgChartsModule,
+    HeaderComponent,
+    FooterComponent,
+    RouterModule,
+  ],
   templateUrl: './organizer-analytics.html',
-  styleUrls: ['./organizer-analytics.scss']
+  styleUrls: ['./organizer-analytics.scss'],
 })
 export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
-
   private destroy$ = new Subject<void>();
 
   // Properties
@@ -37,7 +41,7 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
     { text: 'Dashboard', action: 'dashboard', style: 'primary' },
     { text: 'Export Data', action: 'exportData', style: 'primary' },
     { text: 'Refresh', action: 'refresh', style: 'primary' },
-    { text: 'Logout', action: 'logout', style: 'primary' }
+    { text: 'Logout', action: 'logout', style: 'primary' },
   ];
 
   // Chart configurations
@@ -47,8 +51,8 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
     plugins: {
       legend: {
         position: 'bottom',
-      }
-    }
+      },
+    },
   };
 
   barChartOptions: ChartConfiguration['options'] = {
@@ -58,15 +62,15 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
       y: {
         beginAtZero: true,
         ticks: {
-          stepSize: 1
-        }
-      }
+          stepSize: 1,
+        },
+      },
     },
     plugins: {
       legend: {
-        display: false
-      }
-    }
+        display: false,
+      },
+    },
   };
 
   doughnutChartOptions: ChartConfiguration['options'] = {
@@ -75,51 +79,71 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
     plugins: {
       legend: {
         position: 'bottom',
-      }
-    }
+      },
+    },
   };
 
   // Chart data
   categoryChartData: ChartData<'pie'> = {
     labels: [],
-    datasets: [{
-      data: [],
-      backgroundColor: [
-        '#3498db', '#e74c3c', '#2ecc71', '#f39c12',
-        '#9b59b6', '#1abc9c', '#34495e', '#e67e22'
-      ]
-    }]
+    datasets: [
+      {
+        data: [],
+        backgroundColor: [
+          '#3498db',
+          '#e74c3c',
+          '#2ecc71',
+          '#f39c12',
+          '#9b59b6',
+          '#1abc9c',
+          '#34495e',
+          '#e67e22',
+        ],
+      },
+    ],
   };
 
   monthlyChartData: ChartData<'bar'> = {
     labels: [],
-    datasets: [{
-      data: [],
-      backgroundColor: '#3498db',
-      borderColor: '#2980b9',
-      borderWidth: 1
-    }]
+    datasets: [
+      {
+        data: [],
+        backgroundColor: '#3498db',
+        borderColor: '#2980b9',
+        borderWidth: 1,
+      },
+    ],
   };
 
   registrationsChartData: ChartData<'bar'> = {
     labels: [],
-    datasets: [{
-      data: [],
-      backgroundColor: '#2ecc71',
-      borderColor: '#27ae60',
-      borderWidth: 1
-    }]
+    datasets: [
+      {
+        data: [],
+        backgroundColor: '#2ecc71',
+        borderColor: '#27ae60',
+        borderWidth: 1,
+      },
+    ],
   };
 
   revenueChartData: ChartData<'doughnut'> = {
     labels: [],
-    datasets: [{
-      data: [],
-      backgroundColor: [
-        '#f39c12', '#e74c3c', '#9b59b6', '#1abc9c',
-        '#34495e', '#e67e22', '#3498db', '#2ecc71'
-      ]
-    }]
+    datasets: [
+      {
+        data: [],
+        backgroundColor: [
+          '#f39c12',
+          '#e74c3c',
+          '#9b59b6',
+          '#1abc9c',
+          '#34495e',
+          '#e67e22',
+          '#3498db',
+          '#2ecc71',
+        ],
+      },
+    ],
   };
 
   constructor(
@@ -164,7 +188,8 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.analyticsService.getOrganizerAnalytics(this.organizerId)
+    this.analyticsService
+      .getOrganizerAnalytics(this.organizerId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
@@ -177,7 +202,7 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
           this.error = error.message;
           this.loading = false;
           this.dataLoaded = false;
-        }
+        },
       });
   }
 
@@ -188,7 +213,8 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
     }
 
     this.refreshing = true;
-    this.analyticsService.refreshAnalytics('organizer', this.organizerId)
+    this.analyticsService
+      .refreshAnalytics('organizer', this.organizerId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -198,13 +224,14 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Failed to refresh analytics:', error);
           this.refreshing = false;
-        }
+        },
       });
   }
 
   private decodeToken(): void {
     try {
-      const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+      const token =
+        sessionStorage.getItem('token') || localStorage.getItem('token');
 
       if (!token) {
         console.error('No token found in storage');
@@ -229,7 +256,8 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error decoding token:', error);
       this.organizerId = null;
-      this.error = 'Failed to decode authentication token. Please log in again.';
+      this.error =
+        'Failed to decode authentication token. Please log in again.';
     }
   }
 
@@ -237,25 +265,35 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
     // Update category chart
     this.categoryChartData = {
       labels: Object.keys(data.eventsByCategory),
-      datasets: [{
-        data: Object.values(data.eventsByCategory),
-        backgroundColor: [
-          '#3498db', '#e74c3c', '#2ecc71', '#f39c12',
-          '#9b59b6', '#1abc9c', '#34495e', '#e67e22'
-        ]
-      }]
+      datasets: [
+        {
+          data: Object.values(data.eventsByCategory),
+          backgroundColor: [
+            '#3498db',
+            '#e74c3c',
+            '#2ecc71',
+            '#f39c12',
+            '#9b59b6',
+            '#1abc9c',
+            '#34495e',
+            '#e67e22',
+          ],
+        },
+      ],
     };
 
     // Update monthly events chart
     this.monthlyChartData = {
       labels: Object.keys(data.eventsByMonth),
-      datasets: [{
-        data: Object.values(data.eventsByMonth),
-        backgroundColor: '#3498db',
-        borderColor: '#2980b9',
-        borderWidth: 1,
-        label: 'Events'
-      }]
+      datasets: [
+        {
+          data: Object.values(data.eventsByMonth),
+          backgroundColor: '#3498db',
+          borderColor: '#2980b9',
+          borderWidth: 1,
+          label: 'Events',
+        },
+      ],
     };
 
     // Update registrations chart (top 10 events)
@@ -264,14 +302,18 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
       .slice(0, 10);
 
     this.registrationsChartData = {
-      labels: topRegistrations.map(item => this.truncateLabel(item.eventTitle)),
-      datasets: [{
-        data: topRegistrations.map(item => item.registrations),
-        backgroundColor: '#2ecc71',
-        borderColor: '#27ae60',
-        borderWidth: 1,
-        label: 'Registrations'
-      }]
+      labels: topRegistrations.map((item) =>
+        this.truncateLabel(item.eventTitle)
+      ),
+      datasets: [
+        {
+          data: topRegistrations.map((item) => item.registrations),
+          backgroundColor: '#2ecc71',
+          borderColor: '#27ae60',
+          borderWidth: 1,
+          label: 'Registrations',
+        },
+      ],
     };
 
     // Update revenue chart (top 8 events)
@@ -280,19 +322,29 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
       .slice(0, 8);
 
     this.revenueChartData = {
-      labels: topRevenue.map(item => this.truncateLabel(item.eventTitle)),
-      datasets: [{
-        data: topRevenue.map(item => item.revenue),
-        backgroundColor: [
-          '#f39c12', '#e74c3c', '#9b59b6', '#1abc9c',
-          '#34495e', '#e67e22', '#3498db', '#2ecc71'
-        ]
-      }]
+      labels: topRevenue.map((item) => this.truncateLabel(item.eventTitle)),
+      datasets: [
+        {
+          data: topRevenue.map((item) => item.revenue),
+          backgroundColor: [
+            '#f39c12',
+            '#e74c3c',
+            '#9b59b6',
+            '#1abc9c',
+            '#34495e',
+            '#e67e22',
+            '#3498db',
+            '#2ecc71',
+          ],
+        },
+      ],
     };
   }
 
   private truncateLabel(label: string, maxLength: number = 20): string {
-    return label.length > maxLength ? label.substring(0, maxLength) + '...' : label;
+    return label.length > maxLength
+      ? label.substring(0, maxLength) + '...'
+      : label;
   }
 
   getChartType(type: string): ChartType {
@@ -323,7 +375,9 @@ export class OrganizerAnalyticsComponent implements OnInit, OnDestroy {
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `analytics-data-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `analytics-data-${
+      new Date().toISOString().split('T')[0]
+    }.json`;
     link.click();
     URL.revokeObjectURL(url);
   }
