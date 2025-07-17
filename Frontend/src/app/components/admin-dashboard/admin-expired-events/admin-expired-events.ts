@@ -189,18 +189,31 @@ export class AdminExpiredEvents implements OnInit {
 
   loadExpiredEvents(): void {
     this.loadingService.show();
+
     this.eventService.getExpiredEvents().subscribe({
-      next: (events: Event[]) => {
+      next: (events) => {
         this.expiredEvents = events;
+        // this.filteredExpiredEvents = [...events];
+        // this.extractFilterOptions();
         this.loadingService.hide();
+        this.showAlert(
+          'success',
+          'Events Loaded',
+          'Successfully loaded all available events!'
+        );
       },
-      error: (error: HttpErrorResponse) => {
-        console.error('Error loading expired events:', error);
-        this.showAlert('error', 'Error', 'Failed to load expired events');
+      error: (err) => {
+        console.error('Error loading events', err);
         this.loadingService.hide();
+        this.showAlert(
+          'error',
+          'Loading Failed',
+          'Failed to load events. Please try again later.'
+        );
       },
     });
   }
+
 
   confirmDeleteEvent(eventId: string, eventTitle: string): void {
     this.customAlert = {
@@ -233,10 +246,10 @@ export class AdminExpiredEvents implements OnInit {
     });
   }
 
-  showEventDetail(event: Event): void {
+  showEventDetail(event: Event) {
     this.selectedEvent = event;
     this.showEventDetails = true;
-    this.loadRegisteredUsers(event._id);
+    document.body.style.overflow = 'hidden';
   }
 
   loadRegisteredUsers(eventId: string) {

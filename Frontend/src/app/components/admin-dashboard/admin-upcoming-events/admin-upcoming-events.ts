@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -63,11 +63,12 @@ export interface CustomAlert {
   templateUrl: './admin-upcoming-events.html',
   styleUrls: ['./admin-upcoming-events.scss'],
 })
-export class AdminUpcomingEvents implements OnInit {
+export class AdminUpcomingEvents {
   events: Event[] = [];
   filteredEvents: Event[] = [];
   usersMap: { [eventId: string]: RegisteredUsersResponse } = {};
   showUsersDropdown: { [eventId: string]: boolean } = {};
+  userName: string | null = null;
 
   // Event details modal properties
   selectedEvent: Event | null = null;
@@ -97,12 +98,37 @@ export class AdminUpcomingEvents implements OnInit {
     private loadingService: LoadingService,
     private router: Router,
     private http: HttpClient
-  ) {}
-
-  ngOnInit(): void {
+  ) {
     this.loadEvents();
-    this.viewAvailableEvents();
   }
+
+  // ngOnInit(): void {
+  //     // this.setUserFromLocalUser();
+
+  //   this.loadEvents();
+  //   this.viewAvailableEvents();
+  // }
+
+//   setUserFromLocalUser() {
+//   try {
+//     const userString = localStorage.getItem('user');
+//     if (userString) {
+//       const user = JSON.parse(userString);
+//       this.userEmail = user.email || '';
+//       this.userId = user._id || '';
+//       this.isSuperAdmin = this.userEmail === 'superadmin@gmail.com';
+//     } else {
+//       this.userEmail = '';
+//       this.userId = '';
+//       this.isSuperAdmin = false;
+//     }
+//   } catch (error) {
+//     console.error('Failed to parse user from localStorage', error);
+//     this.userEmail = '';
+//     this.userId = '';
+//     this.isSuperAdmin = false;
+//   }
+// }
 
   handleHeaderAction(action: string): void {
     switch (action) {
@@ -201,15 +227,15 @@ export class AdminUpcomingEvents implements OnInit {
     }
   }
 
-  viewAvailableEvents() {
-    const availableSection = document.querySelector('.upcoming-events');
-    if (availableSection) {
-      availableSection.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }
-  }
+  // viewAvailableEvents() {
+  //   const availableSection = document.querySelector('.upcoming-events');
+  //   if (availableSection) {
+  //     availableSection.scrollIntoView({
+  //       behavior: 'smooth',
+  //       block: 'start',
+  //     });
+  //   }
+  // }
 
   // loadRegisteredUsersForEvents(): void {
   //   this.filteredEvents.forEach((event) => {
