@@ -54,7 +54,12 @@ export const createLocation = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 export const getAllLocations = asyncHandler(async (req, res) => {
   // console.log('📥 Fetching all locations');
-  const locations = await Location.find({});
+  const locations = await Location.find({}, {
+    bookings: 0,
+    createdAt: 0,
+    updatedAt: 0,
+    __v: 0
+  });
   res.status(200).json(locations);
 });
 

@@ -112,6 +112,7 @@ export class UserDashboardComponent implements OnDestroy {
     'Agra',
     'Noida',
   ];
+  
 
   private searchTimeout: any;
 
@@ -162,7 +163,9 @@ export class UserDashboardComponent implements OnDestroy {
   dateFrom = '';
   dateTo = '';
   selectedPriceRange = '';
-  sortBy = 'date';
+  // sortBy = 'date';
+  sortBy: string = 'date_desc'; // Default selected option
+
 
   availableCategories: string[] = [];
   //availableCities: string[] = [];
@@ -419,7 +422,7 @@ export class UserDashboardComponent implements OnDestroy {
     });
   }
 
-  fetchEvents(page: number = 1): void {
+ fetchEvents(page: number = 1): void {
     this.isLoading = true;
     const filters: any = {};
     if (this.searchQuery?.trim()) {
@@ -440,27 +443,30 @@ export class UserDashboardComponent implements OnDestroy {
     if (this.selectedPriceRange) {
       filters.priceRange = this.selectedPriceRange;
     }
-    this.eventService
-      .getPaginatedEvents(page, this.eventsPerPage, filters)
-      .subscribe({
-        next: (response) => {
-          this.events = response.data.events;
-          this.paginatedEvents = response.data.events;
-          this.filteredEvents = [...this.events];
-          this.applySorting();
-          const pagination = response.data.pagination;
-          this.currentPage = pagination.currentPage;
-          this.totalPages = pagination.totalPages;
-          this.eventsPerPage = pagination.perPage;
-        },
-        error: (error) => {
-          console.error('❌ Error fetching events:', error);
-          this.showAlert('error', 'Load Failed', 'Failed to load events');
-        },
-        complete: () => {
-          this.isLoading = false;
-        },
-      });
+
+    if(this.sortBy){
+      filters.sortBy = this.sortBy;
+    }
+    this.eventService.getPaginatedEvents(page, this.eventsPerPage, filters).subscribe({
+      next: (response) => { 
+        this.events = response.data.events;
+        this.paginatedEvents = response.data.events;
+        this.filteredEvents = [...this.events];
+        this.applySorting();
+        const pagination = response.data.pagination;
+        this.currentPage = pagination.currentPage;
+        this.totalPages = pagination.totalPages;
+        this.eventsPerPage = pagination.perPage;
+        
+      },
+      error: (error) => {
+        console.error('❌ Error fetching events:', error);
+        this.showAlert('error', 'Load Failed', 'Failed to load events');
+      },
+      complete: () => {
+        this.isLoading = false;
+      }
+    });
   }
 
   registerForEvent(eventId: string) {

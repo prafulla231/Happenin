@@ -276,10 +276,10 @@ export class AdminDashboardComponent {
   ) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     // this.loadExpiredEvents();
-    this.loadEvents();
-    this.loadLocations();
-    this.loadApprovals();
-    this.loadExpiredEvents();
+    // this.loadEvents();
+    // this.loadLocations();
+    // this.loadApprovals();
+    // this.loadExpiredEvents();
     this.setUserFromLocalUser();
 
     this.registerForm = this.fb.group({

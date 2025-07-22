@@ -263,9 +263,33 @@ export class AdminUpcomingEvents {
     });
   }
 
-  toggleUsersDropdown(eventId: string): void {
-    this.showUsersDropdown[eventId] = !this.showUsersDropdown[eventId];
+  
+ toggleUsersDropdown(eventId: string) {
+  // If dropdown is currently closed, we're about to open it
+  if (!this.showUsersDropdown[eventId]) {
+    // Check if we haven't loaded users for this event yet
+    if (!this.usersMap[eventId]) {
+      this.loadRegisteredUsers(eventId);
+    }
   }
+  
+  // Toggle the dropdown state
+  this.showUsersDropdown[eventId] = !this.showUsersDropdown[eventId];
+}
+isUsersLoaded(eventId: string): boolean {
+  return !!this.usersMap[eventId];
+}
+
+// Optional: Add a method to get user count for display
+getUserCount(eventId: string): number {
+  return this.usersMap[eventId]?.currentRegistration || 0;
+}
+
+hasNoUsers(eventId: string): boolean {
+  const users = this.usersMap[eventId]?.users;
+  return Array.isArray(users) && users.length === 0;
+}
+
 
   showEventDetail(event: Event) {
     this.selectedEvent = event;
@@ -288,9 +312,9 @@ export class AdminUpcomingEvents {
         this.filteredEvents = [...events];
         // this.extractFilterOptions();
         // this.applySorting();
-        this.events.forEach((event) => {
-          this.loadRegisteredUsers(event._id); // keep your existing method call
-        });
+        // this.events.forEach((event) => {
+        //   this.loadRegisteredUsers(event._id); // keep your existing method call
+        // });
         this.loadingService.hide();
         this.showAlert(
           'success',

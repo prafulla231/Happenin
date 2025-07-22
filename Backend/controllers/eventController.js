@@ -192,13 +192,12 @@ export const getEvents = async (req, res) => {
 // };
 
 
-
 export const getUpcomingEvents = async (req, res) => {
   try {
     const events = await Event.find({ 
       date: { $gte: new Date() }, 
       isDeleted: false 
-    }).sort({ date: 1 }).populate('createdBy', 'name email role');
+    }).select('-createdAt -updatedAt -__v').sort({ date: 1 }).populate('createdBy', 'name email role');
     // console.log("events : ", events);
     
     return apiResponse(res, 200, "Upcoming events fetched successfully", events);
@@ -208,6 +207,7 @@ export const getUpcomingEvents = async (req, res) => {
   }
 };
 
+
 export const getPaginatedEvents = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -216,48 +216,65 @@ export const getPaginatedEvents = async (req, res) => {
 
     const filter = { isDeleted: false };
 
-   
+    // console.log('🛬 API HIT: /paginatedEvents');
+    // console.log('📨 Query Params:', req.query);
 
-    // Search by title
+    // 🔍 Filters
     if (req.query.search) {
       filter.title = { $regex: req.query.search, $options: 'i' };
     }
 
-    // Filter by category
     if (req.query.category) {
       filter.category = req.query.category;
     }
 
-    // 🔥 Filter by city by first mapping to placeNames
     if (req.query.city) {
-      const matchingLocations = await Location.find({ city: req.query.city }).select('placeName');
-      const placeNames = matchingLocations.map(loc => loc.placeName);
+      const locationDocs = await Location.find({ city: req.query.city }).select('placeName');
+      const matchingPlaceNames = locationDocs.map(loc => loc.placeName);
 
-     
-      if (placeNames.length > 0) {
-        filter.location = { $in: placeNames };
+      // console.log('🏙 Matching placeNames for city:', req.query.city, matchingPlaceNames);
+
+      if (matchingPlaceNames.length > 0) {
+        filter.location = { $in: matchingPlaceNames };
       } else {
-        // Ensure query returns no events
-        filter.location = '__NO_MATCH__';
+        filter.location = '__NO_MATCH__'; // Forces no match
       }
     }
 
-    // Filter by date range
-    if (req.query.fromDate || req.query.toDate) {
-      filter.date = {};
-      if (req.query.fromDate) filter.date.$gte = new Date(req.query.fromDate);
-      if (req.query.toDate) filter.date.$lte = new Date(req.query.toDate);
-    }
+    // 📅 Date filtering
+if (req.query.fromDate || req.query.toDate) {
+  filter.date = {};
+  if (req.query.fromDate) filter.date.$gte = new Date(req.query.fromDate);
+  if (req.query.toDate) filter.date.$lte = new Date(req.query.toDate);
+} else {
+  // 👇 Default: show only today and future events
+  filter.date = { $gte: new Date() };
+}
 
-    // Filter by price range
+
     if (req.query.priceRange) {
       const [min, max] = req.query.priceRange.split('-').map(Number);
       filter.price = { $gte: min, $lte: max };
     }
 
+    // ✅ Sort
+    let sortOption = { date: -1 }; // Default: Newest First
+    if (req.query.sortBy) {
+      const [field, direction] = req.query.sortBy.split('_'); // e.g., price_desc
+      const sortOrder = direction === 'asc' ? 1 : -1;
+      const validFields = ['price', 'date', 'title', 'category'];
 
-    // Get paginated events
+      if (validFields.includes(field)) {
+        sortOption = { [field]: sortOrder };
+      }
+    }
+
+    // console.log('🔍 Final Filter Used:', filter);
+    // console.log('↕️ Sort Option:', sortOption);
+
     const events = await Event.find(filter)
+     .select('-createdAt -updatedAt -__v')
+      .sort(sortOption)
       .skip(skip)
       .limit(limit)
       .populate('createdBy', 'name email role');
@@ -271,17 +288,16 @@ export const getPaginatedEvents = async (req, res) => {
       perPage: limit,
     };
 
-
     return apiResponse(res, 200, 'Paginated events fetched successfully', {
       events,
       pagination
     });
-
   } catch (error) {
     console.error('❌ Get Paginated Events Error:', error);
     return apiError(res, 500, 'Server error while fetching paginated events', error);
   }
 };
+
 
 
 // GET EVENTS BY USER ID (only not deleted)
@@ -390,7 +406,7 @@ export const getExpiredEvents = async (req, res) => {
         date: { $lt: new Date() },
         isDeleted: false 
       }
-    )
+    ).select('-createdAt -updatedAt -__v')
     .sort({ date: -1 })
     .populate('createdBy', 'name email role');
 

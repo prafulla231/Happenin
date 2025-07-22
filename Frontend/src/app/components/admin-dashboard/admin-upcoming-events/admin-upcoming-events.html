@@ -60,7 +60,72 @@
         </button>
       </div>
 
-      <div class="registered-users-section">
+       <div class="registered-users-section">
+  <h4>Registered Users</h4>
+
+  <div class="users-dropdown">
+    <button
+      class="users-toggle-btn"
+      (click)="toggleUsersDropdown(event._id)"
+      [attr.aria-expanded]="showUsersDropdown[event._id]"
+      [attr.aria-controls]="'usersList-' + event._id"
+    >
+      <!-- Show loading state when dropdown is open but users not loaded -->
+      <span *ngIf="showUsersDropdown[event._id] && !isUsersLoaded(event._id)">
+        Loading users...
+      </span>
+      <!-- Show user count when users are loaded -->
+      <span *ngIf="isUsersLoaded(event._id)">
+        Registered users: {{ getUserCount(event._id) }}
+      </span>
+      <!-- Show default text when dropdown is closed and no users loaded -->
+      <span *ngIf="!showUsersDropdown[event._id] && !isUsersLoaded(event._id)">
+        View registered users
+      </span>
+      
+      <span
+        class="dropdown-icon"
+        [class.rotated]="showUsersDropdown[event._id]"
+      >
+        ▼
+      </span>
+    </button>
+
+    <ul
+      id="usersList-{{ event._id }}"
+      class="users-list"
+      *ngIf="showUsersDropdown[event._id]"
+    >
+      <!-- Show loading indicator while users are being fetched -->
+      <li *ngIf="!isUsersLoaded(event._id)" class="loading-item">
+        <div class="loading-spinner">Loading users...</div>
+      </li>
+      
+      <!-- Show users once loaded -->
+      <li *ngFor="let user of usersMap[event._id]?.users" class="user-item">
+        <div class="user-info">
+          <span class="user-name">{{ user.name }}</span>
+          <span class="user-email">{{ user.email }}</span>
+        </div>
+        <button
+          class="remove-user-btn"
+          (click)="confirmRemoveUser(event._id, user._id, user.name)"
+          title="Remove user"
+        >
+          Remove
+        </button>
+      </li>
+      
+      <!-- Show message when no users are registered -->
+     <li *ngIf="isUsersLoaded(event._id) && hasNoUsers(event._id)" class="no-users-item">
+  No users registered for this event
+</li>
+
+    </ul>
+  </div>
+</div>
+      
+      <!-- <div class="registered-users-section">
         <h4>Registered Users</h4>
 
         <div *ngIf="usersMap[event._id]" class="users-dropdown">
@@ -102,7 +167,7 @@
             </li>
           </ul>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 

@@ -359,30 +359,6 @@ export class OrganizerDashboardComponent implements OnDestroy {
   }
 
   private loadAllData(): void {
-    this.isLoading = true;
-    this.loadingService.show();
-
-    // Load locations
-    this.locationService
-      .fetchLocations()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.locations = Array.isArray(data) ? data : [];
-          this.places = this.locations;
-          this.filteredStates = [
-            ...new Set(
-              this.locations.map((loc) => loc.state?.trim()).filter(Boolean)
-            ),
-          ];
-        },
-        error: (error) => {
-          console.error('Error loading locations:', error);
-          this.locations = [];
-          this.places = [];
-        },
-      });
-
     // Load events
     if (this.organizerId) {
       this.eventService
@@ -419,6 +395,23 @@ export class OrganizerDashboardComponent implements OnDestroy {
       this.loadingService.hide();
     }
   }
+
+   private loadLocations(): void {
+  this.locationService.fetchLocations().pipe(
+    takeUntil(this.destroy$)
+  ).subscribe({
+    next: (data) => {
+      this.locations = Array.isArray(data) ? data : [];
+      this.places = this.locations;
+      this.filteredStates = [...new Set(this.locations.map(loc => loc.state?.trim()).filter(Boolean))];
+    },
+    error: (error) => {
+      console.error('Error loading locations:', error);
+      this.locations = [];
+      this.places = [];
+    }
+  });
+}
 
   calculateDuration() {
     const start = this.eventForm.get('startTime')?.value;
@@ -635,22 +628,22 @@ export class OrganizerDashboardComponent implements OnDestroy {
     );
   }
 
-  loadRegisteredUsers(eventId: string, callback?: () => void) {
-    this.eventService
-      .getRegisteredUsers(eventId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          this.usersMap[eventId] = res.data;
-          if (callback) callback();
-        },
-        error: (error) => {
-          console.error('Error loading registered users:', error);
-          // alert('Failed to load registered users');
-          this.showAlert('error', 'Error', 'Failed to load registered users');
-        },
-      });
-  }
+loadRegisteredUsers(eventId: string) {
+  this.eventService
+    .getRegisteredUsers(eventId)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (res) => {
+        this.usersMap[eventId] = res.data;
+        this.isLoadingUsers = false; // ← Set directly
+      },
+      error: (error) => {
+        console.error('Error loading registered users:', error);
+        this.showAlert('error', 'Error', 'Failed to load registered users');
+        this.isLoadingUsers = false; // ← Set directly
+      },
+    });
+}
 
   // State/City Filters
   onStateChange() {
@@ -679,6 +672,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
   }
 
   toggleCreateForm() {
+    this.loadLocations();
     this.showCreateForm = !this.showCreateForm;
     this.isEditMode = false;
     this.resetForm();
@@ -716,14 +710,20 @@ export class OrganizerDashboardComponent implements OnDestroy {
       setTimeout(() => (window.location.href = '/login'), 500);
     });
   }
+  isLoadingUsers = false;
 
   openUserModal(eventId: string) {
-    this.loadRegisteredUsers(eventId, () => (this.selectedEventId = eventId));
-  }
+  console.log('Opening modal for event:', eventId);
+  this.selectedEventId = eventId;
+  this.isLoadingUsers = true;
+  
+  this.loadRegisteredUsers(eventId);
+}
+closeUserModal() {
+  this.selectedEventId = null;
+  this.isLoadingUsers = false;
+}
 
-  closeUserModal() {
-    this.selectedEventId = null;
-  }
 
   showEventDetail(event: Event) {
     this.selectedEvent = event;

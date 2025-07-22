@@ -60,7 +60,7 @@ export const approveEvent = async (req, res) => {
 
 export const viewApprovalRequest = async (req, res) => {
   try {
-    const events = await Approval.find().populate('createdBy', 'name email role');
+    const events = await Approval.find().select('-createdAt -updatedAt -__v').populate('createdBy', 'name email role');
     return apiResponse(res, 200, 'Events fetched successfully', events);
   } catch (error) {
     console.error('Get Events error:', error.message);

@@ -331,36 +331,47 @@
     </div>
 
     <!-- Registered Users Modal for Approved Events -->
-    <div class="modal-backdrop" *ngIf="selectedEventId && usersMap[selectedEventId]">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>Registered Users</h3>
-          <button class="modal-close-btn" (click)="closeUserModal()">×</button>
-        </div>
-
-        <div class="modal-body">
-          <ul class="users-list" *ngIf="usersMap[selectedEventId]?.users?.length; else noUsers">
-            <li class="user-item" *ngFor="let user of usersMap[selectedEventId].users">
-              <div class="user-info">
-                <span class="user-name">{{ user.name }}</span>
-                <span class="user-email">{{ user.email }}</span>
-              </div>
-            </li>
-          </ul>
-
-          <ng-template #noUsers>
-            <div class="no-users-message">
-              <span class="no-users-icon">👥</span>
-              <p>No users registered for this event yet.</p>
-            </div>
-          </ng-template>
-        </div>
-
-        <div class="modal-footer">
-          <button class="modal-btn" (click)="closeUserModal()">Close</button>
-        </div>
-      </div>
+    <div class="modal-backdrop" *ngIf="selectedEventId && (usersMap[selectedEventId] || isLoadingUsers)">
+  <div class="modal" [ngStyle]="{
+       'top': '50%',
+       'left': '50%',
+       'transform': 'translate(-50%, -50%)',
+       'position': 'fixed',
+       'display': 'flex',
+       'flex-direction':'column'
+     }">
+    <div class="modal-header">
+      <h3>Registered Users</h3>
+      <button class="modal-close-btn" (click)="closeUserModal()">×</button>
     </div>
+
+    <div class="modal-body">
+      <div *ngIf="isLoadingUsers" class="loading-message">
+        Loading users...
+      </div>
+      
+      <ul class="users-list" *ngIf="!isLoadingUsers && usersMap[selectedEventId]?.users?.length; else noUsers">
+        <li class="user-item" *ngFor="let user of usersMap[selectedEventId].users">
+          <div class="user-info">
+            <span class="user-name">{{ user.name }}</span>
+            <span class="user-email">{{ user.email }}</span>
+          </div>
+        </li>
+      </ul>
+
+      <ng-template #noUsers>
+        <div class="no-users-message" *ngIf="!isLoadingUsers">
+          <span class="no-users-icon">👥</span>
+          <p>No users registered for this event yet.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="modal-footer">
+      <button class="modal-btn" (click)="closeUserModal()">Close</button>
+    </div>
+  </div>
+</div>
   </div>
 
   <!-- Pending Approval Events Section -->
