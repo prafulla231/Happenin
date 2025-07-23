@@ -573,6 +573,7 @@ export class OrganizerDashboardComponent implements OnDestroy {
   }
 
   onEdit(event: Event) {
+     this.loadLocations();
     window.scrollTo(0, 0);
     const loc = this.locations.find((l) => l.placeName === event.location);
     this.eventForm.patchValue({
